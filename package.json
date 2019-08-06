@@ -1,0 +1,26 @@
+{
+  "name": "tc-fkb-folk-api",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node ./bin/www",
+    "watch": "nodemon ./bin/www",
+    "watch-cross": "$(DEBUG=myapp:* | set DEBUG=myapp:*) nodemon ./bin/www",
+    "test": " mocha test/**/*.test.js"
+  },
+  "dependencies": {
+    "bluebird": "^3.5.5",
+    "config": "^3.2.2",
+    "cookie-parser": "~1.4.4",
+    "debug": "~2.6.9",
+    "dotenv": "^8.0.0",
+    "express": "~4.16.1",
+    "http-errors": "~1.6.3",
+    "ioredis": "^4.14.0",
+    "jade": "~1.11.0",
+    "morgan": "~1.9.1",
+    "pg-promise": "^9.0.0",
+    "redis-commands": "^1.5.0",
+    "redis-parser": "^3.0.0"
+  }
+}

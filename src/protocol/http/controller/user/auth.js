@@ -1,0 +1,350 @@
+var authService = require('../../../../domain/folk/user/authenticate/_services/authServiceTemp')
+var settingService = require('../../../../domain/folk/user/setting/_services/settingServiceTemp')
+var friendService = require('../../../../domain/folk/circle/_services/friendServiceTemp')
+var messageService = require('../../../../application/message/messageService')
+var notificationService = require('../../../../application/notification/notificationService')
+var authFormat = require('../../../../domain/folk/user/authenticate/format')
+
+exports.signup = async (req, res, next) => {
+  Promise.resolve(authService.signup(req.body))
+    .then(userInfo => res.locals.data = userInfo)
+    .then(() => next())
+    .catch(err => next(err))
+}
+
+/**
+ * login 時，
+ * 1. 預設取得所有朋友的資訊 (朋友清單)，
+ *  只是每個朋友只帶回最少量可供顯示的訊息
+ * 2. 取得 message service 驗證資訊
+ * 3. 建立 notification service 的消息通知機制
+ */
+exports.login = async (req, res, next) => {
+  var {
+    account,
+    password // encrypted
+  } = req.body
+  var data = res.locals.data = {}
+  var message = 0,
+    notification = 1,
+    friend = 2
+
+  // authService.login create session info
+  try {
+    var userInfo = await authService.login(account, password)
+  } catch (err) {
+    next(err)
+  }
+
+  // *** 等三項服務的速度會太慢嗎？有必要改成異步？
+  Promise.all([
+      messageService.authenticate(userInfo),
+      notificationService.createUserChannel(userInfo),
+      friendService.list(userInfo),
+    ])
+    .then(serviceInfoList => {
+      data.userInfo = userInfo
+      data.msgInfo = serviceInfoList[message]
+      data.notifyInfo = serviceInfoList[notification]
+      data.friendList = serviceInfoList[friend]
+    })
+    .then(() => next())
+    .catch(err => next(err))
+}
+
+/**
+ * http method GET
+ * for those users who forget their login account (search email OR phone)
+ */
+exports.searchAccount = async (req, res, next) => {
+  var {
+    type,
+    account // 半殘的片段帳戶資訊, ex: terrence
+  } = res.locals.data = req.query
+  var data = res.locals.data
+
+  try {
+    var existingAccount = await authService.searchAccount(type, account)
+    data.account = existingAccount // 完整的帳戶資訊, ex: terrence.chao@gmail.com
+    next()
+  } catch (err) {
+    next(err)
+  }
+}
+
+/**
+ * http method GET
+ * for those users who forget their social media account (facebook/google)
+ */
+exports.searchSocialAccount = async (req, res, next) => {
+  // X) don't do this in this stage.....
+  next(new Error('API causes errors. No social account'))
+}
+
+/**
+ * http method PUT ([PUT]:'server-host/api/v1/user/verification)
+ * 發送的前提是，你已經知道 account 了 (email OR phone), 所以
+ * 發送 verifyInfo 時會伴隨著 email/phone 資訊 (寄信或發簡訊)，並且
+ * 回應 token 資訊給前端。
+ * 
+ * 這裡用 PUT 的原因是，若尚未有 verify code/token 的話才會產生新的 code/token,
+ * 若已經有的話則不更新。(在第一次驗證成功後，這樣的資訊在 DB 中會保持為 null)
+ * 
+ * token 在這裡的用途是為了製造一個臨時的 verify-link. 一旦用戶身份驗證成功，
+ * 這個 verify-link 將會失效。
+ * 
+ * for those users who forget their login account || password.
+ * At here:
+ * A. forget login account:
+ *  1. seatch user's account
+ *  2. create verify token & code with same email/phone in DB
+ *  3. send 'verify info' (by email OR sms). The content of 'verify info' including:
+ *      a. verify-link => 可有可無
+ *      b. verification code (if email OR sms)
+ *      c. reset password request (if email)
+ *  4. response verify-link to front-end
+ * 
+ * B. forget password:
+ *  1. create verify token & code with same email/phone in DB
+ *  2. send 'verify info' (by email OR sms). The content of 'verify info' including:
+ *      a. b. c. => the same as above
+ *  3. response verify-link to front-end
+ * 
+ * At front-end, get verify-link to do 'checkVerificationWithCode':
+ * ([POST]:'server-host/api/v1/user/verification/code/:[token]')
+ */
+exports.sendVerifyInfo = async (req, res, next) => {
+  var {
+    type,
+    account
+  } = req.body
+
+  Promise.resolve(authService.createVerification(type, account))
+    .then(verification => {
+      verifyInfo = authFormat.byVerification(req, verification)
+      notificationService.sendVerification(verifyInfo) // no waiting!! (no await)
+      return verifyInfo
+    })
+    .then(verifyInfo => {
+      res.locals.data = {
+        'verify-link': verifyInfo.verifyLink,
+        'token': verifyInfo.token
+      }
+      next()
+    })
+    .catch(err => next(err))
+}
+
+/**
+ * http method POST (idempotent)
+ * 從 'sendVerifyInfo' ([PUT]:'server-host/api/v1/user/verification) 以後，
+ * front-end 得到了 verify-link ([POST]:'server-host/api/v1/user/verification/code/:[token]')，
+ * 用戶將從 email OR sms 得知 verify code。
+ * 只要經過第一次驗證成功後，這樣的 verify-link 就會失效。
+ * 
+ * [當用戶已登入時，一定要在req.body帶上region,uid,token...etc等資訊避免重複驗證流程導致錯誤]
+ * 
+ * At front-end:
+ *  1. after 'sendVerifyInfo', get verify-link ([POST]:'server-host/api/v1/user/verification/code/:[token]')
+ *  2. redirect to the [verify-page] for input verify code
+ *  3. call verify-link
+ * [NOTE]: front-end [verify-page] 也必須隨著 verify-link 失效。用戶回到上一頁會被導向到 landing page
+ * 
+ * At here:
+ *  1. validate user is logged in? leave if yes.
+ *  2. check the verify token and code are matched in DB [token/code->sameuser]
+ *  3. delete the verify token & code from DB
+ *  4. create session info (sessionID/cookie)  ( important! important! important! )
+ *  5. response session info & userID to front-end
+ * 
+ * At front-end:
+ *  1. get session info & userID if response status 200.
+ *  2. user can choose (or choose not) to reset password. go step 3. if not.
+ *  3. redirect to landing page or profile. ( important! important! important! )
+ */
+exports.checkVerificationWithCode = async (req, res, next) => {
+  var token = req.params.token,
+    code = req.body.code
+  var data = res.locals.data = {}
+  var message = 0,
+    notification = 1,
+    friend = 2,
+    user = 3
+
+  // 檢查 session 是否已經登入. 
+  // 當用戶已登入時，一定要在req.body帶上 region, uid, token ... etc 等資訊避免重複驗證流程導致錯誤
+  Promise.resolve(authService.isLoggedInByMock(req.body))
+    .then(result => result === true ? next() : null)
+    .then(() => authService.validateVerification({
+      token,
+      code
+    }))
+    .then(async userInfo => {
+      await authService.deleteVerification(userInfo)
+      return userInfo
+    })
+    .then(async userInfo => {
+      userInfo.auth = await authService.createSession(userInfo)
+      return userInfo
+    })
+    .then(userInfo => Promise.all([
+      messageService.authenticate(userInfo),
+      notificationService.createUserChannel(userInfo),
+      friendService.list(userInfo),
+      userInfo // user = 3
+    ]))
+    .then(serviceInfoList => {
+      data.msgInfo = serviceInfoList[message]
+      data.notifyInfo = serviceInfoList[notification]
+      data.friendList = serviceInfoList[friend]
+      data.userInfo = serviceInfoList[user] // user = 3
+      next()
+    })
+    .catch(err => next(err))
+}
+
+/**
+ * http method PUT
+ * At front-end:
+ *  1. user chooses to reset password.
+ *  2. call api ([PUT]:'/:[uid]/password/reset')
+ * 
+ * At here: (session info has created)
+ *  1. [update-passowrd] in DB without checking the old one.
+ * 
+ * At front-end:
+ *  1. redirect to landing page or profile. ( important! important! important! )
+ */
+exports.resetPassword = async (req, res, next) => {
+  var {
+    region,
+    uid,
+    email,
+    password // encrypted
+  } = req.body
+  
+  Promise.resolve(authService.resetPassword({ region, uid, email }, password))
+    .then(() => next())
+    .catch(err => next(err))
+}
+
+/**
+ * http method POST (idempotent)
+ * front-end 在執行 'sendVerifyInfo' ([PUT]:'server-host/api/v1/user/verification) 以後，
+ * 並不會從 response 中拿到這裡的 verify-link，而是用戶透過點擊信箱內的 [變更密碼] 而導向到 front-end 的
+ * 某一個輸入密碼的頁面，其頁面會呼叫這裡的 verify-link：
+ * ([POST]:'server-host/api/v1/user/verification/password/:[token]')。
+ * 只要經過第一次驗證成功後，這樣的 verify-link 就會失效。
+ * 
+ * [當用戶已登入時，一定要在req.body帶上region,uid,token...etc等資訊避免重複驗證流程導致錯誤]
+ * 
+ * At front-end:
+ *  1. after 'sendVerifyInfo', user get the verify info including 
+ *      the link of [變更密碼] (reset password request) from email.
+ *  2. user clicks the link and is bringed to [reset-password-page].
+ *  3. user keyin new password twice and submit.
+ *  4. front-end call verify-link ([POST]:'server-host/api/v1/user/verification/password/:[token]')
+ * [NOTE]: front-end [reset-password-page] 也必須隨著 verify-link 失效。用戶回到上一頁會被導向到 landing page
+ * 
+ * At here:
+ *  1. validate user is logged in? leave if yes.
+ *  2. [check-verify-token/reset] in DB. If valid, [update-passowrd] in DB without checking the old one.
+ *  3. delete the verify token & code from DB
+ *  4. create session info (sessionID/cookie)  ( important! important! important! )
+ *  5. response session info & userID to front-end
+ * 
+ * At front-end:
+ *  1. get session info & userID if response status 200.
+ *  2. redirect to landing page or profile. ( important! important! important! )
+ */
+exports.checkVerificationWithPassword = async (req, res, next) => {
+  var {
+    token,
+    reset
+  } = req.params,
+    password = req.body.password // encrypted
+  var data = res.locals.data = {}
+  var friend = 0,
+    message = 1,
+    notification = 2,
+    user = 3
+
+  // 檢查 session 是否已經登入. 
+  // 當用戶已登入時，一定要在req.body帶上 region, uid, token ... etc 等資訊避免重複驗證流程導致錯誤
+  Promise.resolve(authService.isLoggedInByMock(req.body))
+    .then(result => result === true ? next() : null)
+    .then(() => authService.validateVerification({
+      token,
+      reset
+    }))
+    .then(async userInfo => {
+      await authService.resetPassword(userInfo, password)
+      return userInfo
+    })
+    .then(async userInfo => {
+      await authService.deleteVerification(userInfo)
+      return userInfo
+    })
+    .then(async userInfo => {
+      userInfo.auth = await authService.createSession(userInfo)
+      return userInfo
+    })
+    .then(userInfo => Promise.all([
+      friendService.list(userInfo),
+      messageService.authenticate(userInfo),
+      notificationService.createUserChannel(userInfo),
+      userInfo // user = 3
+    ]))
+    .then(serviceInfoList => {
+      data.friendList = serviceInfoList[friend]
+      data.msgInfo = serviceInfoList[message]
+      data.notifyInfo = serviceInfoList[notification]
+      data.userInfo = serviceInfoList[user] // user = 3
+      next()
+    })
+    .catch(err => next(err))
+}
+
+exports.isLoggedIn = async (req, res, next) => {
+  // validate session info by region/uid/token
+  // If yes, to someone's profile
+  var region = req.params.region || req.query.region || req.body.region,
+    uid = req.params.uid || req.query.uid || req.body.uid,
+    token = req.params.token || req.query.token || req.body.token
+    
+  Promise.resolve(authService.isLoggedIn({
+    region,
+    uid,
+    token
+  }))
+    .then(result => next())
+    .catch(err => next(err))
+}
+
+exports.checkOldPassword = async (req, res, next) => {
+  var {
+    region,
+    uid,
+    email,
+    password // encrypted
+  } = req.body
+
+  Promise.resolve(authService.validatePassword({ region, uid, email }, password))
+    .then(result => next())
+    .catch(err => next(err))
+}
+
+/**
+ * 直接從 session 刪除用戶紀錄
+ */
+exports.logout = async (req, res, next) => {
+  var userInfo = req.query
+
+  Promise.all([
+    authService.logout(userInfo),
+    messageService.quit(userInfo),
+    notificationService.quit(userInfo)
+  ])
+    .then(() => next())
+    .then(err => next(err))
+}

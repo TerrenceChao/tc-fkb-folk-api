@@ -1,0 +1,147 @@
+var express = require('express')
+var router = express.Router()
+var userReq = require('../protocol/http/request/user/userReq')
+var auth = require('../protocol/http/controller/user/auth')
+var profile = require('../protocol/http/controller/user/profile')
+var setting = require('../protocol/http/controller/user/setting')
+var friend = require('../protocol/http/controller/circle/friend')
+var generalRes = require('../protocol/http/response/generalRes')
+
+/* GET user listing. */
+router.get('/', function (req, res, next) {
+  res.send('respond with user resource')
+})
+
+// auth
+router.post('/signup',
+  // userReq.accountValidator,
+  userReq.userInfoValidator,
+  userReq.newPasswordValidator,
+  auth.signup,
+  generalRes.success
+  // front-end redirect to landing page
+)
+
+router.post('/login',
+  userReq.accountValidator,
+  auth.login,
+  // setting.getUserInfo, (於 service 層中處理)
+  // friend.list, (於 service 層中處理)
+  generalRes.success
+)
+
+/**
+ * for those users who forget their login account
+ * type = email/phone,
+ * account = 'xxx@gmail.com/+886987654321'
+ * [將來帳戶的資料庫sharding時得做額外處理]
+ */
+router.get('/search',
+  userReq.accountValidator,
+  auth.searchAccount,
+  generalRes.success
+)
+
+/**
+ * for those users who forget their social account (facebook/google)
+ * account = 'xxx@gmail.com'
+ * X) don't do this in this stage.....
+ * [將來帳戶的資料庫sharding時得做額外處理]
+ */
+router.get('/search/social?account',
+  userReq.accountValidator,
+  auth.searchSocialAccount,
+  generalRes.success
+)
+
+// send verify info (through email or sms)
+router.put('/verification',
+  userReq.accountValidator,
+  auth.sendVerifyInfo,
+  generalRes.success
+)
+
+/**
+ * 當透過[驗證碼]登入時，以下兩步驟是一組的：
+ * 1. ['/verification/code/:token']
+ * 2. ['/:uid/password/reset'] (已透過 step 1 登入)
+ * check by verification code (idempotent)
+ */
+router.post('/verification/code/:token',
+  userReq.verificationValidator,
+  auth.checkVerificationWithCode, // 確認後刪除 verification info (token/code)
+  generalRes.success
+  // front-end redirect to landing page
+)
+
+/**
+ * 當透過[驗證碼]登入時，以下兩步驟是一組的：
+ * 1. ['/verification/code/:token']
+ * 2. ['/:uid/password/reset'] (已透過 step 1 登入)
+ * 
+ * 如果用戶在前端要回到上一頁？
+ * 沒辦法了，因為 [checkVerificationWithCode] 階段已經刪除 token/code, 無法回上一頁
+ * session info (sessionID/cookie) has registered after [POST]:'/verification/code/:token'
+ */
+router.put('/:uid/password/reset',
+  userReq.sessionValidator,
+  userReq.newPasswordValidator, // 檢查兩次輸入的新密碼是否相同
+  auth.isLoggedIn, // 已登入狀態 => validate session info by uid (req.params.uid)
+  auth.resetPassword, // 直接變更新密碼
+  generalRes.success
+  // front-end redirect to landing page
+)
+
+/**
+ * 當透過[重設密碼]登入時，只會進行以下一個步驟：
+ * check by reset password (idempotent)
+ */
+router.post('/verification/password/:token/:reset',
+  userReq.verificationValidator,
+  userReq.newPasswordValidator, // 檢查兩次輸入的新密碼是否相同
+  auth.checkVerificationWithPassword, /** 檢查 verify token 後，直接變更新密碼，然後刪除 verification info (token/code) */
+  generalRes.success
+  // front-end redirect to landing page
+)
+
+router.get('/logout',
+  // userReq.userInfoValidator,
+  // auth.isLoggedIn, // validate session info by uid (req.params.uid)
+  auth.logout,
+  generalRes.success
+)
+
+// profile (get someone's profile, not only userself)
+router.get('/:profile_id/profile',
+  // userReq.userInfoValidator,
+  auth.isLoggedIn, // validate session info by uid (req.params.uid)
+  profile.getRelationStatus,
+  setting.getUserInfo,
+  generalRes.success
+)
+
+// setting
+router.get('/:uid/setting/info',
+  userReq.userInfoValidator,
+  auth.isLoggedIn, // validate session info by uid (req.params.uid)
+  setting.getUserInfo,
+  generalRes.success
+)
+
+router.put('/:uid/setting/info',
+  userReq.userInfoValidator,
+  auth.isLoggedIn, // validate session info by uid (req.params.uid)
+  setting.updateUserInfo,
+  generalRes.success
+)
+
+router.put('/:uid/setting/password',
+  userReq.userInfoValidator,
+  userReq.newPasswordValidator, // 檢查兩次輸入的新密碼是否相同
+  auth.isLoggedIn, // 已登入狀態 => validate session info by uid (req.params.uid)
+  auth.checkOldPassword, // 先檢查舊密碼是否正確
+  auth.resetPassword, // 再變更新密碼
+  generalRes.success
+)
+
+module.exports = router
