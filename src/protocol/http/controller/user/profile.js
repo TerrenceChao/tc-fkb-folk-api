@@ -1,3 +1,6 @@
+var friendService = require('../../../../domain/circle/_services/friendServiceTemp')
+var objOperator = require('../../../../library/objOperator')
+
 /**
  * Assume user has a long long story/history ...
  * batch load.
@@ -16,11 +19,14 @@
  * 4. nothing for yourself.
  */
 exports.getRelationStatus = async (req, res, next) => {
-  var owner = req.params.profile_id,
-  var visitor = req.query.uid
-  res.locals.data = {
-    owner,
-    visitor
-  }
-  next()
+  var owner = req.params,
+    visitor = req.query
+  var data = res.locals.data = objOperator.getDefaultIfUndefined(res.locals.data)
+
+  Promise.resolve(friendService.getRelationStatus(owner, visitor))
+    .then(relationStatus => {
+      data.relationStatus = relationStatus
+      next()
+    })
+    .catch(err => next(err))
 }

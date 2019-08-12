@@ -1,9 +1,10 @@
 var authService = require('../../../../domain/folk/user/authenticate/_services/authServiceTemp')
 var settingService = require('../../../../domain/folk/user/setting/_services/settingServiceTemp')
-var friendService = require('../../../../domain/folk/circle/_services/friendServiceTemp')
+var friendService = require('../../../../domain/circle/_services/friendServiceTemp')
 var messageService = require('../../../../application/message/messageService')
 var notificationService = require('../../../../application/notification/notificationService')
 var authFormat = require('../../../../domain/folk/user/authenticate/format')
+var objOperator = require('../../../../library/objOperator')
 
 exports.signup = async (req, res, next) => {
   Promise.resolve(authService.signup(req.body))
@@ -24,7 +25,7 @@ exports.login = async (req, res, next) => {
     account,
     password // encrypted
   } = req.body
-  var data = res.locals.data = {}
+  var data = res.locals.data = objOperator.getDefaultIfUndefined(res.locals.data)
   var message = 0,
     notification = 1,
     friend = 2
@@ -165,7 +166,7 @@ exports.sendVerifyInfo = async (req, res, next) => {
 exports.checkVerificationWithCode = async (req, res, next) => {
   var token = req.params.token,
     code = req.body.code
-  var data = res.locals.data = {}
+  var data = res.locals.data = objOperator.getDefaultIfUndefined(res.locals.data)
   var message = 0,
     notification = 1,
     friend = 2,
@@ -222,8 +223,12 @@ exports.resetPassword = async (req, res, next) => {
     email,
     password // encrypted
   } = req.body
-  
-  Promise.resolve(authService.resetPassword({ region, uid, email }, password))
+
+  Promise.resolve(authService.resetPassword({
+      region,
+      uid,
+      email
+    }, password))
     .then(() => next())
     .catch(err => next(err))
 }
@@ -263,7 +268,7 @@ exports.checkVerificationWithPassword = async (req, res, next) => {
     reset
   } = req.params,
     password = req.body.password // encrypted
-  var data = res.locals.data = {}
+  var data = res.locals.data = objOperator.getDefaultIfUndefined(res.locals.data)
   var friend = 0,
     message = 1,
     notification = 2,
@@ -308,15 +313,15 @@ exports.checkVerificationWithPassword = async (req, res, next) => {
 exports.isLoggedIn = async (req, res, next) => {
   // validate session info by region/uid/token
   // If yes, to someone's profile
-  var region = req.params.region || req.query.region || req.body.region,
-    uid = req.params.uid || req.query.uid || req.body.uid,
-    token = req.params.token || req.query.token || req.body.token
-    
+  var region = objOperator.getFromReq(req, 'region'),
+    uid = objOperator.getFromReq(req, 'uid'),
+    token = objOperator.getFromReq(req, 'token')
+
   Promise.resolve(authService.isLoggedIn({
-    region,
-    uid,
-    token
-  }))
+      region,
+      uid,
+      token
+    }))
     .then(result => next())
     .catch(err => next(err))
 }
@@ -329,7 +334,11 @@ exports.checkOldPassword = async (req, res, next) => {
     password // encrypted
   } = req.body
 
-  Promise.resolve(authService.validatePassword({ region, uid, email }, password))
+  Promise.resolve(authService.validatePassword({
+      region,
+      uid,
+      email
+    }, password))
     .then(result => next())
     .catch(err => next(err))
 }
@@ -338,13 +347,13 @@ exports.checkOldPassword = async (req, res, next) => {
  * 直接從 session 刪除用戶紀錄
  */
 exports.logout = async (req, res, next) => {
-  var userInfo = req.query
+  var userInfo = req.params
 
   Promise.all([
-    authService.logout(userInfo),
-    messageService.quit(userInfo),
-    notificationService.quit(userInfo)
-  ])
+      authService.logout(userInfo),
+      messageService.quit(userInfo),
+      notificationService.quit(userInfo)
+    ])
     .then(() => next())
-    .then(err => next(err))
+    .catch(err => next(err))
 }

@@ -185,10 +185,10 @@ AuthService.prototype.createSession = async function (userInfo) {
 
 /**
  * [日後做資料庫sharding時可能需要除了uid以外的資訊]
- * userInfo 至少要有 {region, uid, email}
+ * [accountIdentify] 至少要有 [region,uid,token]
  * 這裡不是只輸入 uid
  */
-AuthService.prototype.isLoggedIn = async function (userInfo) {
+AuthService.prototype.isLoggedIn = async function (accountIdentify) {
   return true
 }
 
@@ -197,8 +197,8 @@ AuthService.prototype.isLoggedIn = async function (userInfo) {
  * [這個function是多餘的]
  * [這個function是多餘的，只是用來check寄送驗證信和簡訊(by-code-or-reset-password)]
  */
-AuthService.prototype.isLoggedInByMock = async function (userInfo) {
-  return true
+AuthService.prototype.isLoggedInByMock = async function (accountIdentify) {
+  return false
 }
 
 AuthService.prototype.logout = async function (userInfo) {

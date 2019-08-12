@@ -1,35 +1,24 @@
-function authValidatorInQuery(req, res, next) {
-  Array.apply(null, ['region', 'uid', 'email']).forEach(field => {
-    if (req.query[field] === undefined) {
-      var err = new Error(`user info is lacked with: ${field}`)
+/**
+ * 檢查欄位中，「region」很重要！
+ * 未來如果真的實現異地部署，這裡的檢查欄位可能更多
+ */
+exports.privateUserInfoValidator = (req, res, next) => {
+  // 檢查欄位中，「region」很重要！
+  Array.apply(null, ['region'].forEach(field => {
+    if (req.headers[field] === undefined && 
+      req.params[field] === undefined &&
+      req.query[field] === undefined &&
+      req.body[field] === undefined) {
+      var err = new Error(`account identify is lacked with: ${field}`)
       err.status = 422
       next(err)
     }
-  })
-}
-
-function authValidatorInBody(req, res, next) {
-  Array.apply(null, ['region', 'uid', 'email']).forEach(field => {
-    if (req.body[field] === undefined) {
-      var err = new Error(`user info is lacked with: ${field}`)
-      err.status = 422
-      next(err)
-    }
-  })
-}
-
-var authValidators = {
-  POST: authValidatorInBody,
-  GET: authValidatorInQuery,
-  PUT: authValidatorInBody,
-  PATCH: authValidatorInBody,
-  DELETE: authValidatorInQuery,
+  }))
+  next()
 }
 
 exports.userInfoValidator = (req, res, next) => {
-  // 檢查欄位中，「region」很重要！
   // the necessery user info fields check (not all of those)
-  authValidators[req.method](req, res, next)
   next()
 }
 
@@ -43,36 +32,49 @@ exports.accountValidator = (req, res, next) => {
   next()
 }
 
-var sessionValidatorInQuery = function (req, res, next) {
-  Array.apply(null, ['region', 'uid', 'token']).forEach(field => {
-    if (req.query[field] === undefined) {
-      var err = new Error(`session info is lacked with: ${field}`)
+exports.accountIdentifyValidator = (req, res, next) => {
+  // 檢查欄位中，「region」很重要！
+  Array.apply(null, ['uid', 'region', 'token'].forEach(field => {
+    if (req.headers[field] === undefined && 
+      req.params[field] === undefined &&
+      req.query[field] === undefined &&
+      req.body[field] === undefined) {
+      var err = new Error(`account identify is lacked with: ${field}`)
       err.status = 422
       next(err)
     }
-  })
+  }))
+
+  next()
 }
 
-var sessionValidatorInBody = function (req, res, next) {
-  Array.apply(null, ['region', 'uid', 'token']).forEach(field => {
-    if (req.body[field] === undefined) {
-      var err = new Error(`session info is lacked with: ${field}`)
+exports.visitorIdentifyValidator = (req, res, next) => {
+  // 檢查欄位中，「region」很重要！
+  Array.apply(null, ['visitor_uid', 'visitor_region'].forEach(field => {
+    if (req.headers[field] === undefined && 
+      req.query[field] === undefined &&
+      req.body[field] === undefined) {
+      var err = new Error(`visitor identify is lacked with: ${field}`)
       err.status = 422
       next(err)
     }
-  })
-}
+  }))
 
-var sessionValidators = {
-  POST: sessionValidatorInBody,
-  GET: sessionValidatorInQuery,
-  PUT: sessionValidatorInBody,
-  PATCH: sessionValidatorInBody,
-  DELETE: sessionValidatorInQuery,
+  next()
 }
 
 exports.sessionValidator = (req, res, next) => {
-  sessionValidators[req.method](req, res, next)
+  // 檢查欄位中，「region」很重要！
+  Array.apply(null, ['uid', 'region', 'token'].forEach(field => {
+    if (req.headers[field] === undefined &&
+      req.params[field] === undefined &&
+      req.query[field] === undefined &&
+      req.body[field] === undefined) {
+      var err = new Error(`account identify is lacked with: ${field}`)
+      err.status = 422
+      next(err)
+    }
+  }))
   next()
 }
 
@@ -85,14 +87,29 @@ exports.verificationValidator = (req, res, next) => {
   next()
 }
 
+exports.passwordValidator = (req, res, next) => {
+  if (req.body.password === undefined) {
+    var err = new Error(`password is required`)
+    err.status = 422
+    next(err)
+  }
+  next()
+}
+
 exports.newPasswordValidator = (req, res, next) => {
   // confirm both new password repeated twice are matched
   var {
-    password,
-    passwordRepeat
+    newPassword,
+    newPasswordConfirm
   } = req.body // both password are encrypted
-  if (password === undefined || passwordRepeat === undefined || password !== passwordRepeat) {
-    var err = new Error(`password are not matched`)
+  if (newPassword === undefined || newPasswordConfirm === undefined) {
+    var err = new Error(`new password is required`)
+    err.status = 422
+    next(err)
+  }
+
+  if (newPassword !== newPasswordConfirm) {
+    var err = new Error(`new passwords are not matched`)
     err.status = 422
     next(err)
   }

@@ -1,3 +1,5 @@
+var notificationService = require('../../../../application/notification/notificationService')
+
 /**
  * X) No search controllers:
  *  1. exports.search = async (req, res, next) => {}

@@ -14,20 +14,18 @@ router.get('/', function (req, res, next) {
 
 // auth
 router.post('/signup',
-  // userReq.accountValidator,
+  userReq.privateUserInfoValidator,
   userReq.userInfoValidator,
   userReq.newPasswordValidator,
   auth.signup,
-  generalRes.success
+  generalRes.createdSuccess
   // front-end redirect to landing page
 )
 
 router.post('/login',
   userReq.accountValidator,
   auth.login,
-  // setting.getUserInfo, (於 service 層中處理)
-  // friend.list, (於 service 層中處理)
-  generalRes.success
+  generalRes.createdSuccess
 )
 
 /**
@@ -64,26 +62,26 @@ router.put('/verification',
 /**
  * 當透過[驗證碼]登入時，以下兩步驟是一組的：
  * 1. ['/verification/code/:token']
- * 2. ['/:uid/password/reset'] (已透過 step 1 登入)
+ * 2. ['/password/reset'] (已透過 step 1 登入)
  * check by verification code (idempotent)
  */
 router.post('/verification/code/:token',
   userReq.verificationValidator,
   auth.checkVerificationWithCode, // 確認後刪除 verification info (token/code)
-  generalRes.success
+  generalRes.createdSuccess
   // front-end redirect to landing page
 )
 
 /**
  * 當透過[驗證碼]登入時，以下兩步驟是一組的：
  * 1. ['/verification/code/:token']
- * 2. ['/:uid/password/reset'] (已透過 step 1 登入)
+ * 2. ['/password/reset'] (已透過 step 1 登入)
  * 
  * 如果用戶在前端要回到上一頁？
  * 沒辦法了，因為 [checkVerificationWithCode] 階段已經刪除 token/code, 無法回上一頁
  * session info (sessionID/cookie) has registered after [POST]:'/verification/code/:token'
  */
-router.put('/:uid/password/reset',
+router.put('/password/reset',
   userReq.sessionValidator,
   userReq.newPasswordValidator, // 檢查兩次輸入的新密碼是否相同
   auth.isLoggedIn, // 已登入狀態 => validate session info by uid (req.params.uid)
@@ -100,20 +98,23 @@ router.post('/verification/password/:token/:reset',
   userReq.verificationValidator,
   userReq.newPasswordValidator, // 檢查兩次輸入的新密碼是否相同
   auth.checkVerificationWithPassword, /** 檢查 verify token 後，直接變更新密碼，然後刪除 verification info (token/code) */
-  generalRes.success
+  generalRes.createdSuccess
   // front-end redirect to landing page
 )
 
-router.get('/logout',
-  // userReq.userInfoValidator,
+router.get('/:uid/:region/logout',
+  userReq.accountIdentifyValidator,
   // auth.isLoggedIn, // validate session info by uid (req.params.uid)
   auth.logout,
   generalRes.success
 )
 
+// -------------------------------------------------------------
+
 // profile (get someone's profile, not only userself)
-router.get('/:profile_id/profile',
-  // userReq.userInfoValidator,
+router.get('/:uid/:region/profile',
+  userReq.accountIdentifyValidator,
+  userReq.visitorIdentifyValidator,
   auth.isLoggedIn, // validate session info by uid (req.params.uid)
   profile.getRelationStatus,
   setting.getUserInfo,
@@ -121,22 +122,24 @@ router.get('/:profile_id/profile',
 )
 
 // setting
-router.get('/:uid/setting/info',
-  userReq.userInfoValidator,
+router.get('/:uid/:region/setting/info',
+  userReq.accountIdentifyValidator,
   auth.isLoggedIn, // validate session info by uid (req.params.uid)
   setting.getUserInfo,
   generalRes.success
 )
 
-router.put('/:uid/setting/info',
+router.put('/:uid/:region/setting/info',
+  userReq.accountIdentifyValidator,
   userReq.userInfoValidator,
   auth.isLoggedIn, // validate session info by uid (req.params.uid)
   setting.updateUserInfo,
   generalRes.success
 )
 
-router.put('/:uid/setting/password',
-  userReq.userInfoValidator,
+router.put('/:uid/:region/setting/password',
+  userReq.accountIdentifyValidator,
+  userReq.passwordValidator,
   userReq.newPasswordValidator, // 檢查兩次輸入的新密碼是否相同
   auth.isLoggedIn, // 已登入狀態 => validate session info by uid (req.params.uid)
   auth.checkOldPassword, // 先檢查舊密碼是否正確
