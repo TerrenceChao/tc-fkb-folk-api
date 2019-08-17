@@ -43,7 +43,19 @@ NotificationService.prototype.sendVerification = function (verifyInfo) {
   redisEmitter.publish(notifyInfo.to, notifyInfo.content)
 }
 
-NotificationService.prototype.quit = function (userInfo) {
+NotificationService.prototype.sendInvitation = function (invitation) {
+  
+}
+
+NotificationService.prototype.replyInvitation = function (invitation) {
+
+}
+
+NotificationService.prototype.notify = function (accountInfo, packet) {
+
+}
+
+NotificationService.prototype.quit = function (accountInfo) {
 
 }
 

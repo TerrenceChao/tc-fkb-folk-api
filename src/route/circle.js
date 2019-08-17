@@ -3,8 +3,9 @@ var router = express.Router()
 var userReq = require('../protocol/http/request/user/userReq')
 var circleReq = require('../protocol/http/request/circle/circleReq')
 var auth = require('../protocol/http/controller/user/auth')
-var discover = require('../protocol/http/controller/circle/discover')
+var invite = require('../protocol/http/controller/circle/invite')
 var friend = require('../protocol/http/controller/circle/friend')
+var generalRes = require('../protocol/http/response/generalRes')
 
 /* GET circle listing. */
 router.get('/', function (req, res, next) {
@@ -14,29 +15,67 @@ router.get('/', function (req, res, next) {
 // send invitation
 router.post('/:uid/:region/invite',
   userReq.accountIdentifyValidator,
-  circleReq.targetUserValidator,
+  circleReq.targetAccountInfoValidator,
   auth.isLoggedIn,
-  discover.sendInvitation
+  invite.sendInvitation,
+  generalRes.createdSuccess
+)
+
+// get invitation
+router.get('/:uid/:region/invite',
+  userReq.accountIdentifyValidator,
+  // iid validator?
+  auth.isLoggedIn,
+  invite.getInvitation,
+  generalRes.success
+)
+
+// get received invitation list
+router.get('/:uid/:region/invite/list/received',
+  userReq.accountIdentifyValidator,
+  auth.isLoggedIn,
+  invite.getReceivedInvitationList,
+  generalRes.success
+)
+
+// get sent invitation list
+router.get('/:uid/:region/invite/list/sent',
+  userReq.accountIdentifyValidator,
+  auth.isLoggedIn,
+  invite.getSentInvitationList,
+  generalRes.success
 )
 
 // invitation response (confirm/cancel)
 router.put('/:uid/:region/invite',
   userReq.accountIdentifyValidator,
+  // iid validator?
   auth.isLoggedIn,
-  discover.invitationResponse
+  invite.replyInvitation,
+  generalRes.success
 )
 
 router.get('/:uid/:region/friend/list',
   userReq.accountIdentifyValidator,
   auth.isLoggedIn,
-  friend.list
+  friend.list,
+  generalRes.success
 )
 
-router.delete('/:uid/:region/friend/:target_uid/:target_region',
+router.get('/:uid/:region/friend',
   userReq.accountIdentifyValidator,
-  circleReq.targetUserValidator,
+  circleReq.targetAccountInfoValidator,
   auth.isLoggedIn,
-  friend.remove
+  friend.find,
+  generalRes.success
+)
+
+router.delete('/:uid/:region/friend',
+  userReq.accountIdentifyValidator,
+  // circleReq.targetAccountInfoValidator,
+  auth.isLoggedIn,
+  friend.remove,
+  generalRes.success
 )
 
 module.exports = router

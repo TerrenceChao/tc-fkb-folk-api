@@ -1,3 +1,5 @@
+var constant = require('../../../property/constant')
+
 function FriendService() {
   console.log(`init ${arguments.callee.name} (template)`)
 }
@@ -6,7 +8,7 @@ function FriendService() {
  * 傳回用戶的所有朋友資訊，但為了節省效能，
  * 每一筆資料，僅傳回最低限量可供顯示的欄位即可
  */
-FriendService.prototype.list = function (userInfo) {
+FriendService.prototype.list = async function (accountInfo, limit = constant.LIMIT, skip = constant.SKIP) {
   return [
     // 僅傳回最低限量可供顯示的資料即可
     {
@@ -32,8 +34,30 @@ FriendService.prototype.list = function (userInfo) {
   ]
 }
 
-FriendService.prototype.remove = function (userInfo) {
-  return '3fb6e6a1-abc1-4f6f-99d9-57ae6f4e759a'
+/**
+ * find a friend of someone (accountInfo)
+ */
+FriendService.prototype.findOne = async function (accountInfo, targetAccountInfo) {
+  return {
+    region: targetAccountInfo.target_region,
+    uid: targetAccountInfo.target_uid,
+    profilePath: '/asdfghjnjkoj',
+    profilePic: '/asdfghjnjkojhgyu78iokjhgtfrgtyh',
+    // no email. its private
+    // no phone num. its private
+    givenName: 'albert',
+    familyName: 'lin',
+  }
+}
+
+/**
+ * remove someone's (accountInfo) friend.
+ */
+FriendService.prototype.remove = async function (accountInfo, targetAccountInfo) {
+  return {
+    uid: targetAccountInfo.target_uid,
+    region: targetAccountInfo.target_region
+  }
 }
 
 /**
@@ -42,7 +66,7 @@ FriendService.prototype.remove = function (userInfo) {
  * 3. invite (type 3)
  * 4. nothing for yourself (type 4)
  */
-FriendService.prototype.getRelationStatus = function (ownerAccountInfo, visitorAccountInfo) {
+FriendService.prototype.getRelationStatus = async function (ownerAccountInfo, visitorAccountInfo) {
   return {
     'type': 2,
     'relation': 'invitation has sent'

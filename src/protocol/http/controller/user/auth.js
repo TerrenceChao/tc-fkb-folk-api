@@ -1,3 +1,4 @@
+var _ = require('lodash')
 var authService = require('../../../../domain/folk/user/authenticate/_services/authServiceTemp')
 var settingService = require('../../../../domain/folk/user/setting/_services/settingServiceTemp')
 var friendService = require('../../../../domain/circle/_services/friendServiceTemp')
@@ -217,18 +218,10 @@ exports.checkVerificationWithCode = async (req, res, next) => {
  *  1. redirect to landing page or profile. ( important! important! important! )
  */
 exports.resetPassword = async (req, res, next) => {
-  var {
-    region,
-    uid,
-    email,
-    password // encrypted
-  } = req.body
+  var accountInfo = _.pick(req.body, ['uid', 'region']),
+      password = req.body.password // encrypted
 
-  Promise.resolve(authService.resetPassword({
-      region,
-      uid,
-      email
-    }, password))
+  Promise.resolve(authService.resetPassword(accountInfo, password))
     .then(() => next())
     .catch(err => next(err))
 }
@@ -327,18 +320,10 @@ exports.isLoggedIn = async (req, res, next) => {
 }
 
 exports.checkOldPassword = async (req, res, next) => {
-  var {
-    region,
-    uid,
-    email,
-    password // encrypted
-  } = req.body
+  var accountInfo = _.pick(req.body, ['uid', 'region']),
+      password = req.body.password // encrypted
 
-  Promise.resolve(authService.validatePassword({
-      region,
-      uid,
-      email
-    }, password))
+  Promise.resolve(authService.validatePassword(accountInfo, password))
     .then(result => next())
     .catch(err => next(err))
 }
@@ -347,12 +332,12 @@ exports.checkOldPassword = async (req, res, next) => {
  * 直接從 session 刪除用戶紀錄
  */
 exports.logout = async (req, res, next) => {
-  var userInfo = req.params
+  var accountInfo = req.params
 
   Promise.all([
-      authService.logout(userInfo),
-      messageService.quit(userInfo),
-      notificationService.quit(userInfo)
+      authService.logout(accountInfo),
+      messageService.quit(accountInfo),
+      notificationService.quit(accountInfo)
     ])
     .then(() => next())
     .catch(err => next(err))

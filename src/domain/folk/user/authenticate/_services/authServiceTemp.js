@@ -150,34 +150,34 @@ AuthService.prototype.validateVerification = async function (verificaiton) {
  * [日後做資料庫sharding時可能需要除了uid以外的資訊]
  * 所以這裡不是只輸入 uid
  */
-AuthService.prototype.deleteVerification = async function (userInfo) {
+AuthService.prototype.deleteVerification = async function (accountInfo) {
   return true
 }
 
 /**
  * [日後做資料庫sharding時可能需要除了uid以外的資訊]
- * userInfo 至少要有 {region, uid, email}
+ * accountInfo 至少要有 {region, uid}
  * 這裡不是只輸入 uid
  */
-AuthService.prototype.resetPassword = async function (userInfo, password) {
+AuthService.prototype.resetPassword = async function (accountInfo, password) {
   return true
 }
 
 /**
  * [日後做資料庫sharding時可能需要除了uid以外的資訊]
- * userInfo 至少要有 {region, uid, email}
+ * accountInfo 至少要有 {region, uid}
  * 這裡不是只輸入 uid
  */
-AuthService.prototype.validatePassword = async function (userInfo, password) {
+AuthService.prototype.validatePassword = async function (accountInfo, password) {
   return true
 }
 
 /**
  * [日後做資料庫sharding時可能需要除了uid以外的資訊]
- * userInfo 至少要有 {region, uid, email}
+ * accountInfo 至少要有 {region, uid}
  * 這裡不是只輸入 uid
  */
-AuthService.prototype.createSession = async function (userInfo) {
+AuthService.prototype.createSession = async function (accountInfo) {
   return new Promise(resolve => setTimeout(resolve({
     token: 'cdrty6uijkmnbvcdxcvbnmnbvfghyuiuy656789oikjhgfh',
   }), 2000))
@@ -201,7 +201,7 @@ AuthService.prototype.isLoggedInByMock = async function (accountIdentify) {
   return false
 }
 
-AuthService.prototype.logout = async function (userInfo) {
+AuthService.prototype.logout = async function (accountInfo) {
   return true
 }
 

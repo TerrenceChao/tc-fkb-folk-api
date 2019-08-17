@@ -19,11 +19,11 @@ var objOperator = require('../../../../library/objOperator')
  * 4. nothing for yourself.
  */
 exports.getRelationStatus = async (req, res, next) => {
-  var owner = req.params,
-    visitor = req.query
+  var ownerAccountInfo = req.params,
+    visitorAccountInfo = req.query
   var data = res.locals.data = objOperator.getDefaultIfUndefined(res.locals.data)
 
-  Promise.resolve(friendService.getRelationStatus(owner, visitor))
+  Promise.resolve(friendService.getRelationStatus(ownerAccountInfo, visitorAccountInfo))
     .then(relationStatus => {
       data.relationStatus = relationStatus
       next()

@@ -1,11 +1,11 @@
 /**
- * 檢查欄位中，「region」很重要！
+ * 註冊的檢查欄位中，「region」很重要！
  * 未來如果真的實現異地部署，這裡的檢查欄位可能更多
  */
-exports.privateUserInfoValidator = (req, res, next) => {
+exports.registerInfoValidator = (req, res, next) => {
   // 檢查欄位中，「region」很重要！
   Array.apply(null, ['region'].forEach(field => {
-    if (req.headers[field] === undefined && 
+    if (req.headers[field] === undefined &&
       req.params[field] === undefined &&
       req.query[field] === undefined &&
       req.body[field] === undefined) {
@@ -35,37 +35,6 @@ exports.accountValidator = (req, res, next) => {
 exports.accountIdentifyValidator = (req, res, next) => {
   // 檢查欄位中，「region」很重要！
   Array.apply(null, ['uid', 'region', 'token'].forEach(field => {
-    if (req.headers[field] === undefined && 
-      req.params[field] === undefined &&
-      req.query[field] === undefined &&
-      req.body[field] === undefined) {
-      var err = new Error(`account identify is lacked with: ${field}`)
-      err.status = 422
-      next(err)
-    }
-  }))
-
-  next()
-}
-
-exports.visitorIdentifyValidator = (req, res, next) => {
-  // 檢查欄位中，「region」很重要！
-  Array.apply(null, ['visitor_uid', 'visitor_region'].forEach(field => {
-    if (req.headers[field] === undefined && 
-      req.query[field] === undefined &&
-      req.body[field] === undefined) {
-      var err = new Error(`visitor identify is lacked with: ${field}`)
-      err.status = 422
-      next(err)
-    }
-  }))
-
-  next()
-}
-
-exports.sessionValidator = (req, res, next) => {
-  // 檢查欄位中，「region」很重要！
-  Array.apply(null, ['uid', 'region', 'token'].forEach(field => {
     if (req.headers[field] === undefined &&
       req.params[field] === undefined &&
       req.query[field] === undefined &&
@@ -75,6 +44,22 @@ exports.sessionValidator = (req, res, next) => {
       next(err)
     }
   }))
+
+  next()
+}
+
+exports.visitorAccountInfoValidator = (req, res, next) => {
+  // 檢查欄位中，「region」很重要！
+  Array.apply(null, ['visitor_uid', 'visitor_region'].forEach(field => {
+    if (req.headers[field] === undefined &&
+      req.query[field] === undefined &&
+      req.body[field] === undefined) {
+      var err = new Error(`visitor identify is lacked with: ${field}`)
+      err.status = 422
+      next(err)
+    }
+  }))
+
   next()
 }
 

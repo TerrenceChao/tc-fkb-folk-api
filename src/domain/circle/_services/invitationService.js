@@ -1,7 +1,7 @@
 
 function InvitationService() {}
 
-InvitationService.prototype.invite = function () {
+InvitationService.prototype.inviteToBeFriend = function () {
   // create invitation record
 }
 

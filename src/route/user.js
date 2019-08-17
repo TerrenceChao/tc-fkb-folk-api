@@ -14,7 +14,7 @@ router.get('/', function (req, res, next) {
 
 // auth
 router.post('/signup',
-  userReq.privateUserInfoValidator,
+  userReq.registerInfoValidator,
   userReq.userInfoValidator,
   userReq.newPasswordValidator,
   auth.signup,
@@ -46,7 +46,7 @@ router.get('/search',
  * X) don't do this in this stage.....
  * [將來帳戶的資料庫sharding時得做額外處理]
  */
-router.get('/search/social?account',
+router.get('/search/social',
   userReq.accountValidator,
   auth.searchSocialAccount,
   generalRes.success
@@ -82,7 +82,7 @@ router.post('/verification/code/:token',
  * session info (sessionID/cookie) has registered after [POST]:'/verification/code/:token'
  */
 router.put('/password/reset',
-  userReq.sessionValidator,
+  userReq.accountIdentifyValidator,
   userReq.newPasswordValidator, // 檢查兩次輸入的新密碼是否相同
   auth.isLoggedIn, // 已登入狀態 => validate session info by uid (req.params.uid)
   auth.resetPassword, // 直接變更新密碼
@@ -114,7 +114,7 @@ router.get('/:uid/:region/logout',
 // profile (get someone's profile, not only userself)
 router.get('/:uid/:region/profile',
   userReq.accountIdentifyValidator,
-  userReq.visitorIdentifyValidator,
+  userReq.visitorAccountInfoValidator,
   auth.isLoggedIn, // validate session info by uid (req.params.uid)
   profile.getRelationStatus,
   setting.getUserInfo,
