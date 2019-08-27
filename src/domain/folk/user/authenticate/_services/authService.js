@@ -1,11 +1,15 @@
+// TODO: for temporary
+var authRepo = require('../_repositories/authRepositoryTemp')
 
-function AuthService (userRepo, accountRepo) {
-  this.userRepo = userRepo
-  this.accountRepo = accountRepo
+function AuthService (authRepo) {
+  this.authRepo = authRepo
 }
 
 AuthService.prototype.signup = async function (userInfo) {
   
 }
 
-module.exports = new AuthService(userRepository, accountRepository)
+module.exports = {
+  authService: new AuthService(authRepo),
+  AuthService
+}

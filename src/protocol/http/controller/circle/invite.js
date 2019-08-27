@@ -1,8 +1,9 @@
 var _ = require('lodash')
-var constant = require('../../../../domain/circle/_properties/constant')
-var invitationService = require('../../../../domain/circle/_services/invitationServiceTemp')
+const CONSTANT = require('../../../../domain/circle/_properties/constant')
+var { friendService } = require('../../../../domain/circle/friend/friendServiceTemp')
+var { invitationService } = require('../../../../domain/circle/invitation/invitationServiceTemp')
 var notificationService = require('../../../../application/notification/notificationService')
-var objOperator = require('../../../../library/objOperator')
+var op = require('../../../../library/objOperator')
 
 /**
  * send invitation
@@ -13,53 +14,12 @@ var objOperator = require('../../../../library/objOperator')
  */
 exports.sendInvitation = async (req, res, next) => {
   var accountInfo = req.params,
-    targetAccountInfo = req.body
-  res.locals.data = objOperator.getDefaultIfUndefined(res.locals.data)
+    targetAccountInfo = _.mapKeys(req.body, (value, key) => key.replace('target_', ''))
+  res.locals.data = op.getDefaultIfUndefined(res.locals.data)
 
-  Promise.resolve(invitationService.inviteToBeFriend(accountInfo, targetAccountInfo))
-    .then(invitation => {
-      notificationService.sendInvitation(invitation)
-      res.locals.data = invitation
-      next()
-    })
-    .catch(err => next(err))
-}
-
-exports.getInvitation = async (req, res, next) => {
-  var accountInfo = req.params,
-    invitationId = req.query.iid
-  res.locals.data = objOperator.getDefaultIfUndefined(res.locals.data)
-
-  Promise.resolve(invitationService.getInvitation(accountInfo, invitationId))
-    .then(invitation => res.locals.data = invitation)
-    .then(() => next())
-    .catch(err => next(err))
-}
-
-exports.getReceivedInvitationList = async (req, res, next) => {
-  var accountInfo = req.params,
-    {
-      limit,
-      skip
-    } = req.query
-  res.locals.data = objOperator.getDefaultIfUndefined(res.locals.data)
-
-  Promise.resolve(invitationService.getInvitationList(accountInfo, constant.INVITE_ARROW_RECEIVED, limit, skip))
-    .then(invitationList => res.locals.data = invitationList)
-    .then(() => next())
-    .catch(err => next(err))
-}
-
-exports.getSentInvitationList = async (req, res, next) => {
-  var accountInfo = req.params,
-    {
-      limit,
-      skip
-    } = req.query
-  res.locals.data = objOperator.getDefaultIfUndefined(res.locals.data)
-
-  Promise.resolve(invitationService.getInvitationList(accountInfo, constant.INVITE_ARROW_SENT, limit, skip))
-    .then(invitationList => res.locals.data = invitationList)
+  Promise.resolve(friendService.findOne(accountInfo, targetAccountInfo))
+    .then(friend => friend == null ? invitationService.inviteToBeFriend(accountInfo, targetAccountInfo) : Promise.reject(new Error(`You are already friends`)))
+    .then(invitation => notificationService.emitInvitation(res.locals.data = invitation))
     .then(() => next())
     .catch(err => next(err))
 }
@@ -82,14 +42,44 @@ exports.getSentInvitationList = async (req, res, next) => {
  */
 exports.replyInvitation = async (req, res, next) => {
   var accountInfo = req.params,
-    invitationReply = req.body
-  res.locals.data = objOperator.getDefaultIfUndefined(res.locals.data)
+    invitationRes = req.body
+  res.locals.data = op.getDefaultIfUndefined(res.locals.data)
 
-  Promise.resolve(invitationService.dealwithFriendInvitation(accountInfo, invitationReply))
-    .then(reply => {
-      notificationService.replyInvitation(reply)
-      res.locals.data = reply
-      next()
-    })
+  Promise.resolve(invitationService.dealwithFriendInvitation(accountInfo, invitationRes))
+    .then(replyInvite => notificationService.emitInvitation(res.locals.data = replyInvite))
+    .then(() => next())
+    .catch(err => next(err))
+}
+
+exports.getInvitation = async (req, res, next) => {
+  var accountInfo = req.params,
+    invitationInfo = req.query
+  res.locals.data = op.getDefaultIfUndefined(res.locals.data)
+
+  Promise.resolve(invitationService.getInvitation(accountInfo, invitationInfo))
+    .then(invitation => res.locals.data = invitation)
+    .then(() => next())
+    .catch(err => next(err))
+}
+
+exports.getReceivedInvitationList = async (req, res, next) => {
+  var accountInfo = req.params,
+    query = req.query
+  res.locals.data = op.getDefaultIfUndefined(res.locals.data)
+
+  Promise.resolve(invitationService.getInvitationList(accountInfo, CONSTANT.INVITE_ARROW_RECEIVED, query.limit, query.skip))
+    .then(invitationList => res.locals.data = invitationList)
+    .then(() => next())
+    .catch(err => next(err))
+}
+
+exports.getSentInvitationList = async (req, res, next) => {
+  var accountInfo = req.params,
+    query = req.query
+  res.locals.data = op.getDefaultIfUndefined(res.locals.data)
+
+  Promise.resolve(invitationService.getInvitationList(accountInfo, CONSTANT.INVITE_ARROW_SENT, query.limit, query.skip))
+    .then(invitationList => res.locals.data = invitationList)
+    .then(() => next())
     .catch(err => next(err))
 }

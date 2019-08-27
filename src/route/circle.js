@@ -24,7 +24,7 @@ router.post('/:uid/:region/invite',
 // get invitation
 router.get('/:uid/:region/invite',
   userReq.accountIdentifyValidator,
-  // iid validator?
+  circleReq.invitationInfoValidator,
   auth.isLoggedIn,
   invite.getInvitation,
   generalRes.success
@@ -72,7 +72,7 @@ router.get('/:uid/:region/friend',
 
 router.delete('/:uid/:region/friend',
   userReq.accountIdentifyValidator,
-  // circleReq.targetAccountInfoValidator,
+  circleReq.targetAccountInfoValidator,
   auth.isLoggedIn,
   friend.remove,
   generalRes.success

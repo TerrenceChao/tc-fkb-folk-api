@@ -28,7 +28,7 @@ NotificationService.prototype.createUserChannel = function (userInfo) {
  * notifyInfo.to = [terrence@gmail.com, +886-987-654-321]
  * notifyInfo.content = [根據lang翻譯過後的內容]
  */
-NotificationService.prototype.sendVerification = function (verifyInfo) {
+NotificationService.prototype.emitVerification = function (verifyInfo) {
   var type = verifyInfo.type
   var lang = verifyInfo.content.lang
 
@@ -43,15 +43,12 @@ NotificationService.prototype.sendVerification = function (verifyInfo) {
   redisEmitter.publish(notifyInfo.to, notifyInfo.content)
 }
 
-NotificationService.prototype.sendInvitation = function (invitation) {
+NotificationService.prototype.emitInvitation = function (invitation) {
   
 }
 
-NotificationService.prototype.replyInvitation = function (invitation) {
 
-}
-
-NotificationService.prototype.notify = function (accountInfo, packet) {
+NotificationService.prototype.emitEvent = function (accountInfo, packet) {
 
 }
 

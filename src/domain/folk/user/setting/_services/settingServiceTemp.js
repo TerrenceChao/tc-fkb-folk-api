@@ -1,4 +1,8 @@
-function SettingService() {
+const userRepo = require('../../authenticate/_repositories/authRepositoryTemp')
+
+
+function SettingService(userRepo) {
+  this.userRepo = userRepo
   console.log(`init ${arguments.callee.name} (template)`)
 }
 
@@ -7,8 +11,12 @@ function SettingService() {
  * 額外的資訊才有 email, phone, ....
  */
 SettingService.prototype.getUserInfo = async function (accountInfo) {
-  // create record in account 
+  const user = await this.userRepo.getUser(accountInfo)
+  if (user != null) {
+    return user
+  }
 
+  throw new Error(`User not found`)
   // var err = new Error(`SettingService causes error!`)
   // err.status = 501
   // throw err
@@ -16,7 +24,35 @@ SettingService.prototype.getUserInfo = async function (accountInfo) {
   return {
     region: 'us',
     lang: 'en',
-    uid: '4bfd676f-ce80-404d-82db-4642a6543c09',
+    uid: '6d23430a-ccef-47b7-b1eb-2cf70e6bd9ca',
+    email: 'alice.wang@outlook.com',
+    givenName: 'alice',
+    familyName: 'wang',
+    gender: 'female',
+    birth: '2019-08-01',
+  }
+}
+
+/**
+ * accountInfo 至少有 uid, region,
+ * 額外的資訊才有 email, phone, ....
+ */
+SettingService.prototype.getPublicUserInfo = async function (accountInfo) {
+  const PRIVATE_FIELDS = ['email', 'phone', 'password', 'newPassword', 'newPasswordConfirm']
+  const user = await this.userRepo.getUser(accountInfo, PRIVATE_FIELDS)
+  if (user != null) {
+    return user
+  }
+
+  throw new Error(`User not found`)
+  // var err = new Error(`SettingService causes error!`)
+  // err.status = 501
+  // throw err
+
+  return {
+    region: 'us',
+    lang: 'en',
+    uid: '6d23430a-ccef-47b7-b1eb-2cf70e6bd9ca',
     email: 'alice.wang@outlook.com',
     givenName: 'alice',
     familyName: 'wang',
@@ -30,7 +66,12 @@ SettingService.prototype.getUserInfo = async function (accountInfo) {
  * 額外的資訊才有 email, phone, ....
  */
 SettingService.prototype.updateUserInfo = async function (accountInfo, userInfo) {
-  // create record in account 
+  const updated = await this.userRepo.updateUser(accountInfo, userInfo)
+  if (updated == true) {
+    return updated
+  }
+
+  throw new Error(`Update user info fail`) 
 
   // var err = new Error(`SettingService causes error!`)
   // err.status = 501
@@ -39,7 +80,7 @@ SettingService.prototype.updateUserInfo = async function (accountInfo, userInfo)
   return {
     region: 'tw',
     lang: 'zh-tw',
-    uid: '4bfd676f-ce80-404d-82db-4642a6543c09',
+    uid: '6d23430a-ccef-47b7-b1eb-2cf70e6bd9ca',
     email: 'terrence@gmail.com',
     phone: '+886-123-456-789', // (private)
     givenName: 'albert',
@@ -49,4 +90,7 @@ SettingService.prototype.updateUserInfo = async function (accountInfo, userInfo)
   }
 }
 
-module.exports = new SettingService()
+module.exports = {
+  settingService: new SettingService(userRepo),
+  SettingService
+}

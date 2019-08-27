@@ -1,6 +1,6 @@
 function success (req, res, next) {
   res.locals.data = res.locals.data || {}
-  res.locals.meta = {
+  res.locals.meta = res.locals.meta || {
     code: '100000',
     msg: arguments.callee.name
   }
@@ -10,7 +10,7 @@ function success (req, res, next) {
 
 function createdSuccess (req, res, next) {
   res.locals.data = res.locals.data || {}
-  res.locals.meta = {
+  res.locals.meta = res.locals.meta || {
     code: '100000',
     msg: arguments.callee.name
   }

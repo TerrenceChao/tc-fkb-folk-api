@@ -4,7 +4,6 @@ var userReq = require('../protocol/http/request/user/userReq')
 var auth = require('../protocol/http/controller/user/auth')
 var profile = require('../protocol/http/controller/user/profile')
 var setting = require('../protocol/http/controller/user/setting')
-var friend = require('../protocol/http/controller/circle/friend')
 var generalRes = require('../protocol/http/response/generalRes')
 
 /* GET user listing. */
@@ -116,8 +115,7 @@ router.get('/:uid/:region/profile',
   userReq.accountIdentifyValidator,
   userReq.visitorAccountInfoValidator,
   auth.isLoggedIn, // validate session info by uid (req.params.uid)
-  profile.getRelationStatus,
-  setting.getUserInfo,
+  profile.getHeader,
   generalRes.success
 )
 
@@ -142,8 +140,7 @@ router.put('/:uid/:region/setting/password',
   userReq.passwordValidator,
   userReq.newPasswordValidator, // 檢查兩次輸入的新密碼是否相同
   auth.isLoggedIn, // 已登入狀態 => validate session info by uid (req.params.uid)
-  auth.checkOldPassword, // 先檢查舊密碼是否正確
-  auth.resetPassword, // 再變更新密碼
+  auth.checkThenResetPassword, // 先檢查舊密碼是否正確, 再變更新密碼
   generalRes.success
 )
 
