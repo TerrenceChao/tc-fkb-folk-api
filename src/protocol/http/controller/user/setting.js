@@ -7,10 +7,8 @@ exports.getUserInfo = async (req, res, next) => {
   var data = res.locals.data = objOperator.getDefaultIfUndefined(res.locals.data)
 
   Promise.resolve(settingService.getUserInfo(owner))
-    .then(userInfo => {
-      data = _.assignIn(data, userInfo)
-      next()
-    })
+    .then(userInfo => data = _.assignIn(data, userInfo))
+    .then(() => next())
     .catch(err => next(err))
 }
 
@@ -20,9 +18,7 @@ exports.updateUserInfo = async (req, res, next) => {
   var data = res.locals.data = objOperator.getDefaultIfUndefined(res.locals.data)
 
   Promise.resolve(settingService.updateUserInfo(accountInfo, userInfo))
-    .then(userInfo => {
-      data = _.assignIn(data, userInfo)
-      next()
-    })
+    .then(userInfo => data = _.assignIn(data, userInfo))
+    .then(() => next())
     .catch(err => next(err))
 }

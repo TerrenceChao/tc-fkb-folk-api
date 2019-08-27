@@ -24,6 +24,30 @@ app.use(express.urlencoded({
   extended: false
 }))
 app.use(cookieParser())
+
+const ALLOW_REGION = process.env.ACCESS_CONTROL_ALLOW_ORIGIN
+const ALLOW_METHODS = process.env.ACCESS_CONTROL_ALLOW_METHODS
+const ALLOW_HEADERS = process.env.ACCESS_CONTROL_ALLOW_HEADERS
+
+app.use((req, res, next) => {
+  // Website you wish to allow to connect
+  res.setHeader('Access-Control-Allow-Origin', ALLOW_REGION)
+
+  // Request methods you wish to allow
+  res.setHeader('Access-Control-Allow-Methods', ALLOW_METHODS)
+
+  // Request headers you wish to allow
+  res.setHeader('Access-Control-Allow-Headers', 'clientuseragent,content-type')
+
+  /**
+   * Set to true if you need the website to include cookies in the requests sent
+   * to the API (e.g. in case you use sessions)
+   */
+  res.setHeader('Access-Control-Allow-Credentials', true)
+
+  next()
+})
+
 app.use(express.static(path.join(__dirname, 'public')))
 
 app.use('/', indexRouter)
@@ -32,6 +56,10 @@ var prefix = '/api/v1'
 app.use(`${prefix}/user`, userRouter)
 app.use(`${prefix}/circle`, circleRouter)
 app.use(`${prefix}/feeds`, feedsRouter)
+
+// TODO: for temporary (實驗，模擬情境用, 之後會移除)
+app.use(`${prefix}/simulate`, require('./src/route/__simulation'))
+
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

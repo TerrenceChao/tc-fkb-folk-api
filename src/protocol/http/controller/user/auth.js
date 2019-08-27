@@ -5,11 +5,29 @@ var friendService = require('../../../../domain/circle/_services/friendServiceTe
 var messageService = require('../../../../application/message/messageService')
 var notificationService = require('../../../../application/notification/notificationService')
 var authFormat = require('../../../../domain/folk/user/authenticate/format')
-var objOperator = require('../../../../library/objOperator')
+var op = require('../../../../library/objOperator')
+
+const IDX_USER = 0
+const IDX_MESSAGE = 1
+const IDX_NOTIFICATION = 2
+const IDX_FRIEND = 3
 
 exports.signup = async (req, res, next) => {
+  var clientuseragent = req.headers.clientuseragent
+  var data = res.locals.data = op.getDefaultIfUndefined(res.locals.data)
+
+  // authService.signup create session info
   Promise.resolve(authService.signup(req.body))
-    .then(userInfo => res.locals.data = userInfo)
+    .then(userInfo => Promise.all([
+      userInfo,
+      messageService.authenticate(_.assignIn(userInfo, { clientuseragent })),
+      notificationService.createUserChannel(userInfo),
+    ]))
+    .then(serviceInfoList => {
+      data.userInfo = serviceInfoList[IDX_USER]
+      data.msgInfo = serviceInfoList[IDX_MESSAGE]
+      data.notifyInfo = serviceInfoList[IDX_NOTIFICATION]
+    })
     .then(() => next())
     .catch(err => next(err))
 }
@@ -22,33 +40,25 @@ exports.signup = async (req, res, next) => {
  * 3. 建立 notification service 的消息通知機制
  */
 exports.login = async (req, res, next) => {
-  var {
-    account,
-    password // encrypted
-  } = req.body
-  var data = res.locals.data = objOperator.getDefaultIfUndefined(res.locals.data)
-  var message = 0,
-    notification = 1,
-    friend = 2
+  var clientuseragent = req.headers.clientuseragent
+  // password is encrypted 
+  var { email, password } = req.body
+  var data = res.locals.data = op.getDefaultIfUndefined(res.locals.data)
 
   // authService.login create session info
-  try {
-    var userInfo = await authService.login(account, password)
-  } catch (err) {
-    next(err)
-  }
-
-  // *** 等三項服務的速度會太慢嗎？有必要改成異步？
-  Promise.all([
-      messageService.authenticate(userInfo),
+  Promise.resolve(authService.login(email, password))
+    // *** 等三項服務的速度會太慢嗎？有必要拆開？
+    .then(userInfo => Promise.all([
+      userInfo,
+      messageService.authenticate(_.assignIn(userInfo, { clientuseragent })),
       notificationService.createUserChannel(userInfo),
       friendService.list(userInfo),
-    ])
+    ]))
     .then(serviceInfoList => {
-      data.userInfo = userInfo
-      data.msgInfo = serviceInfoList[message]
-      data.notifyInfo = serviceInfoList[notification]
-      data.friendList = serviceInfoList[friend]
+      data.userInfo = serviceInfoList[IDX_USER]
+      data.msgInfo = serviceInfoList[IDX_MESSAGE]
+      data.notifyInfo = serviceInfoList[IDX_NOTIFICATION]
+      data.friendList = serviceInfoList[IDX_FRIEND]
     })
     .then(() => next())
     .catch(err => next(err))
@@ -66,8 +76,8 @@ exports.searchAccount = async (req, res, next) => {
   var data = res.locals.data
 
   try {
-    var existingAccount = await authService.searchAccount(type, account)
-    data.account = existingAccount // 完整的帳戶資訊, ex: terrence.chao@gmail.com
+    // 完整的帳戶資訊, ex: terrence.chao@gmail.com
+    data.account = await authService.searchAccount(type, account)
     next()
   } catch (err) {
     next(err)
@@ -116,24 +126,19 @@ exports.searchSocialAccount = async (req, res, next) => {
  * ([POST]:'server-host/api/v1/user/verification/code/:[token]')
  */
 exports.sendVerifyInfo = async (req, res, next) => {
-  var {
-    type,
-    account
-  } = req.body
+  var body = req.body
 
-  Promise.resolve(authService.createVerification(type, account))
+  Promise.resolve(authService.createVerification(body.type, body.account))
     .then(verification => {
       verifyInfo = authFormat.byVerification(req, verification)
       notificationService.sendVerification(verifyInfo) // no waiting!! (no await)
       return verifyInfo
     })
-    .then(verifyInfo => {
-      res.locals.data = {
-        'verify-link': verifyInfo.verifyLink,
-        'token': verifyInfo.token
-      }
-      next()
+    .then(verifyInfo => res.locals.data = {
+      'verify-link': verifyInfo.verifyLink,
+      'token': verifyInfo.token
     })
+    .then(() => next())
     .catch(err => next(err))
 }
 
@@ -165,43 +170,33 @@ exports.sendVerifyInfo = async (req, res, next) => {
  *  3. redirect to landing page or profile. ( important! important! important! )
  */
 exports.checkVerificationWithCode = async (req, res, next) => {
-  var token = req.params.token,
-    code = req.body.code
-  var data = res.locals.data = objOperator.getDefaultIfUndefined(res.locals.data)
-  var message = 0,
-    notification = 1,
-    friend = 2,
-    user = 3
+  var clientuseragent = req.headers.clientuseragent,
+    verifyInfo = op.collectFromReq(req, ['token', 'code'])
+  var data = res.locals.data = op.getDefaultIfUndefined(res.locals.data)
 
   // 檢查 session 是否已經登入. 
   // 當用戶已登入時，一定要在req.body帶上 region, uid, token ... etc 等資訊避免重複驗證流程導致錯誤
   Promise.resolve(authService.isLoggedInByMock(req.body))
-    .then(result => result === true ? next() : null)
-    .then(() => authService.validateVerification({
-      token,
-      code
-    }))
+    .then(result => result === true ? Promise.reject(new Error(`user is logged in`)) : null)
+    .then(() => authService.validateVerification(verifyInfo))
     .then(async userInfo => {
       await authService.deleteVerification(userInfo)
-      return userInfo
-    })
-    .then(async userInfo => {
       userInfo.auth = await authService.createSession(userInfo)
       return userInfo
     })
     .then(userInfo => Promise.all([
-      messageService.authenticate(userInfo),
+      userInfo,
+      messageService.authenticate(_.assignIn(userInfo, { clientuseragent })),
       notificationService.createUserChannel(userInfo),
       friendService.list(userInfo),
-      userInfo // user = 3
     ]))
     .then(serviceInfoList => {
-      data.msgInfo = serviceInfoList[message]
-      data.notifyInfo = serviceInfoList[notification]
-      data.friendList = serviceInfoList[friend]
-      data.userInfo = serviceInfoList[user] // user = 3
-      next()
+      data.userInfo = serviceInfoList[IDX_USER]
+      data.msgInfo = serviceInfoList[IDX_MESSAGE]
+      data.notifyInfo = serviceInfoList[IDX_NOTIFICATION]
+      data.friendList = serviceInfoList[IDX_FRIEND]
     })
+    .then(() => next())
     .catch(err => next(err))
 }
 
@@ -256,65 +251,44 @@ exports.resetPassword = async (req, res, next) => {
  *  2. redirect to landing page or profile. ( important! important! important! )
  */
 exports.checkVerificationWithPassword = async (req, res, next) => {
-  var {
-    token,
-    reset
-  } = req.params,
+  var clientuseragent = req.headers.clientuseragent,
+    verifyInfo = _.pick(req.params, ['token', 'reset']),
     password = req.body.password // encrypted
-  var data = res.locals.data = objOperator.getDefaultIfUndefined(res.locals.data)
-  var friend = 0,
-    message = 1,
-    notification = 2,
-    user = 3
+  var data = res.locals.data = op.getDefaultIfUndefined(res.locals.data)
 
   // 檢查 session 是否已經登入. 
   // 當用戶已登入時，一定要在req.body帶上 region, uid, token ... etc 等資訊避免重複驗證流程導致錯誤
   Promise.resolve(authService.isLoggedInByMock(req.body))
-    .then(result => result === true ? next() : null)
-    .then(() => authService.validateVerification({
-      token,
-      reset
-    }))
+    .then(result => result === true ? Promise.reject(new Error(`user is logged in`)) : null)
+    .then(() => authService.validateVerification(verifyInfo))
     .then(async userInfo => {
       await authService.resetPassword(userInfo, password)
-      return userInfo
-    })
-    .then(async userInfo => {
       await authService.deleteVerification(userInfo)
-      return userInfo
-    })
-    .then(async userInfo => {
       userInfo.auth = await authService.createSession(userInfo)
       return userInfo
     })
     .then(userInfo => Promise.all([
-      friendService.list(userInfo),
-      messageService.authenticate(userInfo),
+      userInfo,
+      messageService.authenticate(_.assignIn(userInfo, { clientuseragent })),
       notificationService.createUserChannel(userInfo),
-      userInfo // user = 3
+      friendService.list(userInfo),
     ]))
     .then(serviceInfoList => {
-      data.friendList = serviceInfoList[friend]
-      data.msgInfo = serviceInfoList[message]
-      data.notifyInfo = serviceInfoList[notification]
-      data.userInfo = serviceInfoList[user] // user = 3
-      next()
+      data.userInfo = serviceInfoList[IDX_USER]
+      data.msgInfo = serviceInfoList[IDX_MESSAGE]
+      data.notifyInfo = serviceInfoList[IDX_NOTIFICATION]
+      data.friendList = serviceInfoList[IDX_FRIEND]
     })
+    .then(() => next())
     .catch(err => next(err))
 }
 
 exports.isLoggedIn = async (req, res, next) => {
   // validate session info by region/uid/token
   // If yes, to someone's profile
-  var region = objOperator.getFromReq(req, 'region'),
-    uid = objOperator.getFromReq(req, 'uid'),
-    token = objOperator.getFromReq(req, 'token')
+  var accountIdentify = op.collectFromReq(req, ['region', 'uid', 'token'])
 
-  Promise.resolve(authService.isLoggedIn({
-      region,
-      uid,
-      token
-    }))
+  Promise.resolve(authService.isLoggedIn(accountIdentify))
     .then(result => next())
     .catch(err => next(err))
 }

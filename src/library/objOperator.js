@@ -1,3 +1,5 @@
+var _ = require('lodash')
+
 function getDefaultIfUndefined(value, defultValue = {}) {
   return value === undefined ? value = defultValue : value
 }
@@ -13,7 +15,31 @@ function getFromReq(req, field) {
   return value
 }
 
+function collectFromReq(req, fieldList) {
+  if (! Array.isArray(fieldList)) {
+    throw new Error(`fieldList is not an array`)
+  }
+
+  const collect = {}
+  fieldList.forEach(field => {
+    collect[field] = getFromReq(req, field)
+  })
+
+  return collect
+}
+
+function cloneAndAssign(data, extraData) {
+  return _.assign(Object.create(data), extraData)
+}
+
+function cloneAndAssignIn(data, extraData) {
+  return _.assignIn(Object.create(data), extraData)
+}
+
 module.exports = {
   getDefaultIfUndefined,
-  getFromReq
+  cloneAndAssign,
+  cloneAndAssignIn,
+  getFromReq,
+  collectFromReq,
 }

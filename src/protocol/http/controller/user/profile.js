@@ -24,9 +24,7 @@ exports.getRelationStatus = async (req, res, next) => {
   var data = res.locals.data = objOperator.getDefaultIfUndefined(res.locals.data)
 
   Promise.resolve(friendService.getRelationStatus(ownerAccountInfo, visitorAccountInfo))
-    .then(relationStatus => {
-      data.relationStatus = relationStatus
-      next()
-    })
+    .then(relationStatus => data.relationStatus = relationStatus)
+    .then(() => next())
     .catch(err => next(err))
 }

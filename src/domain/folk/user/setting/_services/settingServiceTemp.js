@@ -16,7 +16,7 @@ SettingService.prototype.getUserInfo = async function (accountInfo) {
   return {
     region: 'us',
     lang: 'en',
-    uid: '4bfd676f-ce80-404d-82db-4642a6543c09',
+    uid: '6d23430a-ccef-47b7-b1eb-2cf70e6bd9ca',
     email: 'alice.wang@outlook.com',
     givenName: 'alice',
     familyName: 'wang',
@@ -39,7 +39,7 @@ SettingService.prototype.updateUserInfo = async function (accountInfo, userInfo)
   return {
     region: 'tw',
     lang: 'zh-tw',
-    uid: '4bfd676f-ce80-404d-82db-4642a6543c09',
+    uid: '6d23430a-ccef-47b7-b1eb-2cf70e6bd9ca',
     email: 'terrence@gmail.com',
     phone: '+886-123-456-789', // (private)
     givenName: 'albert',

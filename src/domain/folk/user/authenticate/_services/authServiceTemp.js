@@ -1,4 +1,7 @@
-var expirationMins = parseInt(process.env.EXPIRATION_TIME)
+var _ = require('lodash')
+var authRepo = require('../_repositories/authRepositoryTemp')
+
+const expirationMins = parseInt(process.env.EXPIRATION_TIME)
 
 function AuthService() {
   console.log(`init ${arguments.callee.name} (template)`)
@@ -17,24 +20,15 @@ AuthService.prototype.signup = async function (signupInfo) {
   // err.status = 501
   // throw err
 
+  var user = await authRepo.createAccountUser(signupInfo)
+
   var auth = await this.createSession({
-    region: 'tw',
-    uid: '4bfd676f-ce80-404d-82db-4642a6543c09',
-    email: 'terrence@gmail.com',
+    region: user.region,
+    uid: user.uid,
+    email: user.email,
   })
 
-  return {
-    region: 'tw',
-    lang: 'zh-tw',
-    uid: '4bfd676f-ce80-404d-82db-4642a6543c09',
-    email: 'terrence@gmail.com',
-    phone: '+886-987-654-321', // (private)
-    givenName: 'terrence',
-    familyName: 'chao',
-    gender: 'male',
-    birth: '2019-08-01',
-    auth
-  }
+  return _.assignIn(user, { auth })
 }
 
 /**
@@ -42,38 +36,25 @@ AuthService.prototype.signup = async function (signupInfo) {
  * 1. create session info !!!!!!
  * 2. return user info
  */
-AuthService.prototype.login = async function (emailAccount, password) {
+AuthService.prototype.login = async function (email, password) {
 
   // var err = new Error(`AuthService causes error!`)
   // err.status = 501
   // throw err
-
-  var uid = '4bfd676f-ce80-404d-82db-4642a6543c09'
+  var user = await authRepo.getAccountUser({ email }, password)
 
   var auth = await this.createSession({
-    region: 'tw',
-    uid: '4bfd676f-ce80-404d-82db-4642a6543c09',
-    email: 'terrence@gmail.com',
+    region: user.region,
+    uid: user.uid,
+    email: user.email,
   })
   
-  return {
-    region: 'tw',
-    lang: 'zh-tw',
-    uid: '4bfd676f-ce80-404d-82db-4642a6543c09',
-    email: 'terrence@gmail.com',
-    givenName: 'terrence',
-    familyName: 'chao',
-    gender: 'male',
-    birth: '2019-08-01',
-    auth
-  }
+  return _.assignIn(user, { auth })
 }
 
 AuthService.prototype.searchAccount = async function (type, account) {
-  if (type === 'email') {
-    return 'terrence@gmail.com'
-  } else if (type === 'phone') {
-    return '+886-987-654-321'
+  if (type === 'email' || type === 'phone') {
+    return await authRepo.searchAccount(type, account)
   } else {
     var err = new Error('invalid account type, [email, phone] are available types')
     err.status = 404
@@ -96,34 +77,56 @@ AuthService.prototype.createVerification = async function (type, account) {
 
   var date = new Date()
   var reset = date.setMinutes(date.getMinutes() + expirationMins)
+  const partialUserData = await authRepo.createVerification(type, account, reset)
 
   return {
     type,
     account,
-    content: {
-      region: 'tw',
-      
-      /**
-       * lang: 'zh-tw' 在 sendVerification 時,
-       * notificationService(透過 redis 發送) 用中文的 template 會變成亂碼:
-       * path: src/application/notification/content/sms/template.js
-       */
-      lang: 'en',
-      givenName: 'terrence',
-      familyName: 'chao',
-      gender: 'male',
-    },
+    /**
+     * lang: 'zh-tw' 在 sendVerification 時,
+     * notificationService(透過 redis 發送) 用中文的 template 會變成亂碼:
+     * path: src/application/notification/content/sms/template.js
+     */
+    content: _.pick(partialUserData, ['region', 'lang', 'givenName', 'familyName', 'gender']),
     /**
      * token 隱含的資訊，已經能讓後端服務知道 token 要去哪一個區域
      *  (Tokyo, Taiwan, Sydney ...) 找尋用戶資料了
      */
-    token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c',
-    code: '539288',
+    token: partialUserData.verificaiton.token,
+    code: partialUserData.verificaiton.code,
     /**
      * for reset password directly (with expiration expiration time: 10 mins)
      */
     reset
   }
+
+  // return {
+  //   type,
+  //   account,
+  //   content: {
+  //     region: 'tw',
+      
+  //     /**
+  //      * lang: 'zh-tw' 在 sendVerification 時,
+  //      * notificationService(透過 redis 發送) 用中文的 template 會變成亂碼:
+  //      * path: src/application/notification/content/sms/template.js
+  //      */
+  //     lang: 'en',
+  //     givenName: 'terrence',
+  //     familyName: 'chao',
+  //     gender: 'male',
+  //   },
+  //   /**
+  //    * token 隱含的資訊，已經能讓後端服務知道 token 要去哪一個區域
+  //    *  (Tokyo, Taiwan, Sydney ...) 找尋用戶資料了
+  //    */
+  //   token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c',
+  //   code: '539288',
+  //   /**
+  //    * for reset password directly (with expiration expiration time: 10 mins)
+  //    */
+  //   reset
+  // }
 }
 
 /**
@@ -134,16 +137,19 @@ AuthService.prototype.createVerification = async function (type, account) {
  *  (Tokyo, Taiwan, Sydney ...) 找尋用戶資料了
  */
 AuthService.prototype.validateVerification = async function (verificaiton) {
-  return {
-    region: 'tw',
-    lang: 'zh-tw',
-    uid: '4bfd676f-ce80-404d-82db-4642a6543c09',
-    email: 'terrence@gmail.com',
-    givenName: 'terrence',
-    familyName: 'chao',
-    gender: 'male',
-    birth: '2019-08-01'
-  }
+  return await authRepo.validateVerification(verificaiton)
+  // return {
+  //   region: 'tw',
+  //   lang: 'zh-tw',
+  //   uid: '345b1c4c-128c-4286-8431-78d16d285f38',
+  //   email: 'terrence@gmail.com',
+  //   profileLink: '5678iolf-tw',
+  //   profilePic: '/ftyuil5678ijk/78iokkl',
+  //   givenName: 'terrence',
+  //   familyName: 'chao',
+  //   gender: 'male',
+  //   birth: '2019-08-01'
+  // }
 }
 
 /**

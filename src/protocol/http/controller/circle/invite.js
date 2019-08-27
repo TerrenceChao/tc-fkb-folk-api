@@ -1,8 +1,8 @@
 var _ = require('lodash')
-var constant = require('../../../../domain/circle/_properties/constant')
+const CONSTANT = require('../../../../domain/circle/_properties/constant')
 var invitationService = require('../../../../domain/circle/_services/invitationServiceTemp')
 var notificationService = require('../../../../application/notification/notificationService')
-var objOperator = require('../../../../library/objOperator')
+var op = require('../../../../library/objOperator')
 
 /**
  * send invitation
@@ -14,23 +14,20 @@ var objOperator = require('../../../../library/objOperator')
 exports.sendInvitation = async (req, res, next) => {
   var accountInfo = req.params,
     targetAccountInfo = req.body
-  res.locals.data = objOperator.getDefaultIfUndefined(res.locals.data)
+  res.locals.data = op.getDefaultIfUndefined(res.locals.data)
 
   Promise.resolve(invitationService.inviteToBeFriend(accountInfo, targetAccountInfo))
-    .then(invitation => {
-      notificationService.sendInvitation(invitation)
-      res.locals.data = invitation
-      next()
-    })
+    .then(invitation => notificationService.sendInvitation(res.locals.data = invitation))
+    .then(() => next())
     .catch(err => next(err))
 }
 
 exports.getInvitation = async (req, res, next) => {
   var accountInfo = req.params,
-    invitationId = req.query.iid
-  res.locals.data = objOperator.getDefaultIfUndefined(res.locals.data)
+    invitationInfo = req.query
+  res.locals.data = op.getDefaultIfUndefined(res.locals.data)
 
-  Promise.resolve(invitationService.getInvitation(accountInfo, invitationId))
+  Promise.resolve(invitationService.getInvitation(accountInfo, invitationInfo))
     .then(invitation => res.locals.data = invitation)
     .then(() => next())
     .catch(err => next(err))
@@ -38,13 +35,10 @@ exports.getInvitation = async (req, res, next) => {
 
 exports.getReceivedInvitationList = async (req, res, next) => {
   var accountInfo = req.params,
-    {
-      limit,
-      skip
-    } = req.query
-  res.locals.data = objOperator.getDefaultIfUndefined(res.locals.data)
+    query = req.query
+  res.locals.data = op.getDefaultIfUndefined(res.locals.data)
 
-  Promise.resolve(invitationService.getInvitationList(accountInfo, constant.INVITE_ARROW_RECEIVED, limit, skip))
+  Promise.resolve(invitationService.getInvitationList(accountInfo, CONSTANT.INVITE_ARROW_RECEIVED, query.limit, query.skip))
     .then(invitationList => res.locals.data = invitationList)
     .then(() => next())
     .catch(err => next(err))
@@ -52,13 +46,10 @@ exports.getReceivedInvitationList = async (req, res, next) => {
 
 exports.getSentInvitationList = async (req, res, next) => {
   var accountInfo = req.params,
-    {
-      limit,
-      skip
-    } = req.query
-  res.locals.data = objOperator.getDefaultIfUndefined(res.locals.data)
+    query = req.query
+  res.locals.data = op.getDefaultIfUndefined(res.locals.data)
 
-  Promise.resolve(invitationService.getInvitationList(accountInfo, constant.INVITE_ARROW_SENT, limit, skip))
+  Promise.resolve(invitationService.getInvitationList(accountInfo, CONSTANT.INVITE_ARROW_SENT, query.limit, query.skip))
     .then(invitationList => res.locals.data = invitationList)
     .then(() => next())
     .catch(err => next(err))
@@ -83,13 +74,10 @@ exports.getSentInvitationList = async (req, res, next) => {
 exports.replyInvitation = async (req, res, next) => {
   var accountInfo = req.params,
     invitationReply = req.body
-  res.locals.data = objOperator.getDefaultIfUndefined(res.locals.data)
+  res.locals.data = op.getDefaultIfUndefined(res.locals.data)
 
   Promise.resolve(invitationService.dealwithFriendInvitation(accountInfo, invitationReply))
-    .then(reply => {
-      notificationService.replyInvitation(reply)
-      res.locals.data = reply
-      next()
-    })
+    .then(reply => notificationService.replyInvitation(res.locals.data = reply))
+    .then(() => next())
     .catch(err => next(err))
 }
