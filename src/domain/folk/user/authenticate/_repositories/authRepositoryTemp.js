@@ -440,7 +440,6 @@ AuthRepository.prototype.removeInvitation = async function (accountInfo, invitat
  */
 AuthRepository.prototype.getUser = async function (accountInfo, ignoredFields = []) {
   const DEFAULT_IGNORED_FIELDS = ['verificaiton', 'friendList'].concat(ignoredFields)
-
   for (const userInfo of userDB.values()) {
     if (userInfo.uid === accountInfo.uid && userInfo.region === accountInfo.region) {
       return _.omit(userInfo, DEFAULT_IGNORED_FIELDS)
