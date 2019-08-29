@@ -300,16 +300,16 @@ AuthRepository.prototype.removeFriend = async function (accountInfo, targetAccou
  * friendRepo
  */
 const CONSTANT = require('../../../../circle/_properties/constant')
-AuthRepository.prototype.relation = async function (accountInfo, targetAccountInfo) {
+AuthRepository.prototype.relation = async function (ownerAccountInfo, visitorAccountInfo) {
   for (const userInfo of userDB.values()) {
-    if (userInfo.uid !== accountInfo.uid || userInfo.region !== accountInfo.region) {
-      console.log(` in userDB: ${JSON.stringify(_.pick(userInfo, 'uid', 'region'))}`)
-      console.log(`search: ${JSON.stringify(_.pick(accountInfo, 'uid', 'region'))}`)
+    if (userInfo.uid !== visitorAccountInfo.uid || userInfo.region !== visitorAccountInfo.region) {
+      console.log(`visitor in userDB: ${JSON.stringify(_.pick(userInfo, 'uid', 'region'))}`)
+      console.log(`search visitor: ${JSON.stringify(_.pick(visitorAccountInfo, 'uid', 'region'))}`)
       continue
     }
 
     // 4. user self
-    if (accountInfo.uid === targetAccountInfo.uid && accountInfo.region === targetAccountInfo.region) {
+    if (visitorAccountInfo.uid === ownerAccountInfo.uid && visitorAccountInfo.region === ownerAccountInfo.region) {
       return {
         type: CONSTANT.RELATION_STATUS_SELF,
         relation: 'myself'
@@ -318,7 +318,7 @@ AuthRepository.prototype.relation = async function (accountInfo, targetAccountIn
 
     // 3. invitation has sent
     for (const inv of invitationDB.values()) {
-      if (inv['inviter'].uid === accountInfo.uid && inv['inviter'].region === accountInfo.region) {
+      if (inv['inviter'].uid === visitorAccountInfo.uid && inv['inviter'].region === visitorAccountInfo.region) {
         return {
           type: CONSTANT.RELATION_STATUS_HAS_INVITED,
           relation: 'invitation has sent'
@@ -327,7 +327,7 @@ AuthRepository.prototype.relation = async function (accountInfo, targetAccountIn
     }
 
     // 2. stranger
-    if (undefined === userInfo.friendList.find(friend => friend.uid === targetAccountInfo.uid && friend.region === targetAccountInfo.region)) {
+    if (undefined === userInfo.friendList.find(friend => friend.uid === ownerAccountInfo.uid && friend.region === ownerAccountInfo.region)) {
       return {
         type: CONSTANT.RELATION_STATUS_STRANGER,
         relation: 'stranger'
