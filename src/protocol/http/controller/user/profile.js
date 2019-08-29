@@ -2,7 +2,7 @@ var _ = require('lodash')
 var userService = require('../../../../domain/folk/user/_services/userService')
 var { friendService } = require('../../../../domain/circle/friend/friendServiceTemp')
 var { settingService } = require('../../../../domain/folk/user/setting/_services/settingServiceTemp')
-var objOperator = require('../../../../library/objOperator')
+var op = require('../../../../library/objOperator')
 
 /**
  * About profile:
@@ -26,7 +26,7 @@ var objOperator = require('../../../../library/objOperator')
 exports.getHeader = async (req, res, next) => {
   var ownerAccountInfo = req.params,
     visitorAccountInfo = _.mapKeys(req.query, (value,key) => key.replace('visitor_', ''))
-  res.locals.data = objOperator.getDefaultIfUndefined(res.locals.data)
+  res.locals.data = op.getDefaultIfUndefined(res.locals.data)
 
   userService.promiseServicesForProfileHeader(
     { friendService, settingService },

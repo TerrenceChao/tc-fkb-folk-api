@@ -1,7 +1,7 @@
 var _ = require('lodash')
 var cicleRes = require('../../response/circle/circleRes')
-var { friendService } = require('../../../../domain/circle/friend/friendServiceTemp')
 var notificationService = require('../../../../application/notification/notificationService')
+var { friendService } = require('../../../../domain/circle/friend/friendServiceTemp')
 
 /**
  * get friend record list

@@ -1,4 +1,3 @@
-var _ = require('lodash')
 const CONSTANT = require('../../../property/constant')
 
 // TODO: for temporary

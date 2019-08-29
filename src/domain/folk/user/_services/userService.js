@@ -1,5 +1,5 @@
 function UserService() {
-  console.log(`init ${arguments.callee.name} (template)`)
+  console.log(`init ${arguments.callee.name}`)
 }
 
 const PROFILE_PARTS = {

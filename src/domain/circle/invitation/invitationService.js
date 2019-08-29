@@ -8,7 +8,7 @@ function InvitationService(userRepo, friendRepo, inviteRepo) {
   this.userRepo = userRepo
   this.friendRepo = friendRepo
   this.inviteRepo = inviteRepo
-  console.log(`init ${arguments.callee.name} (template)`)
+  console.log(`init ${arguments.callee.name}`)
 }
 
 InvitationService.prototype.inviteToBeFriend = function () {

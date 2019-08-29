@@ -3,6 +3,7 @@ var authRepo = require('../_repositories/authRepositoryTemp')
 
 function AuthService (authRepo) {
   this.authRepo = authRepo
+  console.log(`init ${arguments.callee.name}`)
 }
 
 AuthService.prototype.signup = async function (userInfo) {

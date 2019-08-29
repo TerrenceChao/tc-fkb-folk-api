@@ -2,7 +2,7 @@ const friendRepo = require('../../folk/user/authenticate/_repositories/authRepos
 
 function FriendService(friendRepo) {
   this.friendRepo = friendRepo
-  console.log(`init ${arguments.callee.name} (template)`)
+  console.log(`init ${arguments.callee.name}`)
 }
 
 FriendService.prototype.list = function () {

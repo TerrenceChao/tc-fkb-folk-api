@@ -52,7 +52,7 @@ app.use(express.static(path.join(__dirname, 'public')))
 
 app.use('/', indexRouter)
 
-var prefix = '/api/v1'
+var prefix = '/folk-service/api/v1'
 app.use(`${prefix}/user`, userRouter)
 app.use(`${prefix}/circle`, circleRouter)
 app.use(`${prefix}/feeds`, feedsRouter)

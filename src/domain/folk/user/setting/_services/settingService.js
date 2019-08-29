@@ -3,7 +3,7 @@ const userRepo = require('../../authenticate/_repositories/authRepositoryTemp')
 
 function SettingService(userRepo) {
   this.userRepo = userRepo
-  console.log(`init ${arguments.callee.name} (template)`)
+  console.log(`init ${arguments.callee.name}`)
 }
 
 module.exports = {

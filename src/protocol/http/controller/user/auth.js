@@ -7,10 +7,6 @@ var { friendService } = require('../../../../domain/circle/friend/friendServiceT
 var authFormat = require('../../../../domain/folk/user/authenticate/format')
 var op = require('../../../../library/objOperator')
 
-const IDX_USER = 0
-const IDX_MESSAGE = 1
-const IDX_NOTIFICATION = 2
-const IDX_FRIEND = 3
 
 exports.signup = async (req, res, next) => {
   var clientuseragent = req.headers.clientuseragent

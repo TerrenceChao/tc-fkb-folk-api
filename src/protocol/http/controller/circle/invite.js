@@ -1,8 +1,8 @@
 var _ = require('lodash')
 const CONSTANT = require('../../../../domain/circle/_properties/constant')
+var notificationService = require('../../../../application/notification/notificationService')
 var { friendService } = require('../../../../domain/circle/friend/friendServiceTemp')
 var { invitationService } = require('../../../../domain/circle/invitation/invitationServiceTemp')
-var notificationService = require('../../../../application/notification/notificationService')
 var op = require('../../../../library/objOperator')
 
 /**
