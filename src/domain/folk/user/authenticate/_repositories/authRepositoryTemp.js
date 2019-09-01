@@ -299,50 +299,42 @@ AuthRepository.prototype.removeFriend = async function (accountInfo, targetAccou
 /**
  * friendRepo
  */
-const CONSTANT = require('../../../../circle/_properties/constant')
-AuthRepository.prototype.relation = async function (ownerAccountInfo, visitorAccountInfo) {
-  for (const userInfo of userDB.values()) {
-    if (userInfo.uid !== visitorAccountInfo.uid || userInfo.region !== visitorAccountInfo.region) {
-      console.log(`visitor in userDB: ${JSON.stringify(_.pick(userInfo, 'uid', 'region'))}`)
-      console.log(`search visitor: ${JSON.stringify(_.pick(visitorAccountInfo, 'uid', 'region'))}`)
-      continue
-    }
+// const CONSTANT = require('../../../../circle/_properties/constant')
+// AuthRepository.prototype.relation = async function (ownerAccountInfo, visitorAccountInfo) {
+//   for (const userInfo of userDB.values()) {
+//     if (userInfo.uid !== visitorAccountInfo.uid || userInfo.region !== visitorAccountInfo.region) {
+//       console.log(`visitor in userDB: ${JSON.stringify(_.pick(userInfo, 'uid', 'region'))}`)
+//       console.log(`search visitor: ${JSON.stringify(_.pick(visitorAccountInfo, 'uid', 'region'))}`)
+//       continue
+//     }
 
-    // 4. user self
-    if (visitorAccountInfo.uid === ownerAccountInfo.uid && visitorAccountInfo.region === ownerAccountInfo.region) {
-      return {
-        type: CONSTANT.RELATION_STATUS_SELF,
-        relation: 'myself'
-      }
-    }
+//     // 3. invitation has sent
+//     for (const inv of invitationDB.values()) {
+//       if (inv['inviter'].uid === visitorAccountInfo.uid && inv['inviter'].region === visitorAccountInfo.region) {
+//         return {
+//           type: CONSTANT.RELATION_STATUS_INVITED,
+//           relation: 'invitation has sent'
+//         }
+//       }
+//     }
 
-    // 3. invitation has sent
-    for (const inv of invitationDB.values()) {
-      if (inv['inviter'].uid === visitorAccountInfo.uid && inv['inviter'].region === visitorAccountInfo.region) {
-        return {
-          type: CONSTANT.RELATION_STATUS_HAS_INVITED,
-          relation: 'invitation has sent'
-        }
-      }
-    }
+//     // 2. stranger
+//     if (undefined === userInfo.friendList.find(friend => friend.uid === ownerAccountInfo.uid && friend.region === ownerAccountInfo.region)) {
+//       return {
+//         type: CONSTANT.RELATION_STATUS_STRANGER,
+//         relation: 'stranger'
+//       }
+//     }
 
-    // 2. stranger
-    if (undefined === userInfo.friendList.find(friend => friend.uid === ownerAccountInfo.uid && friend.region === ownerAccountInfo.region)) {
-      return {
-        type: CONSTANT.RELATION_STATUS_STRANGER,
-        relation: 'stranger'
-      }
-    }
+//     // 1. friend
+//     return {
+//       type: CONSTANT.RELATION_STATUS_FRIEND,
+//       relation: 'friend'
+//     }
+//   }
 
-    // 1. friend
-    return {
-      type: CONSTANT.RELATION_STATUS_FRIEND,
-      relation: 'friend'
-    }
-  }
-
-  throw new Error(`User not found`)
-}
+//   throw new Error(`User not found`)
+// }
 
 
 /**
@@ -392,6 +384,32 @@ AuthRepository.prototype.getInvitation = async function (accountInfo, invitation
 }
 
 /**
+ * invitationRepo 
+ * roles (inviter, recipient)
+ */
+const CONSTANT = require('../../../../circle/_properties/constant')
+AuthRepository.prototype.getInvitationByRoles = async function (accountInfo, targetAccountInfo) {
+  for (const invitation of invitationDB.values()) {
+    const inviter = invitation.inviter
+    const recipient = invitation.recipient
+
+    // 3. user has sent invitation to someone
+    if (inviter.uid === accountInfo.uid && inviter.region === accountInfo.region &&
+      recipient.uid === targetAccountInfo.uid && recipient.region === targetAccountInfo.region) {
+        return invitation
+    }
+
+    // 4. user (accountInfo) is invited
+    if (inviter.uid === targetAccountInfo.uid && inviter.region === targetAccountInfo.region &&
+      recipient.uid === accountInfo.uid && recipient.region === accountInfo.region) {
+        return invitation
+    }
+  }
+
+  return null
+}
+
+/**
  * invitationRepo
  */
 AuthRepository.prototype.getInvitationList = async function (accountInfo, inviteArrow, limit, skip) {
@@ -411,11 +429,64 @@ AuthRepository.prototype.getInvitationList = async function (accountInfo, invite
   return list.slice(skip, skip + limit)
 }
 
+// /**
+//  * invitationRepo
+//  * invitationInfo (iid, region)
+//  */
+// AuthRepository.prototype.removeInvitation = async function (accountInfo, invitationInfo) {
+//   let invitation = invitationDB.get(invitationInfo.iid)
+//   if (invitation === undefined) {
+//     return false
+//   }
+
+//   if (invitation.header.region !== invitationInfo.region) {
+//     throw new Error(`Invitation's region is incorrect`)
+//   }
+
+//   if ((invitation.inviter.uid === accountInfo.uid && invitation.inviter.region === accountInfo.region) ||
+//       (invitation.recipient.uid === accountInfo.uid && invitation.recipient.region === accountInfo.region)
+//       ) {
+//         invitationDB.delete(invitationInfo.iid)
+//         return true
+//     }
+
+//   throw new Error(`Invitation doesn't belong to user: ${JSON.stringify(accountInfo)}`)
+// }
+
 /**
  * invitationRepo
- * invitationInfo (iid, region)
+ * 不論是否跨區域，有可能雙方幾乎同時發送了邀請，也同時建立了invitation records,
+ * 導致雙方都是邀請者/受邀者，所以刪除時 需考慮這種情況 (刪除至多 2 筆資訊)
+ * accountInfo (uid, region)
+ * targetAccountInfo (uid, region)
+ * 
+ * [跨區域操作時使用]
+ * softDelete: 跨區域操作時使用，若雙邊操作需要 rollback 有機會補教。等雙邊都 commit 再硬刪除 (hard delete)
  */
-AuthRepository.prototype.removeInvitation = async function (accountInfo, invitationInfo) {
+AuthRepository.prototype.removeRelatedInvitation = async function (accountInfo, targetAccountInfo, softDelete = false) {
+  let deleteRows = 0
+  for (const invitation of invitationDB.values()) {
+    const inviter = invitation.inviter
+    const recipient = invitation.recipient
+    if (inviter.uid === accountInfo.uid && inviter.region === accountInfo.region &&
+      recipient.uid === targetAccountInfo.uid && recipient.region === targetAccountInfo.region) {
+      invitationDB.delete(invitation.iid)
+      deleteRows++
+    }
+
+    if (inviter.uid === targetAccountInfo.uid && inviter.region === targetAccountInfo.region &&
+      recipient.uid === accountInfo.uid && recipient.region === accountInfo.region) {
+      invitationDB.delete(invitation.iid)
+      deleteRows++
+    }
+
+    if (deleteRows >= 2) {
+      break
+    }
+  }
+
+  return deleteRows
+
   let invitation = invitationDB.get(invitationInfo.iid)
   if (invitation === undefined) {
     return false
@@ -469,15 +540,16 @@ AuthRepository.prototype.updateUser = async function (accountInfo, newUserInfo) 
 /**
  * userRepo
  */
-AuthRepository.prototype.getPairUsers = async function (accountInfo, targetAccountInfo) {
+const DEFAULT_PUBLIC_USER_FIELDS = ['uid', 'region', 'givenName', 'familyName', 'profileLink', 'profilePic']
+AuthRepository.prototype.getPairUsers = async function (accountInfo, targetAccountInfo, defaultFields = DEFAULT_PUBLIC_USER_FIELDS) {
   let user, targetUser
   for (const userInfo of userDB.values()) {
     if (userInfo.uid === accountInfo.uid && userInfo.region === accountInfo.region) {
-      user = _.pick(userInfo, ['uid', 'region', 'lang', 'givenName', 'familyName', 'profileLink', 'profilePic'])
+      user = _.pick(userInfo, defaultFields)
     }
 
     if (userInfo.uid === targetAccountInfo.uid && userInfo.region === targetAccountInfo.region) {
-      targetUser = _.pick(userInfo, ['uid', 'region', 'lang', 'givenName', 'familyName', 'profileLink', 'profilePic'])
+      targetUser = _.pick(userInfo, defaultFields)
     }
 
     if (user !== undefined && targetUser !== undefined) {

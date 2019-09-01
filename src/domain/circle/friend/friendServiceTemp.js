@@ -1,10 +1,13 @@
 const CONSTANT = require('../../../property/constant')
+const CIRCLE_CONST = require('../_properties/constant')
 
 // TODO: for temporary
 const friendRepo = require('../../folk/user/authenticate/_repositories/authRepositoryTemp')
+const inviteRepo = require('../../folk/user/authenticate/_repositories/authRepositoryTemp')
 
-function FriendService(friendRepo) {
+function FriendService(friendRepo, inviteRepo) {
   this.friendRepo = friendRepo
+  this.inviteRepo = inviteRepo
   console.log(`init ${arguments.callee.name} (template)`)
 }
 
@@ -74,21 +77,60 @@ FriendService.prototype.remove = async function (accountInfo, targetAccountInfo)
 }
 
 /**
- * 1. friend (type 1)
- * 2. stranger (type 2)
- * 3. has invited (type 3)
- * 4. nothing for yourself (type 4)
+ * 1. user self (type 1)
+ * 2. friend (type 2)
+ * 3. user is invited (type 3)
+ * 4. user invited someone (type 4)
+ * 5. stranger
  */
-FriendService.prototype.getRelationStatus = async function (ownerAccountInfo, visitorAccountInfo) {
-  return await this.friendRepo.relation(ownerAccountInfo, visitorAccountInfo)
+FriendService.prototype.getRelationship = async function (ownerAccountInfo, visitorAccountInfo) {
+  // 1. user self
+  if (ownerAccountInfo.uid === visitorAccountInfo.uid && ownerAccountInfo.region === visitorAccountInfo.region) {
+    return {
+      type: CIRCLE_CONST.RELATION_STATUS_SELF,
+      relation: 'myself'
+    }
+  }
+
+  // 2. you are friend
+  var friend = await this.friendRepo.getFriend(ownerAccountInfo, visitorAccountInfo)
+  if (friend != null) {
+    return {
+      type: CIRCLE_CONST.RELATION_STATUS_FRIEND,
+      relation: 'friend'
+    }
+  }
+
+  // 5. stranger
+  var invitation = await this.inviteRepo.getInvitationByRoles(ownerAccountInfo, visitorAccountInfo)
+  if (invitation == null) {
+    return {
+      type: CIRCLE_CONST.RELATION_STATUS_STRANGER,
+      relation: 'stranger'
+    }
+  } 
   
-  return {
-    'type': 2,
-    'relation': 'invitation has sent'
+  const inviter = invitation.inviter
+  const recipient = invitation.recipient
+  // 3. user (accountInfo) is invited
+  if (recipient.uid === visitorAccountInfo.uid && recipient.region === visitorAccountInfo.region) {
+    return {
+      type: CIRCLE_CONST.RELATION_STATUS_BE_INVITED,
+      relation: 'you are invited',
+      invitation,
+    }
+  }
+
+  // 4. user has sent invitation to someone
+  if (inviter.uid === visitorAccountInfo.uid && inviter.region === visitorAccountInfo.region) {
+    return {
+      type: CIRCLE_CONST.RELATION_STATUS_INVITED,
+      relation: 'invitation has sent',
+    }
   }
 }
 
 module.exports = {
-  friendService: new FriendService(friendRepo),
+  friendService: new FriendService(friendRepo, inviteRepo),
   FriendService
 }

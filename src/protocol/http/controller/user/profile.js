@@ -7,32 +7,34 @@ var op = require('../../../../library/objOperator')
 /**
  * About profile:
  * A. Relation status including friends / strangers / yourself profile
- * 1. you are friends.
- * 1. show state:'invite' if he/she is a stranger. 
- * 2. show state:'invitation has sent' if you has invited he/she.
- * 3. hide state for yourself.
+ * 1. hide state for yourself
+ * 2. you are friends.
+ * 3. show options (Y/n) if you are invited.
+ * 4. show state:'invitation has sent' if you invited he/she.
+ * 5. show state:'invite' if he/she is a stranger. 
  * 
  * TODO: 
- * B. Assume user has a long long story/history ... batch load.
+ * B. Assume user has a long long story/history, such as
+ *    photos, music, blogs, travels ... separate these parts as [batch-loading].
  */
 
 /**
  * Relation status:
- * 1. friend,
- * 2. stranger,
- * 3. invitation has sent,
- * 4. myself.
+ * 1. user self (type 1)
+ * 2. friend (type 2)
+ * 3. user is invited (type 3)
+ * 4. user invited someone (type 4)
+ * 5. stranger
  */
 exports.getHeader = async (req, res, next) => {
   var ownerAccountInfo = req.params,
-    visitorAccountInfo = _.mapKeys(req.query, (value,key) => key.replace('visitor_', ''))
+    visitorAccountInfo = _.mapKeys(req.query, (value, key) => key.replace('visitor_', ''))
   res.locals.data = op.getDefaultIfUndefined(res.locals.data)
 
-  userService.promiseServicesForProfileHeader(
-    { friendService, settingService },
-    ownerAccountInfo,
-    visitorAccountInfo
-  )
+  Promise.all([
+    friendService.getRelationship(ownerAccountInfo, visitorAccountInfo),
+    settingService.getPublicUserInfo(ownerAccountInfo)
+  ])
     .then(responsData => res.locals.data = userService.packetProfileHeader(responsData))
     .then(() => next())
     .catch(err => next(err))

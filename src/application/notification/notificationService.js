@@ -11,7 +11,7 @@ function NotificationService() {}
  * 線上：會 pop-up 至 client 端. 用戶明顯感受到被通知
  * 線下：client 端背景做了一些資料更新，用戶不知道
  * 
- * B. 以發送類型的角度，區分 email, SMS, push app/web
+ * B. 以發送類型的角度，區分 email, SMS, app-push, web-push
  */
 NotificationService.prototype.createUserChannel = function (userInfo) {
   var uid = userInfo.uid
@@ -48,7 +48,7 @@ NotificationService.prototype.emitInvitation = function (invitation) {
 }
 
 
-NotificationService.prototype.emitEvent = function (accountInfo, packet) {
+NotificationService.prototype.emitEvent = function (event, packet) {
 
 }
 

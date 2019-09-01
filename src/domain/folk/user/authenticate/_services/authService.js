@@ -1,5 +1,5 @@
 // TODO: for temporary
-var authRepo = require('../_repositories/authRepositoryTemp')
+const authRepo = require('../_repositories/authRepositoryTemp')
 
 function AuthService (authRepo) {
   this.authRepo = authRepo

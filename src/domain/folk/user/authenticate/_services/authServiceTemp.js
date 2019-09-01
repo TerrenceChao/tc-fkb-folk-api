@@ -1,5 +1,5 @@
 var _ = require('lodash')
-var authRepo = require('../_repositories/authRepositoryTemp')
+const authRepo = require('../_repositories/authRepositoryTemp')
 
 const expirationMins = parseInt(process.env.EXPIRATION_TIME)
 

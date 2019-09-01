@@ -56,11 +56,10 @@ exports.login = async (req, res, next) => {
  * for those users who forget their login account (search email OR phone)
  */
 exports.searchAccount = async (req, res, next) => {
-  var {
+  var data = {
     type,
     account // 半殘的片段帳戶資訊, ex: terrence
   } = res.locals.data = req.query
-  var data = res.locals.data
 
   try {
     // 完整的帳戶資訊, ex: terrence.chao@gmail.com

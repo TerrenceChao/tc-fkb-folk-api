@@ -7,13 +7,6 @@ const PROFILE_PARTS = {
   1: 'about'
 }
 
-UserService.prototype.promiseServicesForProfileHeader = async function(services, ownerAccountInfo, visitorAccountInfo) {
-  return Promise.all([
-    services.friendService.getRelationStatus(ownerAccountInfo, visitorAccountInfo),
-    services.settingService.getPublicUserInfo(ownerAccountInfo)
-  ])
-}
-
 UserService.prototype.packetProfileHeader = function(responsData) {
   return responsData.reduce((profileInfo, info, part) => {
     profileInfo[PROFILE_PARTS[part]] = info

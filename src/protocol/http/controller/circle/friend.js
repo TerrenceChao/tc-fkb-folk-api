@@ -1,4 +1,6 @@
 var _ = require('lodash')
+const EXCHANGES = require('../../../../application/notification/_properties/constant').EXCHANGES
+const CIRCLE_CONST = require('../../../../domain/circle/_properties/constant')
 var cicleRes = require('../../response/circle/circleRes')
 var notificationService = require('../../../../application/notification/notificationService')
 var { friendService } = require('../../../../domain/circle/friend/friendServiceTemp')
@@ -38,10 +40,13 @@ exports.remove = async (req, res, next) => {
   Promise.resolve(friendService.remove(accountInfo, targetAccountInfo))
     .then(removedFriend => res.locals['data'] = removedFriend)
     //TODO: improve
-    .then(() => notificationService.emitEvent(targetAccountInfo, {
-      requestEvent: 'unfriend',
-      receiver: accountInfo,
-      data: accountInfo
+    .then(() => notificationService.emitEvent('friend', {
+      requestEvent: CIRCLE_CONST.FRIEND_EVENT_REMOVE_FRIEND,
+      exchanges: EXCHANGES.PUSH,
+      receivers: [accountInfo, targetAccountInfo],
+      data: {
+        // 
+      }
     }))
     .then(() => next())
     .catch(err => next(err))

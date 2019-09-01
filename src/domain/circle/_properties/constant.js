@@ -5,21 +5,28 @@ exports.INVITE_ARROW_RECEIVED = 'received'
 
 
 // invitation events
-exports.INVITE_EVENT_FRIEND = 'friend_invitation'
+exports.INVITE_EVENT_FRIEND_INVITE = 'invite_event_friend_invite'
 
-exports.INVITE_EVENT_FRIEND_REPLY = 'reply_friend_invitation'
+exports.INVITE_EVENT_FRIEND_REPLY = 'invite_event_friend_reply'
 
-exports.INVITE_EVENT_SOCIETY = 'society_invitation'
+exports.INVITE_EVENT_SOCIETY_INVITE = 'invite_event_society_invite'
 
-exports.INVITE_EVENT_SOCIETY_REPLY = 'reply_society_invitation'
+exports.INVITE_EVENT_SOCIETY_REPLY = 'invite_event_society_reply'
+
+// friend events
+exports.FRIEND_EVENT_ADD_FRIEND = 'friend_event_add_friend'
+
+exports.FRIEND_EVENT_REMOVE_FRIEND = 'friend_event_remove_friend'
 
 
 
 // relation status
-exports.RELATION_STATUS_FRIEND = 1
+exports.RELATION_STATUS_SELF = 1
 
-exports.RELATION_STATUS_STRANGER = 2
+exports.RELATION_STATUS_FRIEND = 2
 
-exports.RELATION_STATUS_HAS_INVITED = 3
+exports.RELATION_STATUS_BE_INVITED = 3 // 已收到邀請未回覆
 
-exports.RELATION_STATUS_SELF = 4
+exports.RELATION_STATUS_INVITED = 4 // 已發送邀請
+
+exports.RELATION_STATUS_STRANGER = 5

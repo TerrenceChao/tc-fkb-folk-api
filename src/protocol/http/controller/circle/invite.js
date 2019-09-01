@@ -1,6 +1,7 @@
 var _ = require('lodash')
 const CONSTANT = require('../../../../domain/circle/_properties/constant')
 var notificationService = require('../../../../application/notification/notificationService')
+var circleService = require('../../../../domain/circle/_services/circleService')
 var { friendService } = require('../../../../domain/circle/friend/friendServiceTemp')
 var { invitationService } = require('../../../../domain/circle/invitation/invitationServiceTemp')
 var op = require('../../../../library/objOperator')
@@ -17,8 +18,8 @@ exports.sendInvitation = async (req, res, next) => {
     targetAccountInfo = _.mapKeys(req.body, (value, key) => key.replace('target_', ''))
   res.locals.data = op.getDefaultIfUndefined(res.locals.data)
 
-  Promise.resolve(friendService.findOne(accountInfo, targetAccountInfo))
-    .then(friend => friend == null ? invitationService.inviteToBeFriend(accountInfo, targetAccountInfo) : Promise.reject(new Error(`You are already friends`)))
+  Promise.resolve(friendService.getRelationship(targetAccountInfo, accountInfo))
+    .then(relationship => circleService.handleInviteActivity(invitationService, relationship, accountInfo, targetAccountInfo))
     .then(invitation => notificationService.emitInvitation(res.locals.data = invitation))
     .then(() => next())
     .catch(err => next(err))
@@ -45,7 +46,7 @@ exports.replyInvitation = async (req, res, next) => {
     invitationRes = req.body
   res.locals.data = op.getDefaultIfUndefined(res.locals.data)
 
-  Promise.resolve(invitationService.dealwithFriendInvitation(accountInfo, invitationRes))
+  Promise.resolve(invitationService.handleFriendInvitation(accountInfo, invitationRes))
     .then(replyInvite => notificationService.emitInvitation(res.locals.data = replyInvite))
     .then(() => next())
     .catch(err => next(err))
