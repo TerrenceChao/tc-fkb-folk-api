@@ -1,3 +1,5 @@
+var _ = require('lodash')
+const EXCHANGES = require('../../../application/notification/_properties/constant').EXCHANGES
 const CONSTANT = require('../_properties/constant')
 
 function CircleService() {
@@ -25,6 +27,42 @@ CircleService.prototype.handleInviteActivity = async function (invitationService
 
     default:
       return Promise.reject(new Error(`The type of relationship is not defined`))
+  }
+}
+
+/**
+ * TODO: DONT async!!!!!
+ */
+CircleService.prototype.handleNotifyUnfriendActivity = function (notificationService, accountInfo, targetAccountInfo) {
+  const registerRegion = accountInfo.region
+  
+  // 跟自己說
+  notificationService.emitEvent('friend', {
+    requestEvent: CONSTANT.FRIEND_EVENT_REMOVE_FRIEND,
+    registerRegion,
+    exchanges: EXCHANGES.PUSH,
+    receivers: accountInfo,
+    data: targetAccountInfo
+  })
+
+  // 跟對方說
+  notificationService.emitEvent('friend', {
+    requestEvent: CONSTANT.FRIEND_EVENT_REMOVE_FRIEND,
+    registerRegion,
+    exchanges: EXCHANGES.PUSH,
+    receivers: targetAccountInfo,
+    data: accountInfo
+  })
+}
+
+/**
+ * TODO: DONT async!!!!!
+ */
+CircleService.prototype.handleNotifyAllFriendsActivity = function (friendService, notificationService, accountInfo, packet, batchLimit = 3) {
+  let friendList, skip = 0
+  while ((friendList = Promise.resolve(friendService.list(accountInfo, batchLimit, skip))).length > 0) {
+    skip += batchLimit
+    notificationService.emitEvent('friend', _.assignIn(packet, { receivers: friendList }))
   }
 }
 

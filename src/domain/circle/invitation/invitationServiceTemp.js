@@ -31,7 +31,10 @@ InvitationService.prototype.inviteToBeFriend = async function (accountInfo, targ
       inviter: userDisplayInfoList[0],
       recipient: userDisplayInfoList[1],
       header: {
-        region: userDisplayInfoList[1].region,
+        regions: {
+          inviter: userDisplayInfoList[0].region,
+          recipient: userDisplayInfoList[1].region,
+        },
         inviteEvent: CIRCLE_CONST.INVITE_EVENT_FRIEND_INVITE,
         data: {
           options: [true, false]
@@ -117,15 +120,16 @@ InvitationService.prototype.handleFriendInvitation = async function (accountInfo
   // return removedInvitation
 
   let removed = await this.inviteRepo.removeRelatedInvitation(accountInfo, invitationRes.inviter)
-
-  // TODO: 改用 invitationRes 回傳
   if (removed > 0) {
     invitationRes.recipient = accountInfo
     invitationRes.header.inviteEvent = CIRCLE_CONST.INVITE_EVENT_FRIEND_REPLY
     return invitationRes
   }
 
-  throw new Error(`No invitation as ${JSON.stringify(_.pick(invitationRes.header, ['iid', 'region']), null, 2)}`)
+  throw new Error(`No invitation as ${JSON.stringify({
+    inviter: invitationRes.inviter,
+    recipient: accountInfo
+  }, null, 2)}`)
 
   //（改用 invitationRes 回傳）Does 'removedInvitation' look like this?
   return {

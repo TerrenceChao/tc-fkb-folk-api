@@ -1,3 +1,6 @@
+const CIRCILE_CONST = require('../../domain/circle/_properties/constant')
+
+var _ = require('lodash')
 var redisEmitter = require('../../../infrastructure/notification/RedisEmitter')
 var format = require('./content/format')
 var EmailTemplate = require('./content/email/template')
@@ -43,13 +46,32 @@ NotificationService.prototype.emitVerification = function (verifyInfo) {
   redisEmitter.publish(notifyInfo.to, notifyInfo.content)
 }
 
+/**
+ * TODO: [尚未考慮跨區域情境]
+ * 不同區域的分開處理
+ * 1. same region  => notification-api
+ * 2. corss region => dispatch-api
+ */
 NotificationService.prototype.emitInvitation = function (invitation) {
-  
+  const RECEIVERS = {
+    [CIRCILE_CONST.INVITE_EVENT_FRIEND_INVITE]: 'recipient',
+    [CIRCILE_CONST.INVITE_EVENT_FRIEND_REPLY]: 'inviter',
+  }
+
+  const userId = invitation[RECEIVERS[invitation.header.inviteEvent]].uid
+  redisEmitter.publish(userId, invitation)
 }
 
-
+/**
+ * TODO: [尚未考慮跨區域情境]
+ * packet = { requestEvent, receivers, exchanges, data }
+ * 不同區域的分開處理
+ * 1. same region  => notification-api
+ * 2. corss region => dispatch-api
+ */
 NotificationService.prototype.emitEvent = function (event, packet) {
-
+  console.log(`\n=================\nevent: ${event}\n`)
+  console.log(`packet: ${JSON.stringify(packet, null, 2)}\n=================\n`)
 }
 
 NotificationService.prototype.quit = function (accountInfo) {

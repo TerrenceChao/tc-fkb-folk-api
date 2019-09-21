@@ -33,6 +33,7 @@ exports.signup = async (req, res, next) => {
  */
 exports.login = async (req, res, next) => {
   var clientuseragent = req.headers.clientuseragent
+  var { friendLimit, friendSkip } = req.query
   // password is encrypted 
   var { email, password } = req.body
   res.locals.data = op.getDefaultIfUndefined(res.locals.data)
@@ -44,7 +45,7 @@ exports.login = async (req, res, next) => {
       userInfo,
       messageService.authenticate(_.assignIn(userInfo, { clientuseragent })),
       notificationService.createUserChannel(userInfo),
-      friendService.list(userInfo),
+      friendService.list(userInfo, friendLimit, friendSkip),
     ]))
     .then(serviceInfoList => res.locals.data = userService.packetRegisterInfo(serviceInfoList))
     .then(() => next())

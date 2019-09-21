@@ -247,8 +247,10 @@ AuthRepository.prototype.addFriend = async function (accountInfo, targetAccountI
 
 /**
  * friendRepo
+ * [跨區域操作時使用]
+ * softDelete: 跨區域操作時使用，若雙邊操作需要 rollback 有機會補教。等雙邊都 commit 再硬刪除 (hard delete)
  */
-AuthRepository.prototype.removeFriend = async function (accountInfo, targetAccountInfo) {
+AuthRepository.prototype.removeFriend = async function (accountInfo, targetAccountInfo, softDelete = false) {
   let removedFriend
 
   // remove accountInfo's friend (targetAccountInfo)
@@ -466,17 +468,19 @@ AuthRepository.prototype.getInvitationList = async function (accountInfo, invite
 AuthRepository.prototype.removeRelatedInvitation = async function (accountInfo, targetAccountInfo, softDelete = false) {
   let deleteRows = 0
   for (const invitation of invitationDB.values()) {
+    const header = invitation.header
     const inviter = invitation.inviter
     const recipient = invitation.recipient
+
     if (inviter.uid === accountInfo.uid && inviter.region === accountInfo.region &&
       recipient.uid === targetAccountInfo.uid && recipient.region === targetAccountInfo.region) {
-      invitationDB.delete(invitation.iid)
+      invitationDB.delete(header.iid)
       deleteRows++
     }
 
     if (inviter.uid === targetAccountInfo.uid && inviter.region === targetAccountInfo.region &&
       recipient.uid === accountInfo.uid && recipient.region === accountInfo.region) {
-      invitationDB.delete(invitation.iid)
+      invitationDB.delete(header.iid)
       deleteRows++
     }
 
@@ -486,24 +490,6 @@ AuthRepository.prototype.removeRelatedInvitation = async function (accountInfo, 
   }
 
   return deleteRows
-
-  let invitation = invitationDB.get(invitationInfo.iid)
-  if (invitation === undefined) {
-    return false
-  }
-
-  if (invitation.header.region !== invitationInfo.region) {
-    throw new Error(`Invitation's region is incorrect`)
-  }
-
-  if ((invitation.inviter.uid === accountInfo.uid && invitation.inviter.region === accountInfo.region) ||
-      (invitation.recipient.uid === accountInfo.uid && invitation.recipient.region === accountInfo.region)
-      ) {
-        invitationDB.delete(invitationInfo.iid)
-        return true
-    }
-
-  throw new Error(`Invitation doesn't belong to user: ${JSON.stringify(accountInfo)}`)
 }
 
 /**
