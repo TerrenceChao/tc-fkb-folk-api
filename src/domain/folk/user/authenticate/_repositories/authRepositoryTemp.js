@@ -372,10 +372,6 @@ AuthRepository.prototype.getInvitation = async function (accountInfo, invitation
     return null
   }
 
-  if (invitation.header.region !== invitationInfo.region) {
-    throw new Error(`Invitation's region is incorrect`)
-  }
-
   if ((invitation.inviter.uid === accountInfo.uid && invitation.inviter.region === accountInfo.region) ||
       (invitation.recipient.uid === accountInfo.uid && invitation.recipient.region === accountInfo.region)
       ) {
