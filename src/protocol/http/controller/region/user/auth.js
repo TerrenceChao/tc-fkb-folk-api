@@ -1,11 +1,11 @@
 var _ = require('lodash')
-var messageService = require('../../../../application/message/messageService')
-var notificationService = require('../../../../application/notification/notificationService')
-var userService = require('../../../../domain/folk/user/_services/userService')
-var { authService } = require('../../../../domain/folk/user/authenticate/_services/authServiceTemp')
-var { friendService } = require('../../../../domain/circle/friend/friendServiceTemp')
-var authFormat = require('../../../../domain/folk/user/authenticate/format')
-var op = require('../../../../library/objOperator')
+var messageService = require('../../../../../application/message/_services/_messageService')
+var notificationService = require('../../../../../application/notification/_services/_notificationService')
+var userService = require('../../../../../domain/folk/user/_services/_userService')
+var { authService } = require('../../../../../domain/folk/user/_services/authServiceTemp')
+var { friendService } = require('../../../../../domain/circle/_services/friendServiceTemp')
+var util = require('../../../../../domain/folk/user/_properties/util')
+var op = require('../../../../../library/objOperator')
 
 
 exports.signup = async (req, res, next) => {
@@ -117,7 +117,7 @@ exports.sendVerifyInfo = async (req, res, next) => {
 
   Promise.resolve(authService.createVerification(body.type, body.account))
     .then(verification => {
-      verifyInfo = authFormat.byVerification(req, verification)
+      verifyInfo = util.byVerification(req, verification)
       notificationService.emitVerification(verifyInfo) // no waiting!! (no await)
       return verifyInfo
     })

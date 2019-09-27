@@ -7,7 +7,7 @@
 
 var express = require('express')
 var router = express.Router()
-var auth = require('../protocol/http/controller/user/auth')
+var auth = require('../protocol/http/controller/region/user/auth')
 var generalRes = require('../protocol/http/response/generalRes')
 
 /**
@@ -17,7 +17,7 @@ var generalRes = require('../protocol/http/response/generalRes')
  * discover/people 只是實驗用的，之後會用 elasticsearch 來取代，
  * discover/people 只是實驗用的，之後會用 elasticsearch 來取代，
  */
-const elasticsearch = require('../domain/folk/user/authenticate/_repositories/authRepositoryTemp')
+const elasticsearch = require('../domain/folk/user/_repositories/authRepositoryTemp')
 router.get('/:uid/:region/discover/people',
   auth.isLoggedIn,
   async (req, res, next) => {
@@ -32,7 +32,7 @@ router.get('/:uid/:region/discover/people',
 /**
  * TODO: 產生假帳號...
  */
-const mock = require('../domain/folk/user/authenticate/_repositories/authRepositoryTemp')
+const mock = require('../domain/folk/user/_repositories/authRepositoryTemp')
 router.post('/generate_fake_accounts',
   async (req, res, next) => {
     var amount = req.query.amount

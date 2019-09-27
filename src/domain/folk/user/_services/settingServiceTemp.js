@@ -1,4 +1,4 @@
-const userRepo = require('../../authenticate/_repositories/authRepositoryTemp')
+const userRepo = require('../_repositories/authRepositoryTemp')
 
 
 function SettingService(userRepo) {

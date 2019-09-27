@@ -6,3 +6,7 @@ exports.byVerification = function (req, verification) {
 
   return verification
 }
+
+exports.equalAccount = function (accountA, accountB) {
+  return accountA.region === accountB.region && accountA.uid === accountB.uid
+}

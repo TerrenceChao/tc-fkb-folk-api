@@ -8,9 +8,9 @@ var cookieParser = require('cookie-parser')
 var logger = require('morgan')
 
 var indexRouter = require('./src/route/_index')
-var userRouter = require('./src/route/user')
-var circleRouter = require('./src/route/circle')
-var feedsRouter = require('./src/route/feeds')
+var userRouter = require('./src/route/region/user')
+var circleRouter = require('./src/route/region/circle')
+var feedsRouter = require('./src/route/region/feeds')
 
 var app = express()
 

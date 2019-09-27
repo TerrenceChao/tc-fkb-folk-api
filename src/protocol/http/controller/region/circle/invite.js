@@ -1,10 +1,10 @@
 var _ = require('lodash')
-const CONSTANT = require('../../../../domain/circle/_properties/constant')
-var notificationService = require('../../../../application/notification/notificationService')
-var circleService = require('../../../../domain/circle/_services/circleService')
-var { friendService } = require('../../../../domain/circle/friend/friendServiceTemp')
-var { invitationService } = require('../../../../domain/circle/invitation/invitationServiceTemp')
-var op = require('../../../../library/objOperator')
+const CONSTANT = require('../../../../../domain/circle/_properties/constant')
+var notificationService = require('../../../../../application/notification/_services/_notificationService')
+var circleService = require('../../../../../domain/circle/_services/_circleService')
+var { friendService } = require('../../../../../domain/circle/_services/friendServiceTemp')
+var { invitationService } = require('../../../../../domain/circle/_services/invitationServiceTemp')
+var op = require('../../../../../library/objOperator')
 
 /**
  * send invitation

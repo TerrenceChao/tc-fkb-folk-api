@@ -2,13 +2,13 @@ var _ = require('lodash')
 const {
   CATEGORIES,
   CHANNELS
-} = require('../../../../application/notification/_properties/constant')
-const CONSTANT = require('../../../../domain/folk/user/_properties/constant')
-var notificationService = require('../../../../application/notification/notificationService')
-var circleService = require('../../../../domain/circle/_services/circleService')
-var { settingService } = require('../../../../domain/folk/user/setting/_services/settingServiceTemp')
-var { friendService } = require('../../../../domain/circle/friend/friendServiceTemp')
-var op = require('../../../../library/objOperator')
+} = require('../../../../../application/notification/_properties/constant')
+const CONSTANT = require('../../../../../domain/folk/user/_properties/constant')
+var notificationService = require('../../../../../application/notification/_services/_notificationService')
+var circleService = require('../../../../../domain/circle/_services/_circleService')
+var { settingService } = require('../../../../../domain/folk/user/_services/settingServiceTemp')
+var { friendService } = require('../../../../../domain/circle/_services/friendServiceTemp')
+var op = require('../../../../../library/objOperator')
 
 exports.getUserInfo = async (req, res, next) => {
   var owner = req.params

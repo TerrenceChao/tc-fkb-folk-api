@@ -403,7 +403,7 @@ AuthRepository.prototype.getInvitation = async function (accountInfo, invitation
  * invitationRepo 
  * roles (inviter, recipient)
  */
-const CONSTANT = require('../../../../circle/_properties/constant')
+const CONSTANT = require('../../../circle/_properties/constant')
 AuthRepository.prototype.getInvitationByRoles = async function (accountInfo, targetAccountInfo) {
   for (const invitation of invitationDB.values()) {
     const inviter = invitation.inviter

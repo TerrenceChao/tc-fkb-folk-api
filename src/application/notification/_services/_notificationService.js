@@ -4,13 +4,13 @@ var _ = require('lodash')
 const {
   CATEGORIES,
   CHANNELS
-} = require('./_properties/constant')
-const CIRCILE_CONST = require('../../domain/circle/_properties/constant')
-const ACCOUT_IDENTITY = require('../../domain/folk/user/_properties/constant').ACCOUT_IDENTITY
-var redisEmitter = require('../../../infrastructure/notification/RedisEmitter')
-var format = require('./content/format')
-var EmailTemplate = require('./content/email/template')
-var SMSTemplate = require('./content/sms/template')
+} = require('../_properties/constant')
+const CIRCILE_CONST = require('../../../domain/circle/_properties/constant')
+const ACCOUT_IDENTITY = require('../../../domain/folk/user/_properties/constant').ACCOUT_IDENTITY
+var redisEmitter = require('../../../../infrastructure/notification/RedisEmitter')
+var format = require('../_properties/content/format')
+var EmailTemplate = require('../_properties/content/email/template')
+var SMSTemplate = require('../_properties/content/sms/template')
 
 const PUBLISH_URL = `${process.env.NOTIFICATION_MQ_HOST}${process.env.NOTIFICATION_MQ_URL_REQUEST_PUBLISH}`
 

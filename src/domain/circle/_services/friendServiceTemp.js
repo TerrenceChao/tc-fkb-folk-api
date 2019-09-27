@@ -2,8 +2,8 @@ const CONSTANT = require('../../../property/constant')
 const CIRCLE_CONST = require('../_properties/constant')
 
 // TODO: for temporary
-const friendRepo = require('../../folk/user/authenticate/_repositories/authRepositoryTemp')
-const inviteRepo = require('../../folk/user/authenticate/_repositories/authRepositoryTemp')
+const friendRepo = require('../../folk/user/_repositories/authRepositoryTemp')
+const inviteRepo = require('../../folk/user/_repositories/authRepositoryTemp')
 
 function FriendService(friendRepo, inviteRepo) {
   this.friendRepo = friendRepo

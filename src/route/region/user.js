@@ -1,10 +1,10 @@
 var express = require('express')
 var router = express.Router()
-var userReq = require('../protocol/http/request/user/userReq')
-var auth = require('../protocol/http/controller/user/auth')
-var profile = require('../protocol/http/controller/user/profile')
-var setting = require('../protocol/http/controller/user/setting')
-var generalRes = require('../protocol/http/response/generalRes')
+var userReq = require('../../protocol/http/request/user/userReq')
+var auth = require('../../protocol/http/controller/region/user/auth')
+var profile = require('../../protocol/http/controller/region/user/profile')
+var setting = require('../../protocol/http/controller/region/user/setting')
+var generalRes = require('../../protocol/http/response/generalRes')
 
 /* GET user listing. */
 router.get('/', function (req, res, next) {

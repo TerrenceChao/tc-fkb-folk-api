@@ -1,5 +1,9 @@
-const friendRepo = require('../../folk/user/authenticate/_repositories/authRepositoryTemp')
-const inviteRepo = require('../../folk/user/authenticate/_repositories/authRepositoryTemp')
+const CONSTANT = require('../../../property/constant')
+const CIRCLE_CONST = require('../_properties/constant')
+
+// TODO: for temporary
+const friendRepo = require('../../folk/user/_repositories/authRepositoryTemp')
+const inviteRepo = require('../../folk/user/_repositories/authRepositoryTemp')
 
 function FriendService(friendRepo, inviteRepo) {
   this.friendRepo = friendRepo
@@ -15,18 +19,18 @@ FriendService.prototype.list = async function (accountInfo, limit = CONSTANT.LIM
 
 }
 
-// /**
-//  * TODO: 在跨區域機制下提供 dispatch-api 呼叫
-//  */
+/**
+ * TODO: 在跨區域機制下提供 dispatch-api 呼叫
+ */
 // FriendService.prototype.getRegionList = async function (accountInfo) {
 
 // }
 
-// /**
-//  * TODO: 僅搜尋特定區域的朋友. 在跨區域機制下提供 dispatch-api 呼叫
-//  * 傳回用戶的所有朋友資訊，但為了節省效能，
-//  * 每一筆資料，僅傳回最低限量可供顯示的欄位即可
-//  */
+/**
+ * TODO: 僅搜尋特定區域的朋友. 在跨區域機制下提供 dispatch-api 呼叫
+ * 傳回用戶的所有朋友資訊，但為了節省效能，
+ * 每一筆資料，僅傳回最低限量可供顯示的欄位即可
+ */
 // FriendService.prototype.listByRegion = async function (accountInfo, friendsRegion, limit = CONSTANT.LIMIT, skip = CONSTANT.SKIP) {
 
 // }
