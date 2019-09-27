@@ -38,7 +38,7 @@ SettingService.prototype.getUserInfo = async function (accountInfo) {
  * 額外的資訊才有 email, phone, ....
  */
 SettingService.prototype.getPublicUserInfo = async function (accountInfo) {
-  const PRIVATE_FIELDS = ['email', 'phone', 'password', 'newPassword', 'newPasswordConfirm']
+  const PRIVATE_FIELDS = ['email', 'phone']
   const user = await this.userRepo.getUser(accountInfo, PRIVATE_FIELDS)
   if (user != null) {
     return user

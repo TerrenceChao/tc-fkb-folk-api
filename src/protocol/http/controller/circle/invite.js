@@ -20,7 +20,7 @@ exports.sendInvitation = async (req, res, next) => {
 
   Promise.resolve(friendService.getRelationship(targetAccountInfo, accountInfo))
     .then(relationship => circleService.handleInviteActivity(invitationService, relationship, accountInfo, targetAccountInfo))
-    .then(invitation => notificationService.emitInvitation(res.locals.data = invitation))
+    .then(invitation => notificationService.emitFriendInvitation(res.locals.data = invitation))
     .then(() => next())
     .catch(err => next(err))
 }
@@ -47,7 +47,7 @@ exports.replyInvitation = async (req, res, next) => {
   res.locals.data = op.getDefaultIfUndefined(res.locals.data)
 
   Promise.resolve(invitationService.handleFriendInvitation(accountInfo, invitationRes))
-    .then(replyInvite => notificationService.emitInvitation(res.locals.data = replyInvite))
+    .then(replyInvite => notificationService.emitFriendInvitation(res.locals.data = replyInvite))
     .then(() => next())
     .catch(err => next(err))
 }

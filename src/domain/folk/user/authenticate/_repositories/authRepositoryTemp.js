@@ -174,6 +174,23 @@ AuthRepository.prototype.getFriendList = async function (accountInfo, limit, ski
 
 /**
  * friendRepo
+ * TODO: 僅搜尋特定區域的朋友. 在跨區域機制下提供 dispatch-api 呼叫
+ */
+// AuthRepository.prototype.getFriendListByRegion = async function (accountInfo, region, limit, skip) {
+//   for (const userInfo of userDB.values()) {
+//     if (userInfo.uid !== accountInfo.uid || userInfo.region !== accountInfo.region) {
+//       continue
+//     }
+
+//     // console.log(` in userInfo.friendList: ${JSON.stringify(userInfo.friendList)}`)
+//     return userInfo.friendList.slice(skip, skip + limit).filter(friend => friend.region === region)
+//   }
+
+//   return []
+// }
+
+/**
+ * friendRepo
  */
 AuthRepository.prototype.getFriend = async function (accountInfo, targetAccountInfo) {
   for (const userInfo of userDB.values()) {
@@ -248,6 +265,7 @@ AuthRepository.prototype.addFriend = async function (accountInfo, targetAccountI
 /**
  * friendRepo
  * [跨區域操作時使用]
+ * TODO: 在同區域時,會刪除兩筆紀錄; 在不同區域時只會刪除一筆.
  * softDelete: 跨區域操作時使用，若雙邊操作需要 rollback 有機會補教。等雙邊都 commit 再硬刪除 (hard delete)
  */
 AuthRepository.prototype.removeFriend = async function (accountInfo, targetAccountInfo, softDelete = false) {
@@ -492,7 +510,7 @@ AuthRepository.prototype.removeRelatedInvitation = async function (accountInfo, 
  * userRepo
  */
 AuthRepository.prototype.getUser = async function (accountInfo, ignoredFields = []) {
-  const DEFAULT_IGNORED_FIELDS = ['verificaiton', 'friendList'].concat(ignoredFields)
+  const DEFAULT_IGNORED_FIELDS = ['verificaiton', 'friendList', 'password', 'newPassword', 'newPasswordConfirm'].concat(ignoredFields)
   for (const userInfo of userDB.values()) {
     if (userInfo.uid === accountInfo.uid && userInfo.region === accountInfo.region) {
       return _.omit(userInfo, DEFAULT_IGNORED_FIELDS)

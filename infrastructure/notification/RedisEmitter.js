@@ -1,8 +1,8 @@
 
 var Redis = require('ioredis')
 
-var host = process.env.NOTIFICATION_HOST
-var port = process.env.NOTIFICATION_PORT
+var host = process.env.NOTIFICATION_REDIS_HOST
+var port = process.env.NOTIFICATION_REDIS_PORT
 
 function RedisEmitter () {
   console.log(`init ${arguments.callee.name}`)

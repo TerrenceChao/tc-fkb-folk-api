@@ -1,4 +1,9 @@
 module.exports = {
-  host: process.env.NOTIFICATION_HOST,
-  port: process.env.NOTIFICATION_PORT
+  redis: {
+    host: process.env.NOTIFICATION_REDIS_HOST,
+    port: process.env.NOTIFICATION_REDIS_PORT
+  },
+  mq: {
+    host: process.env.NOTIFICATION_MQ_HOST
+  }
 }

@@ -1,5 +1,8 @@
 var _ = require('lodash')
-const EXCHANGES = require('../../../application/notification/_properties/constant').EXCHANGES
+const {
+  CATEGORIES,
+  CHANNELS
+} = require('../../../application/notification/_properties/constant')
 const CONSTANT = require('../_properties/constant')
 
 function CircleService() {
@@ -34,35 +37,44 @@ CircleService.prototype.handleInviteActivity = async function (invitationService
  * TODO: DONT async!!!!!
  */
 CircleService.prototype.handleNotifyUnfriendActivity = function (notificationService, accountInfo, targetAccountInfo) {
-  const registerRegion = accountInfo.region
+  // const registerRegion = accountInfo.region
   
   // 跟自己說
-  notificationService.emitEvent('friend', {
-    requestEvent: CONSTANT.FRIEND_EVENT_REMOVE_FRIEND,
-    registerRegion,
-    exchanges: EXCHANGES.PUSH,
-    receivers: accountInfo,
-    data: targetAccountInfo
+  notificationService.emitEvent({
+    // registerRegion,
+    category: CATEGORIES.FRIEND_EVENT,
+    channels: CHANNELS.PUSH,
+    sender: accountInfo,
+    receivers: [accountInfo],
+    content: {
+      event: CONSTANT.FRIEND_EVENT_REMOVE_FRIEND,
+      data: targetAccountInfo
+    }
   })
 
   // 跟對方說
-  notificationService.emitEvent('friend', {
-    requestEvent: CONSTANT.FRIEND_EVENT_REMOVE_FRIEND,
-    registerRegion,
-    exchanges: EXCHANGES.PUSH,
-    receivers: targetAccountInfo,
-    data: accountInfo
+  notificationService.emitEvent({
+    // registerRegion,
+    category: CATEGORIES.FRIEND_EVENT,
+    channels: CHANNELS.PUSH,
+    sender: accountInfo,
+    receivers: [targetAccountInfo],
+    content: {
+      event: CONSTANT.FRIEND_EVENT_REMOVE_FRIEND,
+      data: accountInfo
+    }
   })
 }
 
 /**
  * TODO: DONT async!!!!!
  */
-CircleService.prototype.handleNotifyAllFriendsActivity = function (friendService, notificationService, accountInfo, packet, batchLimit = 3) {
-  let friendList, skip = 0
+CircleService.prototype.handleNotifyAllFriendsActivity = function (friendService, notificationService, accountInfo, packet, batchLimit = CONSTANT.FRIEND_BATCH_LIMIT) {
+  let friendList = []
+  let skip = 0
   while ((friendList = Promise.resolve(friendService.list(accountInfo, batchLimit, skip))).length > 0) {
+    notificationService.emitEvent(_.assignIn(packet, { receivers: friendList }))
     skip += batchLimit
-    notificationService.emitEvent('friend', _.assignIn(packet, { receivers: friendList }))
   }
 }
 

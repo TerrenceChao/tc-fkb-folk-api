@@ -5,10 +5,12 @@ exports.INVITE_ARROW_RECEIVED = 'received'
 
 
 // invitation events
+// 朋友邀請
 exports.INVITE_EVENT_FRIEND_INVITE = 'invite_event_friend_invite'
 
 exports.INVITE_EVENT_FRIEND_REPLY = 'invite_event_friend_reply'
 
+// 社團邀請
 exports.INVITE_EVENT_SOCIETY_INVITE = 'invite_event_society_invite'
 
 exports.INVITE_EVENT_SOCIETY_REPLY = 'invite_event_society_reply'
@@ -17,6 +19,9 @@ exports.INVITE_EVENT_SOCIETY_REPLY = 'invite_event_society_reply'
 exports.FRIEND_EVENT_ADD_FRIEND = 'friend_event_add_friend'
 
 exports.FRIEND_EVENT_REMOVE_FRIEND = 'friend_event_remove_friend'
+
+// friend
+exports.FRIEND_BATCH_LIMIT = process.env.FRIEND_BATCH_LIMIT || 500
 
 
 

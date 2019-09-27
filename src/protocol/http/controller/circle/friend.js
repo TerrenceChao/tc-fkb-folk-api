@@ -37,7 +37,7 @@ exports.remove = async (req, res, next) => {
       targetAccountInfo = _.mapKeys(req.query, (value, key) => key.replace('target_', ''))
   
   Promise.resolve(friendService.remove(accountInfo, targetAccountInfo))
-    .then(removedFriend => res.locals['data'] = removedFriend)
+    .then(removedFriend => res.locals.data = removedFriend)
     .then(() => circleService.handleNotifyUnfriendActivity(
       notificationService,
       accountInfo,

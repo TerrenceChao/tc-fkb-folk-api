@@ -46,6 +46,48 @@ FriendService.prototype.list = async function (accountInfo, limit = CONSTANT.LIM
 }
 
 /**
+ * TODO: 在跨區域機制下提供 dispatch-api 呼叫
+ */
+// FriendService.prototype.getRegionList = async function (accountInfo) {
+
+// }
+
+/**
+ * TODO: 僅搜尋特定區域的朋友. 在跨區域機制下提供 dispatch-api 呼叫
+ * 傳回用戶的所有朋友資訊，但為了節省效能，
+ * 每一筆資料，僅傳回最低限量可供顯示的欄位即可
+ */
+// FriendService.prototype.listByRegion = async function (accountInfo, friendsRegion, limit = CONSTANT.LIMIT, skip = CONSTANT.SKIP) {
+//   return await this.friendRepo.getFriendListByRegion(accountInfo, friendsRegion, limit, skip)
+  
+//   return [
+//     // 僅傳回最低限量可供顯示的資料即可
+//     {
+//       region: 'us',
+//       uid: '3d6002e2-f834-4fee-89bb-8a118cc345ee',
+//       profileLink: '/rfvbnju',
+//       profilePic: '/rfvbnju6ytghjkopoiuy',
+//       // no email. its private
+//       // no phone num. its private,
+//       givenName: 'lydia',
+//       familyName: 'wang',
+//       allowFollowMe: true, // TODO: 重要。但開始有 post 時才有用
+//     },
+//     {
+//       region: 'uk',
+//       uid: '3fb6e6a1-abc1-4f6f-99d9-57ae6f4e759a',
+//       profileLink: '/asdfghjnjkoj',
+//       profilePic: '/asdfghjnjkojhgyu78iokjhgtfrgtyh',
+//       // no email. its private
+//       // no phone num. its private
+//       givenName: 'albert',
+//       familyName: 'lin',
+//       allowFollowMe: false, // TODO: 重要。但開始有 post 時才有用
+//     }
+//   ]
+// }
+
+/**
  * find a friend of someone (accountInfo)
  */
 FriendService.prototype.findOne = async function (accountInfo, targetAccountInfo) {
@@ -66,6 +108,7 @@ FriendService.prototype.findOne = async function (accountInfo, targetAccountInfo
 
 /**
  * remove someone's (accountInfo) friend.
+ * TODO: this.friendRepo.removeFriend 在同區域時,會刪除兩筆紀錄; 在不同區域時只會刪除一筆
  */
 FriendService.prototype.remove = async function (accountInfo, targetAccountInfo) {  
   return await this.friendRepo.removeFriend(accountInfo, targetAccountInfo)
