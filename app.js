@@ -37,7 +37,7 @@ app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Methods', ALLOW_METHODS)
 
   // Request headers you wish to allow
-  res.setHeader('Access-Control-Allow-Headers', 'clientuseragent,content-type')
+  res.setHeader('Access-Control-Allow-Headers', ALLOW_HEADERS)
 
   /**
    * Set to true if you need the website to include cookies in the requests sent
