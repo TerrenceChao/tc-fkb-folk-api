@@ -46,9 +46,9 @@ CircleService.prototype.handleNotifyUnfriendActivity = function (notificationSer
     channels: CHANNELS.PUSH,
     sender: accountInfo,
     receivers: [accountInfo],
-    content: {
+    packet: {
       event: CONSTANT.FRIEND_EVENT_REMOVE_FRIEND,
-      data: targetAccountInfo
+      content: targetAccountInfo
     }
   })
 
@@ -59,9 +59,9 @@ CircleService.prototype.handleNotifyUnfriendActivity = function (notificationSer
     channels: CHANNELS.PUSH,
     sender: accountInfo,
     receivers: [targetAccountInfo],
-    content: {
+    packet: {
       event: CONSTANT.FRIEND_EVENT_REMOVE_FRIEND,
-      data: accountInfo
+      content: accountInfo
     }
   })
 }

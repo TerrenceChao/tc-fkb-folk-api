@@ -166,16 +166,12 @@ AuthService.prototype.deleteVerification = async function (accountInfo) {
  * accountInfo 至少要有 {region, uid}
  * 這裡不是只輸入 uid
  */
-AuthService.prototype.resetPassword = async function (accountInfo, password) {
-  return true
-}
+AuthService.prototype.resetPassword = async function (accountInfo, newPassword, oldPassword = null) {
+  if (oldPassword) {
+    // validate old password...
+    // throw error if not matched!
+  }
 
-/**
- * [日後做資料庫sharding時可能需要除了uid以外的資訊]
- * accountInfo 至少要有 {region, uid}
- * 這裡不是只輸入 uid
- */
-AuthService.prototype.validateAndResetPassword = async function (accountInfo, password, newPassword) {
   return true
 }
 

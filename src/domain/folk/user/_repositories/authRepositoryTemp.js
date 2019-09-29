@@ -509,11 +509,11 @@ AuthRepository.prototype.removeRelatedInvitation = async function (accountInfo, 
 /**
  * userRepo
  */
-AuthRepository.prototype.getUser = async function (accountInfo, ignoredFields = []) {
-  const DEFAULT_IGNORED_FIELDS = ['verificaiton', 'friendList', 'password', 'newPassword', 'newPasswordConfirm'].concat(ignoredFields)
+AuthRepository.prototype.getUser = async function (accountInfo, selectedFields = ['*']) {
+  const PW_FIELDS = ['password', 'newPassword', 'newPasswordConfirm']
   for (const userInfo of userDB.values()) {
     if (userInfo.uid === accountInfo.uid && userInfo.region === accountInfo.region) {
-      return _.omit(userInfo, DEFAULT_IGNORED_FIELDS)
+      return selectedFields === ['*'] ? _.omit(userInfo, PW_FIELDS) : _.pick(userInfo, selectedFields)
     }
   }
 

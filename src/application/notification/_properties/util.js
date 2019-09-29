@@ -1,52 +1,80 @@
+const _ = require('lodash')
 const req = require('request')
-const PUBLISH_URL = `${process.env.NOTIFICATION_MQ_HOST}${process.env.NOTIFICATION_MQ_URL_REQUEST_PUBLISH}`
-const RETRY_LIMIT = process.env.NOTIFICATION_RETRY || 3
+const HTTP = require('./constant').HTTP
 
-function request(type, packet, retry = 0) {
-  req(
-    { 
-      method: 'PUT',
-      uri: PUBLISH_URL,
-      json: packet
+
+/**
+ * 
+ * @param {string} type 
+ * @param {Object} message 
+ * @param {int} retry 
+ */
+function request(type, message, retry = 0) {
+  req({ 
+      method: HTTP.PUBLISH_METHOD,
+      uri: HTTP.PUBLISH_URL,
+      headers: HTTP.HEADERS,
+      body: message,
+      json: true
     },
-    (error, response, body) => {
-      if(!error) {
-        console.log(`${type} published as ${PUBLISH_URL}`)
+    (err, response, body) => {
+      if (! err && response.statusCode === HTTP.PUBLISH_SUCCESS) {
+        console.log(`event '${type}':\n published as ${HTTP.PUBLISH_URL}\nbody: ${JSON.stringify(body)}\n`)
+        return
+      }
+
+      if (! err && response.statusCode === HTTP.PUBLISH_FORMAT_ERROR) {
+        console.error(`event '${type}':\n published FAIL for invalid format: ${JSON.stringify(body)}\n`)
         return
       }
       
-      if (retry < RETRY_LIMIT) {
-        console.log(`error: ${error}`)
-        request(type, packet, ++retry)
+      if (retry < HTTP.RETRY_LIMIT) {
+        console.error(err)
+        setTimeout(() => request(type, message, ++retry), HTTP.DELAY)
       } else {
-        console.log(`notify ${type} fail!\nreach the retry limit: ${RETRY_LIMIT}\nresponse: status: ${response.statusCode}\nbody: ${JSON.stringify(body, null, 2)}`)
+        console.error(`notify ${type} fail!\nreach the retry limit: ${HTTP.RETRY_LIMIT}`)
       }
-    }
-  )
+    })
 }
 
-function cbRequest(type, packet, callback, data, retry = 0) {
-  req(
-    { 
-      method: 'PUT',
-      uri: PUBLISH_URL,
-      json: packet
-    },
-    (error, response, body) => {
-      if(!error) {
-        console.log(`${type} published as ${PUBLISH_URL}`)
-        callback(data)
-        return
-      }
-      
-      if (retry < RETRY_LIMIT) {
-        console.log(`error: ${error}`)
-        cbRequest(type, packet, callback, data, ++retry)
-      } else {
-        console.log(`notify ${type} fail!\nreach the retry limit: ${RETRY_LIMIT}\nresponse: status: ${response.statusCode}\nbody: ${JSON.stringify(body, null, 2)}`)
-      }
-    }
-  )
+/**
+ * 
+ * @param {string} type 
+ * @param {Object} message 
+ * @param {function} callback 
+ * @param {*} data 
+ * @param {int} retry 
+ */
+function cbRequest(type, message, callback, data, retry = 0) {
+  return new Promise(resolve => {
+    req({
+        method: HTTP.PUBLISH_METHOD,
+        uri: HTTP.PUBLISH_URL,
+        headers: HTTP.HEADERS,
+        body: message,
+        json: true
+      },
+      (err, response, body) => {
+        if (! err && response.statusCode === HTTP.PUBLISH_SUCCESS) {
+          console.log(`event '${type}':\n published as ${HTTP.PUBLISH_URL}\nbody: ${JSON.stringify(body)}\n`)
+          return resolve(callback(data))
+        }
+
+        if (! err && response.statusCode === HTTP.PUBLISH_FORMAT_ERROR) {
+          console.error(`event '${type}':\n published FAIL for invalid format: ${JSON.stringify(body)}\n`)
+          return resolve(callback(_.pick(body, HTTP.PUBLISH_RESPONSE_KEYS)))
+        }
+        
+        if (retry < HTTP.RETRY_LIMIT) {
+          console.error(err)
+          setTimeout(() => cbRequest(type, message, callback, data, ++retry), HTTP.DELAY)
+        } else {
+          let errMsg = `notify ${type} fail!\nreach the retry limit: ${HTTP.RETRY_LIMIT}`
+          console.error(errMsg)
+          resolve(errMsg)
+        }
+      })
+  })
 }
 
 module.exports = {

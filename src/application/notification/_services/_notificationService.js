@@ -1,20 +1,22 @@
-var _ = require('lodash')
-var {
-  request,
-  cbRequest
-} = require('../_properties/util')
-
-const {
-  CATEGORIES,
-  CHANNELS
-} = require('../_properties/constant')
+const _ = require('lodash')
 const USER_CONST = require('../../../domain/folk/user/_properties/constant')
 const CIRCILE_CONST = require('../../../domain/circle/_properties/constant')
 const ACCOUT_IDENTITY = require('../../../domain/folk/user/_properties/constant').ACCOUT_IDENTITY
-var redisEmitter = require('../../../../infrastructure/notification/RedisEmitter')
+const {
+  CATEGORIES,
+  CHANNELS,
+  HTTP,
+} = require('../_properties/constant')
 var format = require('../_properties/content/format')
 var EmailTemplate = require('../_properties/content/email/template')
 var SMSTemplate = require('../_properties/content/sms/template')
+var redisEmitter = require('../../../../infrastructure/notification/RedisEmitter')
+var util = require('../../../property/util')
+var userUtil = require('../../../domain/folk/user/_properties/util')
+var {
+  request,
+  cbRequest,
+} = require('../_properties/util')
 
 const TEMPLATES = {
   email: EmailTemplate,
@@ -34,20 +36,53 @@ const RECEIVERS = {
   [CIRCILE_CONST.INVITE_EVENT_FRIEND_REPLY]: 'inviter',
 }
 
-
-function NotificationService() {}
-
-NotificationService.prototype.register = function (userInfo) {
-  cbRequest(`first-time-to-register-search-engine`, {
+/**
+ * @param {NotificationService} service 
+ * @param {Object} userInfo 
+ */
+function registerRequest(service, userInfo) {
+  return cbRequest(`first-time-to-register-search-engine`, {
     category: CATEGORIES.PERSONAL,
     channels: [CHANNELS.INTERNAL_SEARCH],
     sender: null,
-    receivers: [userInfo],
-    content: {
+    receivers: [_.pick(userInfo, USER_CONST.ACCOUT_IDENTITY)],
+    packet: {
       event: USER_CONST.SETTING_EVENT_UPDATE_PUBLIC_INFO,
-      data: _.pick(userInfo, USER_CONST.SEARCH_QUERY_RANGE),
+      content: _.pick(userInfo, USER_CONST.PUBLIC_USER_INFO),
     }
-  }, this.init, userInfo)
+  }, service.init, userInfo)
+}
+
+
+function NotificationService() {
+  // init test
+  cbRequest(`notification service connect test...`, {
+    category: CATEGORIES.PERSONAL,
+    channels: [CHANNELS.INTERNAL_SEARCH],
+    sender: null,
+    receivers: [{
+      uid: 'test',
+      region: 'test'
+    }],
+    packet: {
+      event: 'test',
+      content: 'test',
+    }
+  }, this.init, null)
+}
+
+NotificationService.prototype.register = function (userInfo) {
+  let timeoutMsg = {
+    msgCode: 'xxxxxx',
+    error: `connect ECONNREFUSED NOTIFICATION_HOST, timeout: ${HTTP.TIMEOUT}`
+  }
+
+  return Promise.race([
+    registerRequest(this, userInfo),
+    util.delay(HTTP.TIMEOUT, timeoutMsg)
+  ])
+  .then(response => response)
+
 }
 
 /**
@@ -59,13 +94,16 @@ NotificationService.prototype.register = function (userInfo) {
  * B. 以發送類型的角度，區分 email, SMS, app-push, web-push
  */
 NotificationService.prototype.init = function (userInfo) {
-  const uid = userInfo.uid
-  const msg = `pub/sub mechanism for user: ${uid} is created`
+  if (! userUtil.validAccount(userInfo)) {
+    return userInfo
+  }
+
+  const msg = `notify mechanism for user: ${userInfo.uid} is created`
   // TODO: something...
 
   return {
-    msg,
-    code: '10000'
+    msgCode: '100000',
+    msg
   }
 }
 
@@ -81,7 +119,7 @@ NotificationService.prototype.init = function (userInfo) {
  *  receivers: [
  *   { email: xxxx@mail.com/phone: +886-0987-xxx-xxx }
  *  ],
- *  content: {...}
+ *  packet: {...}
  * }
  */
 NotificationService.prototype.emitVerification = function (verifyInfo) {
@@ -99,9 +137,9 @@ NotificationService.prototype.emitVerification = function (verifyInfo) {
     channels: [CHANNEL_TYPES[type]],
     sender: null,
     receivers: [{[type]: notifyInfo.to}],
-    content: {
+    packet: {
       event: USER_CONST.ACCOUNT_EVENT_VALIDATE_ACCOUNT,
-      data: notifyInfo.content,
+      content: notifyInfo.content,
     }
   })
 }
@@ -122,16 +160,16 @@ NotificationService.prototype.emitFriendInvitation = function (invitation) {
     channels: CHANNELS.PUSH,
     sender,
     receivers: [receiver],
-    content: {
+    packet: {
       event: inviteEvent,
-      data: invitation
+      content: invitation
     }
   })
 }
 
 /**
  * TODO: [尚未考慮跨區域情境]
- * packet = { category, channels, sender, receivers, content }
+ * message = { category, channels, sender, receivers, packet }
  * 不同區域的分開處理
  * 1. same region  => notification-api
  * 2. corss region => dispatch-api
@@ -145,15 +183,15 @@ NotificationService.prototype.emitFriendInvitation = function (invitation) {
  *     { region: xxx, uid: xxx },
  *     ...
  *  ],
- *   content: {...}
+ *   packet: {...}
  *  }
  */
-NotificationService.prototype.emitEvent = function (packet) {
-  request(packet.content.event, packet)
+NotificationService.prototype.emitEvent = function (message) {
+  request(message.packet.event, message)
 }
 
 NotificationService.prototype.quit = function (accountInfo) {
-
+  return true
 }
 
 module.exports = new NotificationService()

@@ -1,3 +1,4 @@
+const CONSTANT = require('../../user/_properties/constant')
 const userRepo = require('../_repositories/authRepositoryTemp')
 
 
@@ -38,8 +39,7 @@ SettingService.prototype.getUserInfo = async function (accountInfo) {
  * 額外的資訊才有 email, phone, ....
  */
 SettingService.prototype.getPublicUserInfo = async function (accountInfo) {
-  const PRIVATE_FIELDS = ['email', 'phone']
-  const user = await this.userRepo.getUser(accountInfo, PRIVATE_FIELDS)
+  const user = await this.userRepo.getUser(accountInfo, CONSTANT.PUBLIC_USER_INFO)
   if (user != null) {
     return user
   }

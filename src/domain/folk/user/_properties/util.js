@@ -1,12 +1,28 @@
-exports.byVerification = function (req, verification) {
-  verification.verifyLink = `${req.protocol}://${req.get('host')}/verification/code/${verification.token}`
-  verification.resetLink = `${req.protocol}://${req.get('host')}/verification/password/${verification.token}`
-  // 這裡不需要把 token 刪除. 在透過 notification service 寄送時需要 token 資訊！
-  // delete verification.token (don't do this)
+var hasKeys = require('../../../../property/util').hasKeys
+const ACCOUT_IDENTITY = require('./constant').ACCOUT_IDENTITY
 
-  return verification
+/**
+ * @param {Object} accountA 
+ * @param {Object} accountB 
+ */
+function equalAccounts(accountA, accountB) {
+  ACCOUT_IDENTITY.forEach(field => {
+    if (accountA[field] !== accountB[field]) {
+      return false
+    }
+  })
+
+  return true
 }
 
-exports.equalAccount = function (accountA, accountB) {
-  return accountA.region === accountB.region && accountA.uid === accountB.uid
+/**
+ * @param {Object} accountInfo 
+ */
+function validAccount(accountInfo) {
+  return hasKeys(accountInfo, ACCOUT_IDENTITY)
+}
+
+module.exports = {
+  equalAccounts,
+  validAccount
 }

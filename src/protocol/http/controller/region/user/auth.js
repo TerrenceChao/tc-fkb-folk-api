@@ -4,13 +4,13 @@ var notificationService = require('../../../../../application/notification/_serv
 var userService = require('../../../../../domain/folk/user/_services/_userService')
 var { authService } = require('../../../../../domain/folk/user/_services/authServiceTemp')
 var { friendService } = require('../../../../../domain/circle/_services/friendServiceTemp')
-var util = require('../../../../../domain/folk/user/_properties/util')
-var op = require('../../../../../library/objOperator')
+var httpHandler = require('../../../../../library/httpHandler')
+var util = require('../../../../../property/util')
 
 
 exports.signup = async (req, res, next) => {
   var clientuseragent = req.headers.clientuseragent
-  res.locals.data = op.getDefaultIfUndefined(res.locals.data)
+  res.locals.data = util.customizedDefault(res.locals.data)
 
   // authService.signup create session info
   Promise.resolve(authService.signup(req.body))
@@ -36,7 +36,7 @@ exports.login = async (req, res, next) => {
   var { friendLimit, friendSkip } = req.query
   // password is encrypted 
   var { email, password } = req.body
-  res.locals.data = op.getDefaultIfUndefined(res.locals.data)
+  res.locals.data = util.customizedDefault(res.locals.data)
 
   // authService.login create session info
   Promise.resolve(authService.login(email, password))
@@ -117,7 +117,7 @@ exports.sendVerifyInfo = async (req, res, next) => {
 
   Promise.resolve(authService.createVerification(body.type, body.account))
     .then(verification => {
-      verifyInfo = util.byVerification(req, verification)
+      verifyInfo = httpHandler.genVerifyInfo(req, verification)
       notificationService.emitVerification(verifyInfo) // no waiting!! (no await)
       return verifyInfo
     })
@@ -158,8 +158,8 @@ exports.sendVerifyInfo = async (req, res, next) => {
  */
 exports.checkVerificationWithCode = async (req, res, next) => {
   var clientuseragent = req.headers.clientuseragent,
-    verifyInfo = op.collectFromReq(req, ['token', 'code'])
-  res.locals.data = op.getDefaultIfUndefined(res.locals.data)
+    verifyInfo = httpHandler.parseReqInFields(req, ['token', 'code'])
+  res.locals.data = util.customizedDefault(res.locals.data)
 
   // 檢查 session 是否已經登入. 
   // 當用戶已登入時，一定要在req.body帶上 region, uid, token ... etc 等資訊避免重複驗證流程導致錯誤
@@ -235,8 +235,8 @@ exports.resetPassword = async (req, res, next) => {
 exports.checkVerificationWithPassword = async (req, res, next) => {
   var clientuseragent = req.headers.clientuseragent,
     verifyInfo = _.pick(req.params, ['token', 'reset']),
-    password = req.body.password // encrypted
-  res.locals.data = op.getDefaultIfUndefined(res.locals.data)
+    newPassword = req.body.password // encrypted
+  res.locals.data = util.customizedDefault(res.locals.data)
 
   // 檢查 session 是否已經登入. 
   // 當用戶已登入時，一定要在req.body帶上 region, uid, token ... etc 等資訊避免重複驗證流程導致錯誤
@@ -244,7 +244,7 @@ exports.checkVerificationWithPassword = async (req, res, next) => {
     .then(result => result === true ? Promise.reject(new Error(`user is logged in`)) : null)
     .then(() => authService.validateVerification(verifyInfo))
     .then(async userInfo => {
-      await authService.resetPassword(userInfo, password)
+      await authService.resetPassword(userInfo, newPassword)
       await authService.deleteVerification(userInfo)
       userInfo.auth = await authService.createSession(userInfo)
       return userInfo
@@ -263,7 +263,7 @@ exports.checkVerificationWithPassword = async (req, res, next) => {
 exports.isLoggedIn = async (req, res, next) => {
   // validate session info by region/uid/token
   // If yes, to someone's profile
-  var accountIdentify = op.collectFromReq(req, ['region', 'uid', 'token'])
+  var accountIdentify = httpHandler.parseReqInFields(req, ['region', 'uid', 'token'])
 
   Promise.resolve(authService.isLoggedIn(accountIdentify))
     .then(result => next())
@@ -272,10 +272,10 @@ exports.isLoggedIn = async (req, res, next) => {
 
 exports.checkThenResetPassword = async (req, res, next) => {
   var accountInfo = _.pick(req.body, ['uid', 'region']),
-    password = req.body.password // encrypted
+    oldPassword = req.body.password // encrypted
     newPassword = req.body.newPassword // encrypted
 
-  Promise.resolve(authService.validateAndResetPassword(accountInfo, password, newPassword))
+  Promise.resolve(authService.resetPassword(accountInfo, newPassword, oldPassword))
     .then(() => next())
     .catch(err => next(err))
 }
