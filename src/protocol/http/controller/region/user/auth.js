@@ -17,7 +17,7 @@ exports.signup = async (req, res, next) => {
     .then(userInfo => Promise.all([
       userInfo,
       messageService.authenticate(_.assignIn(userInfo, { clientuseragent })),
-      notificationService.createUserChannel(userInfo),
+      notificationService.register(userInfo),
     ]))
     .then(serviceInfoList => res.locals.data = userService.packetRegisterInfo(serviceInfoList))
     .then(() => next())
@@ -44,7 +44,7 @@ exports.login = async (req, res, next) => {
     .then(userInfo => Promise.all([
       userInfo,
       messageService.authenticate(_.assignIn(userInfo, { clientuseragent })),
-      notificationService.createUserChannel(userInfo),
+      notificationService.init(userInfo),
       friendService.list(userInfo, friendLimit, friendSkip),
     ]))
     .then(serviceInfoList => res.locals.data = userService.packetRegisterInfo(serviceInfoList))
@@ -174,7 +174,7 @@ exports.checkVerificationWithCode = async (req, res, next) => {
     .then(userInfo => Promise.all([
       userInfo,
       messageService.authenticate(_.assignIn(userInfo, { clientuseragent })),
-      notificationService.createUserChannel(userInfo),
+      notificationService.init(userInfo),
       friendService.list(userInfo),
     ]))
     .then(serviceInfoList => res.locals.data = userService.packetRegisterInfo(serviceInfoList))
@@ -252,7 +252,7 @@ exports.checkVerificationWithPassword = async (req, res, next) => {
     .then(userInfo => Promise.all([
       userInfo,
       messageService.authenticate(_.assignIn(userInfo, { clientuseragent })),
-      notificationService.createUserChannel(userInfo),
+      notificationService.init(userInfo),
       friendService.list(userInfo),
     ]))
     .then(serviceInfoList => res.locals.data = userService.packetRegisterInfo(serviceInfoList))

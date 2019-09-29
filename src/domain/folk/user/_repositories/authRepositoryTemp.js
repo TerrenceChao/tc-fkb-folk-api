@@ -165,7 +165,7 @@ AuthRepository.prototype.getFriendList = async function (accountInfo, limit, ski
       continue
     }
 
-    // console.log(` in userInfo.friendList: ${JSON.stringify(userInfo.friendList)}`)
+    // console.log(` in userInfo.friendList: ${JSON.stringify(userInfo.friendList.slice(skip, skip + limit), null, 2)}`)
     return userInfo.friendList.slice(skip, skip + limit)
   }
 

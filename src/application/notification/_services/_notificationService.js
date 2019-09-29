@@ -1,18 +1,20 @@
-var request = require('request')
 var _ = require('lodash')
+var {
+  request,
+  cbRequest
+} = require('../_properties/util')
 
 const {
   CATEGORIES,
   CHANNELS
 } = require('../_properties/constant')
+const USER_CONST = require('../../../domain/folk/user/_properties/constant')
 const CIRCILE_CONST = require('../../../domain/circle/_properties/constant')
 const ACCOUT_IDENTITY = require('../../../domain/folk/user/_properties/constant').ACCOUT_IDENTITY
 var redisEmitter = require('../../../../infrastructure/notification/RedisEmitter')
 var format = require('../_properties/content/format')
 var EmailTemplate = require('../_properties/content/email/template')
 var SMSTemplate = require('../_properties/content/sms/template')
-
-const PUBLISH_URL = `${process.env.NOTIFICATION_MQ_HOST}${process.env.NOTIFICATION_MQ_URL_REQUEST_PUBLISH}`
 
 const TEMPLATES = {
   email: EmailTemplate,
@@ -35,6 +37,19 @@ const RECEIVERS = {
 
 function NotificationService() {}
 
+NotificationService.prototype.register = function (userInfo) {
+  cbRequest(`first-time-to-register-search-engine`, {
+    category: CATEGORIES.PERSONAL,
+    channels: [CHANNELS.INTERNAL_SEARCH],
+    sender: null,
+    receivers: [userInfo],
+    content: {
+      event: USER_CONST.SETTING_EVENT_UPDATE_PUBLIC_INFO,
+      data: _.pick(userInfo, USER_CONST.SEARCH_QUERY_RANGE),
+    }
+  }, this.init, userInfo)
+}
+
 /**
  * notify:
  * A. 以 client 端的角度來看，又區分為線上線下
@@ -43,10 +58,11 @@ function NotificationService() {}
  * 
  * B. 以發送類型的角度，區分 email, SMS, app-push, web-push
  */
-NotificationService.prototype.createUserChannel = function (userInfo) {
+NotificationService.prototype.init = function (userInfo) {
   const uid = userInfo.uid
-  const msg = `pub/sub channel for user:${uid} is created`
-  redisEmitter.publish(uid, msg)
+  const msg = `pub/sub mechanism for user: ${uid} is created`
+  // TODO: something...
+
   return {
     msg,
     code: '10000'
@@ -75,30 +91,19 @@ NotificationService.prototype.emitVerification = function (verifyInfo) {
   notifyInfo = format.byVerifyInfo(verifyInfo)
   notifyInfo.content = TEMPLATES[type].getVerifyContent(notifyInfo.content, lang)
 
-  // should email/SMS to user .... it tests by redis. (notifyInfo.type/to/content)
+  // send email/SMS to user .... it tests by redis. (notifyInfo.type/to/content)
   // redisEmitter.publish(notifyInfo.to, notifyInfo.content)
 
-  request(
-    { 
-      method: 'PUT',
-      uri: PUBLISH_URL,
-      json: {
-        category: CATEGORIES.PERSONAL,
-        channels: CHANNEL_TYPES[type],
-        sender: null,
-        receivers: [notifyInfo.to],
-        content: notifyInfo.content
-      }
-    },
-    (error, response, body) => {
-      if(!error) {
-        console.log(`verification published as ${PUBLISH_URL}`)
-      } else {
-        console.log(`error: ${error}`)
-      }
-      // console.log(`response: status: ${response.statusCode}\nbody: ${JSON.stringify(body, null, 2)}`)
+  request(USER_CONST.ACCOUNT_EVENT_VALIDATE_ACCOUNT, {
+    category: CATEGORIES.PERSONAL,
+    channels: [CHANNEL_TYPES[type]],
+    sender: null,
+    receivers: [{[type]: notifyInfo.to}],
+    content: {
+      event: USER_CONST.ACCOUNT_EVENT_VALIDATE_ACCOUNT,
+      data: notifyInfo.content,
     }
-  )
+  })
 }
 
 /**
@@ -108,30 +113,20 @@ NotificationService.prototype.emitVerification = function (verifyInfo) {
  * 2. corss region => dispatch-api
  */
 NotificationService.prototype.emitFriendInvitation = function (invitation) {
-  const sender = _.pick(invitation[SENDERS[invitation.header.inviteEvent]], ACCOUT_IDENTITY)
-  const receiver = _.pick(invitation[RECEIVERS[invitation.header.inviteEvent]], ACCOUT_IDENTITY)
+  const inviteEvent = invitation.header.inviteEvent
+  const sender = _.pick(invitation[SENDERS[inviteEvent]], ACCOUT_IDENTITY)
+  const receiver = _.pick(invitation[RECEIVERS[inviteEvent]], ACCOUT_IDENTITY)
   
-  request(
-    { 
-      method: 'PUT',
-      uri: PUBLISH_URL,
-      json: {
-        category: CATEGORIES.INVITE_EVENT_FRIEND,
-        channels: CHANNELS.PUSH,
-        sender,
-        receivers: [receiver],
-        content: invitation
-      }
-    },
-    (error, response, body) => {
-      if(!error) {
-        console.log(`verification published as ${PUBLISH_URL}`)
-      } else {
-        console.log(`error: ${error}`)
-      }
-      // console.log(`response: status: ${response.statusCode}\nbody: ${JSON.stringify(body, null, 2)}`)
+  request(inviteEvent, {
+    category: CATEGORIES.INVITE_EVENT_FRIEND,
+    channels: CHANNELS.PUSH,
+    sender,
+    receivers: [receiver],
+    content: {
+      event: inviteEvent,
+      data: invitation
     }
-  )
+  })
 }
 
 /**
@@ -154,21 +149,7 @@ NotificationService.prototype.emitFriendInvitation = function (invitation) {
  *  }
  */
 NotificationService.prototype.emitEvent = function (packet) {
-  request(
-    { 
-      method: 'PUT',
-      uri: PUBLISH_URL,
-      json: packet
-    },
-    (error, response, body) => {
-      if(!error) {
-        console.log(`verification published as ${PUBLISH_URL}`)
-      } else {
-        console.log(`error: ${error}`)
-      }
-      // console.log(`response: status: ${response.statusCode}\nbody: ${JSON.stringify(body, null, 2)}`)
-    }
-  )
+  request(packet.content.event, packet)
 }
 
 NotificationService.prototype.quit = function (accountInfo) {

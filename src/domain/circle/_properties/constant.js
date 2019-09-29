@@ -21,7 +21,7 @@ exports.FRIEND_EVENT_ADD_FRIEND = 'friend_event_add_friend'
 exports.FRIEND_EVENT_REMOVE_FRIEND = 'friend_event_remove_friend'
 
 // friend
-exports.FRIEND_BATCH_LIMIT = process.env.FRIEND_BATCH_LIMIT || 500
+exports.FRIEND_BATCH_LIMIT = process.env.FRIEND_BATCH_LIMIT || 50
 
 
 
