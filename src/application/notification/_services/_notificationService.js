@@ -1,22 +1,20 @@
 const _ = require('lodash')
 const USER_CONST = require('../../../domain/folk/user/_properties/constant')
-const CIRCILE_CONST = require('../../../domain/circle/_properties/constant')
 const ACCOUT_IDENTITY = require('../../../domain/folk/user/_properties/constant').ACCOUT_IDENTITY
 const {
+  HTTP,
   CATEGORIES,
   CHANNELS,
-  HTTP,
+  SENDERS,
+  RECEIVERS,
 } = require('../_properties/constant')
 var format = require('../_properties/content/format')
 var EmailTemplate = require('../_properties/content/email/template')
 var SMSTemplate = require('../_properties/content/sms/template')
 var redisEmitter = require('../../../../infrastructure/notification/RedisEmitter')
-var util = require('../../../property/util')
-var userUtil = require('../../../domain/folk/user/_properties/util')
-var {
-  request,
-  cbRequest,
-} = require('../_properties/util')
+var validAccount = require('../../../domain/folk/user/_properties/util').validAccount
+var delay = require('../../../property/util').delay
+var util = require('../_properties/util')
 
 const TEMPLATES = {
   email: EmailTemplate,
@@ -27,21 +25,12 @@ const CHANNEL_TYPES = {
   phone: 'sms'
 }
 
-const SENDERS = {
-  [CIRCILE_CONST.INVITE_EVENT_FRIEND_INVITE]: 'inviter',
-  [CIRCILE_CONST.INVITE_EVENT_FRIEND_REPLY]: 'recipient',
-}
-const RECEIVERS = {
-  [CIRCILE_CONST.INVITE_EVENT_FRIEND_INVITE]: 'recipient',
-  [CIRCILE_CONST.INVITE_EVENT_FRIEND_REPLY]: 'inviter',
-}
-
 /**
  * @param {NotificationService} service 
  * @param {Object} userInfo 
  */
 function registerRequest(service, userInfo) {
-  return cbRequest(`first-time-to-register-search-engine`, {
+  return util.syncPublishRequest(`first-time-to-register-search-service`, {
     category: CATEGORIES.PERSONAL,
     channels: [CHANNELS.INTERNAL_SEARCH],
     sender: null,
@@ -56,7 +45,7 @@ function registerRequest(service, userInfo) {
 
 function NotificationService() {
   // init test
-  cbRequest(`notification service connect test...`, {
+  util.syncPublishRequest(`connection testing...`, {
     category: CATEGORIES.PERSONAL,
     channels: [CHANNELS.INTERNAL_SEARCH],
     sender: null,
@@ -79,10 +68,9 @@ NotificationService.prototype.register = function (userInfo) {
 
   return Promise.race([
     registerRequest(this, userInfo),
-    util.delay(HTTP.TIMEOUT, timeoutMsg)
+    delay(HTTP.TIMEOUT, timeoutMsg)
   ])
-  .then(response => response)
-
+    .then(response => response)
 }
 
 /**
@@ -94,7 +82,7 @@ NotificationService.prototype.register = function (userInfo) {
  * B. 以發送類型的角度，區分 email, SMS, app-push, web-push
  */
 NotificationService.prototype.init = function (userInfo) {
-  if (! userUtil.validAccount(userInfo)) {
+  if (! validAccount(userInfo)) {
     return userInfo
   }
 
@@ -132,7 +120,7 @@ NotificationService.prototype.emitVerification = function (verifyInfo) {
   // send email/SMS to user .... it tests by redis. (notifyInfo.type/to/content)
   // redisEmitter.publish(notifyInfo.to, notifyInfo.content)
 
-  request(USER_CONST.ACCOUNT_EVENT_VALIDATE_ACCOUNT, {
+  util.publishRequest(USER_CONST.ACCOUNT_EVENT_VALIDATE_ACCOUNT, {
     category: CATEGORIES.PERSONAL,
     channels: [CHANNEL_TYPES[type]],
     sender: null,
@@ -155,7 +143,7 @@ NotificationService.prototype.emitFriendInvitation = function (invitation) {
   const sender = _.pick(invitation[SENDERS[inviteEvent]], ACCOUT_IDENTITY)
   const receiver = _.pick(invitation[RECEIVERS[inviteEvent]], ACCOUT_IDENTITY)
   
-  request(inviteEvent, {
+  util.publishRequest(inviteEvent, {
     category: CATEGORIES.INVITE_EVENT_FRIEND,
     channels: CHANNELS.PUSH,
     sender,
@@ -187,7 +175,7 @@ NotificationService.prototype.emitFriendInvitation = function (invitation) {
  *  }
  */
 NotificationService.prototype.emitEvent = function (message) {
-  request(message.packet.event, message)
+  util.publishRequest(message.packet.event, message)
 }
 
 NotificationService.prototype.quit = function (accountInfo) {
