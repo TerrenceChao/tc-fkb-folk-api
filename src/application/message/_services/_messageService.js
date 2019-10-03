@@ -14,14 +14,9 @@ function MessageService() {
  * "userInfo" here must includes "clientuseragent"
  */
 MessageService.prototype.authenticate = async function (userInfo) {
-  let timeoutMsg = {
-    msgCode: 'xxxxxx',
-    error: `connect ECONNREFUSED MESSAGING_HOST, timeout: ${HTTP.TIMEOUT}`
-  }
-
   return Promise.race([
     util.syncAuthRequest('get-authenticate', userInfo),
-    delay(HTTP.TIMEOUT, timeoutMsg)
+    delay(HTTP.TIMEOUT, HTTP.TIMEOUT_MSG)
   ])
     .then(response => response)
 }

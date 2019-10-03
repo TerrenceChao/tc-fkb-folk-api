@@ -13,7 +13,11 @@ module.exports = {
         json: true
       }
     },
-    TIMEOUT: HTTP.TIMEOUT
+    TIMEOUT: HTTP.TIMEOUT,
+    TIMEOUT_MSG: {
+      msgCode: 'xxxxxx',
+      error: `connect ECONNREFUSED NOTIFICATION_HOST, timeout: ${HTTP.TIMEOUT}`
+    }
   },
   CATEGORIES: {
     PERSONAL: 'personal', // eager delivered

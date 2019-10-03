@@ -49,14 +49,9 @@ function NotificationService() {
 }
 
 NotificationService.prototype.register = function (userInfo) {
-  let timeoutMsg = {
-    msgCode: 'xxxxxx',
-    error: `connect ECONNREFUSED NOTIFICATION_HOST, timeout: ${HTTP.TIMEOUT}`
-  }
-
   return Promise.race([
     registerRequest(this, userInfo),
-    delay(HTTP.TIMEOUT, timeoutMsg)
+    delay(HTTP.TIMEOUT, HTTP.TIMEOUT_MSG)
   ])
     .then(response => response)
 }
