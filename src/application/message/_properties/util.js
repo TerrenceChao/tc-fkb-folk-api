@@ -15,7 +15,7 @@ function authRequest(event, userInfo) {
     clientuseragent: userInfo.clientuseragent
   })
 
-  httpHandler.request('message-service', event, options)
+  httpHandler.request('[message-service]', event, options)
 }
 
 /**
@@ -31,16 +31,28 @@ function syncAuthRequest(event, userInfo) {
     clientuseragent: userInfo.clientuseragent
   })
 
-  return httpHandler.syncRequest('message-service', event, options, (body) => {
-    return {
-      token: body.msgToken,
-      refreshToken: body.msgRefreshToken || 'message-service-refresh-token (not ready yet)',
-    }
+  return httpHandler.syncRequest('[message-service]', event, options, (body) => body.data)
+}
+
+/**
+ * 
+ * @param {string} event 
+ * @param {Object} userInfo 
+ */
+function authRequestTest(event) {
+  let options = HTTP.AUTHENTICATE.OPTIONS
+  options.headers = _.assignIn(options.headers, {
+    'robot-uid': `robot-uid`,
+    'client-robot-agent': `client-robot-agent`,
   })
+
+  httpHandler.request('[message-service]', event, options)
 }
 
 
 module.exports = {
   authRequest,
-  syncAuthRequest
+  syncAuthRequest,
+  // test
+  authRequestTest,
 }

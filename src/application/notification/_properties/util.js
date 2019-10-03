@@ -1,6 +1,10 @@
 const _ = require('lodash')
-const HTTP = require('./constant').HTTP
 const httpHandler = require('../../../library/httpHandler')
+const {
+  HTTP,
+  CATEGORIES,
+  CHANNELS
+} = require('./constant')
 
 
 /**
@@ -12,7 +16,7 @@ function publishRequest(event, message) {
   let options = HTTP.PUBLISH.OPTIONS
   options.body = message
 
-  httpHandler.request('notification-service', event, options)
+  httpHandler.request('[notification-service]', event, options)
 }
 
 /**
@@ -26,11 +30,38 @@ function syncPublishRequest(event, message, callback, data) {
   let options = HTTP.PUBLISH.OPTIONS
   options.body = message
 
-  return httpHandler.syncRequest('notification-service', event, options, callback, data)
+  return httpHandler.syncRequest('[notification-service]', event, options, callback, data)
+}
+
+/**
+ * 
+ * @param {string} event 
+ * @param {function} callback 
+ * @param {*} data 
+ */
+function syncPublishRequestTest(event, callback, data) {
+  let options = HTTP.PUBLISH.OPTIONS
+  options.body = {
+    category: CATEGORIES.PERSONAL,
+    channels: [CHANNELS.INTERNAL_SEARCH],
+    sender: null,
+    receivers: [{
+      uid: 'test',
+      region: 'test'
+    }],
+    packet: {
+      event: 'test',
+      content: 'test',
+    }
+  }
+
+  return httpHandler.syncRequest('[notification-service]', event, options, callback, data)
 }
 
 
 module.exports = {
   publishRequest,
   syncPublishRequest,
+  // test
+  syncPublishRequestTest,
 }

@@ -6,10 +6,7 @@ var util = require('../_properties/util')
 
 function MessageService() {
   // init test
-  util.authRequest('authenticate connnection testing...', {
-    uid: `user`,
-    clientuseragent: `client`
-  })
+  util.authRequestTest('authenticate connnection testing...')
 }
 
 /**

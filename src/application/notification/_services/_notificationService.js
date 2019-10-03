@@ -45,19 +45,7 @@ function registerRequest(service, userInfo) {
 
 function NotificationService() {
   // init test
-  util.syncPublishRequest(`connection testing...`, {
-    category: CATEGORIES.PERSONAL,
-    channels: [CHANNELS.INTERNAL_SEARCH],
-    sender: null,
-    receivers: [{
-      uid: 'test',
-      region: 'test'
-    }],
-    packet: {
-      event: 'test',
-      content: 'test',
-    }
-  }, this.init, null)
+  util.syncPublishRequestTest(`publish connection testing...`, this.init, null)
 }
 
 NotificationService.prototype.register = function (userInfo) {
