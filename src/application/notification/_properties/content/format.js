@@ -1,4 +1,4 @@
-function notityEmailFormat(verifyInfo) {
+function genVerifyEmailFormat(verifyInfo) {
   var content = verifyInfo.content
   Array.apply(null, ['token', 'code', 'reset', 'verifyLink', 'resetLink']).forEach(field => {
     content[field] = verifyInfo[field]
@@ -11,7 +11,7 @@ function notityEmailFormat(verifyInfo) {
   }
 }
 
-function notitySMSFormat(verifyInfo) {
+function genVerifySMSFormat(verifyInfo) {
   var content = verifyInfo.content
   Array.apply(null, ['token', 'code']).forEach(field => {
     content[field] = verifyInfo[field]
@@ -24,11 +24,16 @@ function notitySMSFormat(verifyInfo) {
   }
 }
 
-exports.byVerifyInfo = function (verifyInfo) {
+function genVerifyFormat(verifyInfo) {
   var transformation = {
-    email: notityEmailFormat,
-    phone: notitySMSFormat
+    email: genVerifyEmailFormat,
+    phone: genVerifySMSFormat
   }
 
   return transformation[verifyInfo.type](verifyInfo)
+}
+
+
+module.exports = {
+  genVerifyFormat,
 }

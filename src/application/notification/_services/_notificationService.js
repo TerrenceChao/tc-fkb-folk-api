@@ -8,18 +8,12 @@ const {
   SENDERS,
   RECEIVERS,
 } = require('../_properties/constant')
-var format = require('../_properties/content/format')
-var EmailTemplate = require('../_properties/content/email/template')
-var SMSTemplate = require('../_properties/content/sms/template')
+var form = require('../_properties/content/format')
 var redisEmitter = require('../../../../infrastructure/notification/RedisEmitter')
 var validAccount = require('../../../domain/folk/user/_properties/util').validAccount
 var delay = require('../../../property/util').delay
 var util = require('../_properties/util')
 
-const TEMPLATES = {
-  email: EmailTemplate,
-  phone: SMSTemplate
-}
 const CHANNEL_TYPES = {
   email: 'email',
   phone: 'sms'
@@ -97,8 +91,7 @@ NotificationService.prototype.emitVerification = function (verifyInfo) {
   const type = verifyInfo.type
   const lang = verifyInfo.content.lang
 
-  notifyInfo = format.byVerifyInfo(verifyInfo)
-  notifyInfo.content = TEMPLATES[type].getVerifyContent(notifyInfo.content, lang)
+  notifyInfo = form.genVerifyFormat(verifyInfo)
 
   // send email/SMS to user .... it tests by redis. (notifyInfo.type/to/content)
   // redisEmitter.publish(notifyInfo.to, notifyInfo.content)

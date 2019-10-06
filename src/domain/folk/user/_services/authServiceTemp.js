@@ -84,14 +84,14 @@ AuthService.prototype.createVerification = async function (type, account) {
     type,
     account,
     /**
+     * [NOTE] content 會在 notification-service 才組成[真正的email內容]
      * lang: 'zh-tw' 在 sendVerification 時,
-     * notificationService(透過 redis 發送) 用中文的 template 會變成亂碼:
-     * path: src/application/notification/content/sms/template.js
+     * notificationService(透過 redis 發送) 用中文的 template 會變成亂碼
      */
     content: _.pick(partialUserData, ['region', 'lang', 'givenName', 'familyName', 'gender']),
     /**
-     * token 隱含的資訊，已經能讓後端服務知道 token 要去哪一個區域
-     *  (Tokyo, Taiwan, Sydney ...) 找尋用戶資料了
+     * token 隱含的資訊，已經能讓後端服務知道 token 要去哪一個區域(region)
+     *  (Tokyo, Taipei, Sydney ...) 找尋用戶資料了
      */
     token: partialUserData.verificaiton.token,
     code: partialUserData.verificaiton.code,
@@ -107,10 +107,10 @@ AuthService.prototype.createVerification = async function (type, account) {
   //   content: {
   //     region: 'tw',
       
-  //     /**
+  //    /**
+  //      * [NOTE] content 會在 notification-service 才組成[真正的email內容]
   //      * lang: 'zh-tw' 在 sendVerification 時,
-  //      * notificationService(透過 redis 發送) 用中文的 template 會變成亂碼:
-  //      * path: src/application/notification/content/sms/template.js
+  //      * notificationService(透過 redis 發送) 用中文的 template 會變成亂碼
   //      */
   //     lang: 'en',
   //     givenName: 'terrence',
@@ -118,8 +118,8 @@ AuthService.prototype.createVerification = async function (type, account) {
   //     gender: 'male',
   //   },
   //   /**
-  //    * token 隱含的資訊，已經能讓後端服務知道 token 要去哪一個區域
-  //    *  (Tokyo, Taiwan, Sydney ...) 找尋用戶資料了
+  //    * token 隱含的資訊，已經能讓後端服務知道 token 要去哪一個區域(region)
+  //    *  (Tokyo, Taipei, Sydney ...) 找尋用戶資料了
   //    */
   //   token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c',
   //   code: '539288',
@@ -134,8 +134,8 @@ AuthService.prototype.createVerification = async function (type, account) {
  * 輸入參數 verificaiton 有兩種：
  * 1. [verificaiton={token:xxxx,code:123456}] token & code
  * 2. [verificaiton={token:xxxx,reset:1565022954420}] token & reset (reset 具時效性)
- * token 隱含的資訊，已經能讓後端服務知道 token 要去哪一個區域
- *  (Tokyo, Taiwan, Sydney ...) 找尋用戶資料了
+ * token 隱含的資訊，已經能讓後端服務知道 token 要去哪一個區域(region)
+ *  (Tokyo, Taipei, Sydney ...) 找尋用戶資料了
  */
 AuthService.prototype.validateVerification = async function (verificaiton) {
   return await this.authRepo.validateVerification(verificaiton)
