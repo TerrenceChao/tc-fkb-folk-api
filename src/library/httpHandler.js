@@ -36,16 +36,27 @@ function parseReqInFields(req, fieldList) {
 
 /**
  * 
+ * @param {rquest} req 
+ * @param {Object} verification 
+ */
+function genRegistrationInfo(req, verification) {
+  return {
+    'token': verification.token,
+    'registration-link': `${req.protocol}://${req.get('host')}${HTTP.PREFIX}/user/register/newborn/${verification.token}`,
+  }
+}
+
+/**
+ * 
  * @param {request} req 
  * @param {Object} verification 
  */
 function genVerifyInfo(req, verification) {
-  verification.verifyLink = `${req.protocol}://${req.get('host')}/verification/code/${verification.token}`
-  verification.resetLink = `${req.protocol}://${req.get('host')}/verification/password/${verification.token}`
-  // 這裡不需要把 token 刪除. 在透過 notification service 寄送時需要 token 資訊！
-  // delete verification.token (don't do this)
-
-  return verification
+  return {
+    'token': verification.token,
+    'verify-link': `${req.protocol}://${req.get('host')}${HTTP.PREFIX}/user/verification/code/${verification.token}`,
+    'reset-link': `${req.protocol}://${req.get('host')}${HTTP.PREFIX}/user/verification/password/${verification.token}/${verification.reset}`,
+  }
 }
 
 
@@ -142,6 +153,7 @@ function syncRequest(service, event, options, callback, data = null, retry = 0) 
 module.exports = {
   parseReq,
   parseReqInFields,
+  genRegistrationInfo,
   genVerifyInfo,
   request,
   syncRequest,

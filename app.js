@@ -28,6 +28,7 @@ app.use(cookieParser())
 const ALLOW_REGION = process.env.ACCESS_CONTROL_ALLOW_ORIGIN
 const ALLOW_METHODS = process.env.ACCESS_CONTROL_ALLOW_METHODS
 const ALLOW_HEADERS = process.env.ACCESS_CONTROL_ALLOW_HEADERS
+const PREFIX = process.env.PREFIX
 
 app.use((req, res, next) => {
   // Website you wish to allow to connect
@@ -51,14 +52,12 @@ app.use((req, res, next) => {
 app.use(express.static(path.join(__dirname, 'public')))
 
 app.use('/', indexRouter)
-
-var prefix = '/folk-service/api/v1'
-app.use(`${prefix}/user`, userRouter)
-app.use(`${prefix}/circle`, circleRouter)
-app.use(`${prefix}/feeds`, feedsRouter)
+app.use(`${PREFIX}/user`, userRouter)
+app.use(`${PREFIX}/circle`, circleRouter)
+app.use(`${PREFIX}/feeds`, feedsRouter)
 
 // TODO: for temporary (實驗，模擬情境用, 之後會移除)
-app.use(`${prefix}/simulate`, require('./src/route/__simulation'))
+app.use(`${PREFIX}/simulate`, require('./src/route/__simulation'))
 
 
 // catch 404 and forward to error handler

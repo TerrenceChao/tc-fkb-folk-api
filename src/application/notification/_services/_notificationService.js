@@ -24,13 +24,13 @@ const CHANNEL_TYPES = {
  * @param {Object} userInfo 
  */
 function registerRequest(service, userInfo) {
-  return util.syncPublishRequest(`first-time-to-register-search-service`, {
+  return util.syncPublishRequest(USER_CONST.ACCOUNT_EVENT_REGISTRATION, {
     category: CATEGORIES.PERSONAL,
     channels: [CHANNELS.INTERNAL_SEARCH],
     sender: null,
     receivers: [_.pick(userInfo, USER_CONST.ACCOUT_IDENTITY)],
     packet: {
-      event: USER_CONST.SETTING_EVENT_UPDATE_PUBLIC_INFO,
+      event: USER_CONST.ACCOUNT_EVENT_REGISTRATION,
       content: _.pick(userInfo, USER_CONST.PUBLIC_USER_INFO),
     }
   }, service.init, userInfo)
@@ -72,10 +72,25 @@ NotificationService.prototype.init = function (userInfo) {
   }
 }
 
+NotificationService.prototype.emitRegistration = function (verification) {
+  notifyInfo = form.genVerifyFormat(verification)
+
+  util.publishRequest(USER_CONST.ACCOUNT_EVENT_REGISTRATION, {
+    category: CATEGORIES.PERSONAL,
+    channels: [CHANNELS.EMAIL],
+    sender: null,
+    receivers: [{ email: notifyInfo.to }],
+    packet: {
+      event: USER_CONST.ACCOUNT_EVENT_REGISTRATION,
+      content: notifyInfo.content,
+    }
+  })
+}
+
 /**
  * notifyInfo.type = [email, phone]
  * notifyInfo.to = [terrence@gmail.com, +886-987-654-321]
- * notifyInfo.content = [根據lang翻譯過後的內容]
+ * notifyInfo.content = [verification.content]
  * TODO:
  * requset: {
  *  category: personal,
@@ -87,11 +102,9 @@ NotificationService.prototype.init = function (userInfo) {
  *  packet: {...}
  * }
  */
-NotificationService.prototype.emitVerification = function (verifyInfo) {
-  const type = verifyInfo.type
-  const lang = verifyInfo.content.lang
-
-  notifyInfo = form.genVerifyFormat(verifyInfo)
+NotificationService.prototype.emitVerification = function (verification) {
+  const type = verification.type
+  notifyInfo = form.genVerifyFormat(verification)
 
   // send email/SMS to user .... it tests by redis. (notifyInfo.type/to/content)
   // redisEmitter.publish(notifyInfo.to, notifyInfo.content)
@@ -100,7 +113,7 @@ NotificationService.prototype.emitVerification = function (verifyInfo) {
     category: CATEGORIES.PERSONAL,
     channels: [CHANNEL_TYPES[type]],
     sender: null,
-    receivers: [{[type]: notifyInfo.to}],
+    receivers: [{ [type]: notifyInfo.to }],
     packet: {
       event: USER_CONST.ACCOUNT_EVENT_VALIDATE_ACCOUNT,
       content: notifyInfo.content,

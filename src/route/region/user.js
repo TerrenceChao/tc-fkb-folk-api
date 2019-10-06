@@ -12,11 +12,33 @@ router.get('/', function (req, res, next) {
 })
 
 // auth
+
+/**
+ * 在 database [建立]新用戶資訊
+ */
 router.post('/signup',
   userReq.registerInfoValidator,
   userReq.userInfoValidator,
   userReq.newPasswordValidator,
-  auth.signup,
+  auth.signup,  // create user & send registration email
+  generalRes.createdSuccess
+  /**
+   * options to the landing page:
+   * 1. front-end pop-up dialog to enter [verify-code] in the registration email,
+   * 2. click [verify-link] from the registration email.
+   */
+)
+
+/**
+ * options to the landing page:
+ * 1. 註冊後需要透過驗證信中的[verify-code]登入主畫面,
+ * 2. 或是透過驗證信中點擊[verify-link]轉到主畫面.
+ * 
+ * 雖然只能作用一次，但同樣的 url 不會造成不同的結果 (都是清除驗證資訊，建立session) [idempotent]
+ */
+router.put('/register/newborn/:token',
+  userReq.verificationValidator,
+  auth.authorized, // 確認後刪除 registration info (token/code)
   generalRes.createdSuccess
   // front-end redirect to landing page
 )
@@ -51,7 +73,10 @@ router.get('/search/social',
   generalRes.success
 )
 
-// send verify info (through email or sms)
+/**
+ * send verify info (through email or sms)
+ * 在驗證資訊尚未被清除前 (驗證時清除)，不論作用幾次結果都相同。[idempotent]
+ */
 router.put('/verification',
   userReq.accountValidator,
   auth.sendVerifyInfo,
@@ -62,9 +87,9 @@ router.put('/verification',
  * 當透過[驗證碼]登入時，以下兩步驟是一組的：
  * 1. ['/verification/code/:token']
  * 2. ['/password/reset'] (已透過 step 1 登入)
- * check by verification code (idempotent)
+ * 雖然只能作用一次，但同樣的 url 不會造成不同的結果 (都是清除驗證資訊，建立session) [idempotent]
  */
-router.post('/verification/code/:token',
+router.put('/verification/code/:token',
   userReq.verificationValidator,
   auth.checkVerificationWithCode, // 確認後刪除 verification info (token/code)
   generalRes.createdSuccess
@@ -91,9 +116,10 @@ router.put('/password/reset',
 
 /**
  * 當透過[重設密碼]登入時，只會進行以下一個步驟：
- * check by reset password (idempotent)
+ * check by reset password
+ * 雖然只能作用一次，但同樣的 url 不會造成不同的結果 (都是清除驗證資訊，建立session) [idempotent]
  */
-router.post('/verification/password/:token/:reset',
+router.put('/verification/password/:token/:reset',
   userReq.verificationValidator,
   userReq.newPasswordValidator, // 檢查兩次輸入的新密碼是否相同
   auth.checkVerificationWithPassword, /** 檢查 verify token 後，直接變更新密碼，然後刪除 verification info (token/code) */

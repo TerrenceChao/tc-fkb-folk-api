@@ -3,6 +3,7 @@ exports.ACCOUT_IDENTITY = process.env.ACCOUT_IDENTITY ?
   process.env.ACCOUT_IDENTITY.split(',') : ['region', 'uid']
 
 // account events
+exports.ACCOUNT_EVENT_REGISTRATION = 'account_event_registration'
 exports.ACCOUNT_EVENT_VALIDATE_ACCOUNT = 'account_event_validate_account'
 
 

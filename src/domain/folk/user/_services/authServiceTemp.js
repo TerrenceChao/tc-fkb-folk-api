@@ -11,8 +11,6 @@ function AuthService(authRepo) {
 /**
  * [這裡的signupInfo需要前端協助帶上region(於前端註冊時的所在地)]
  * region!region!region!region!region!region!
- * [建立好資料後需要建立session資訊]
- * create session info!!!!
  */
 AuthService.prototype.signup = async function (signupInfo) {
   // create record in account 
@@ -23,13 +21,13 @@ AuthService.prototype.signup = async function (signupInfo) {
 
   var user = await this.authRepo.createAccountUser(signupInfo)
 
-  var auth = await this.createSession({
-    region: user.region,
-    uid: user.uid,
-    email: user.email,
-  })
+  // var auth = await this.createSession({
+  //   region: user.region,
+  //   uid: user.uid,
+  //   email: user.email,
+  // })
 
-  return _.assignIn(user, { auth })
+  return await this.createVerification('email', user.email) // _.assignIn(user, { auth })
 }
 
 /**
@@ -69,7 +67,7 @@ AuthService.prototype.searchAccount = async function (type, account) {
  * 為了維持 verification 的有效性，
  * [當database中有token,code,reset等資訊時，不再更新。]
  */
-AuthService.prototype.createVerification = async function (type, account) {
+AuthService.prototype.createVerification = async function (type, account, expireTimeLimit = false) {
   if (type !== 'email' && type !== 'phone') {
     var err = new Error('invalid verification type, [email, phone] are available types')
     err.status = 404
@@ -77,7 +75,7 @@ AuthService.prototype.createVerification = async function (type, account) {
   }
 
   var date = new Date()
-  var reset = date.setMinutes(date.getMinutes() + expirationMins)
+  var reset = expireTimeLimit ? date.setMinutes(date.getMinutes() + expirationMins) : null
   const partialUserData = await this.authRepo.createVerification(type, account, reset)
 
   return {

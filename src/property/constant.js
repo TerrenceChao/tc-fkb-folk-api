@@ -9,6 +9,7 @@ module.exports = {
     HEADERS: {
       'content-type': 'application/json',
     },
+    PREFIX: process.env.PREFIX,
     SUCCESS: 200,
     POST_SUCCESS: 201,
     VALIDATE_ERROR: 422,

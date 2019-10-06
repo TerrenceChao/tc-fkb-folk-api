@@ -8,21 +8,50 @@ var httpHandler = require('../../../../../library/httpHandler')
 var util = require('../../../../../property/util')
 
 
+/**
+ * 除了在資料庫建立用戶資訊外，另外需要寄送驗證信件給用戶，以便確認身份。
+ */
 exports.signup = async (req, res, next) => {
-  var clientuseragent = req.headers.clientuseragent
   res.locals.data = util.customizedDefault(res.locals.data)
 
-  // authService.signup create session info
   Promise.resolve(authService.signup(req.body))
+    .then(verification => Promise.all([
+      res.locals.data = httpHandler.genRegistrationInfo(req, verification),
+      notificationService.emitRegistration(verification)
+    ]))
+    .then(() => next())
+    .catch(err => next(err))
+}
+
+/**
+ * 用戶第一次註冊後的授權程序。
+ * 除了沒有朋友以外，其他流程與[checkVerificationWithCode]無異。
+ */
+exports.authorized = async (req, res, next) => {
+  var clientuseragent = req.headers.clientuseragent,
+    verifyInfo = httpHandler.parseReqInFields(req, ['token', 'code'])
+  res.locals.data = util.customizedDefault(res.locals.data)
+
+  // 檢查 session 是否已經登入. 
+  // 當用戶已登入時，一定要在req.body帶上 region, uid, token ... etc 等資訊避免重複驗證流程導致錯誤
+  Promise.resolve(authService.isLoggedInByMock(req.body))
+    .then(loggedIn => loggedIn === true ? Promise.reject(new Error(`user is logged in`)) : null)
+    .then(() => authService.validateVerification(verifyInfo))
+    .then(async userInfo => {
+      await authService.deleteVerification(userInfo)
+      userInfo.auth = await authService.createSession(userInfo)
+      return userInfo
+    })
     .then(userInfo => Promise.all([
       userInfo,
       messageService.authenticate(_.assignIn(userInfo, { clientuseragent })),
-      notificationService.register(userInfo),
+      notificationService.register(_.omit(userInfo, ['auth'])),
     ]))
     .then(serviceInfoList => res.locals.data = userService.packetRegisterInfo(serviceInfoList))
     .then(() => next())
     .catch(err => next(err))
 }
+
 
 /**
  * login 時，
@@ -115,16 +144,11 @@ exports.searchSocialAccount = async (req, res, next) => {
 exports.sendVerifyInfo = async (req, res, next) => {
   var body = req.body
 
-  Promise.resolve(authService.createVerification(body.type, body.account))
-    .then(verification => {
-      verifyInfo = httpHandler.genVerifyInfo(req, verification)
-      notificationService.emitVerification(verifyInfo) // no waiting!! (no await)
-      return verifyInfo
-    })
-    .then(verifyInfo => res.locals.data = {
-      'verify-link': verifyInfo.verifyLink,
-      'token': verifyInfo.token
-    })
+  Promise.resolve(authService.createVerification(body.type, body.account, true))
+    .then(verification => Promise.all([
+      res.locals.data = httpHandler.genVerifyInfo(req, verification),
+      notificationService.emitVerification(verification) // no waiting!! (no await)
+    ]))
     .then(() => next())
     .catch(err => next(err))
 }
@@ -164,7 +188,7 @@ exports.checkVerificationWithCode = async (req, res, next) => {
   // 檢查 session 是否已經登入. 
   // 當用戶已登入時，一定要在req.body帶上 region, uid, token ... etc 等資訊避免重複驗證流程導致錯誤
   Promise.resolve(authService.isLoggedInByMock(req.body))
-    .then(result => result === true ? Promise.reject(new Error(`user is logged in`)) : null)
+    .then(loggedIn => loggedIn === true ? Promise.reject(new Error(`user is logged in`)) : null)
     .then(() => authService.validateVerification(verifyInfo))
     .then(async userInfo => {
       await authService.deleteVerification(userInfo)
@@ -241,7 +265,7 @@ exports.checkVerificationWithPassword = async (req, res, next) => {
   // 檢查 session 是否已經登入. 
   // 當用戶已登入時，一定要在req.body帶上 region, uid, token ... etc 等資訊避免重複驗證流程導致錯誤
   Promise.resolve(authService.isLoggedInByMock(req.body))
-    .then(result => result === true ? Promise.reject(new Error(`user is logged in`)) : null)
+    .then(loggedIn => loggedIn === true ? Promise.reject(new Error(`user is logged in`)) : null)
     .then(() => authService.validateVerification(verifyInfo))
     .then(async userInfo => {
       await authService.resetPassword(userInfo, newPassword)
