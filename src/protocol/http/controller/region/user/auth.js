@@ -139,7 +139,7 @@ exports.searchSocialAccount = async (req, res, next) => {
  *  3. response verify-link to front-end
  * 
  * At front-end, get verify-link to do 'checkVerificationWithCode':
- * ([POST]:'server-host/api/v1/user/verification/code/:[token]')
+ * ([PUT]:'server-host/api/v1/user/verification/code/:[token]')
  */
 exports.sendVerifyInfo = async (req, res, next) => {
   var body = req.body
@@ -154,16 +154,16 @@ exports.sendVerifyInfo = async (req, res, next) => {
 }
 
 /**
- * http method POST (idempotent)
+ * http method PUT
  * 從 'sendVerifyInfo' ([PUT]:'server-host/api/v1/user/verification) 以後，
- * front-end 得到了 verify-link ([POST]:'server-host/api/v1/user/verification/code/:[token]')，
+ * front-end 得到了 verify-link ([PUT]:'server-host/api/v1/user/verification/code/:[token]')，
  * 用戶將從 email OR sms 得知 verify code。
  * 只要經過第一次驗證成功後，這樣的 verify-link 就會失效。
  * 
  * [當用戶已登入時，一定要在req.body帶上region,uid,token...etc等資訊避免重複驗證流程導致錯誤]
  * 
  * At front-end:
- *  1. after 'sendVerifyInfo', get verify-link ([POST]:'server-host/api/v1/user/verification/code/:[token]')
+ *  1. after 'sendVerifyInfo', get verify-link ([PUT]:'server-host/api/v1/user/verification/code/:[token]')
  *  2. redirect to the [verify-page] for input verify code
  *  3. call verify-link
  * [NOTE]: front-end [verify-page] 也必須隨著 verify-link 失效。用戶回到上一頁會被導向到 landing page
@@ -228,11 +228,11 @@ exports.resetPassword = async (req, res, next) => {
 }
 
 /**
- * http method POST (idempotent)
+ * http method PUT
  * front-end 在執行 'sendVerifyInfo' ([PUT]:'server-host/api/v1/user/verification) 以後，
  * 並不會從 response 中拿到這裡的 verify-link，而是用戶透過點擊信箱內的 [變更密碼] 而導向到 front-end 的
  * 某一個輸入密碼的頁面，其頁面會呼叫這裡的 verify-link：
- * ([POST]:'server-host/api/v1/user/verification/password/:[token]')。
+ * ([PUT]:'server-host/api/v1/user/verification/password/:[token]')。
  * 只要經過第一次驗證成功後，這樣的 verify-link 就會失效。
  * 
  * [當用戶已登入時，一定要在req.body帶上region,uid,token...etc等資訊避免重複驗證流程導致錯誤]
@@ -242,7 +242,7 @@ exports.resetPassword = async (req, res, next) => {
  *      the link of [變更密碼] (reset password request) from email.
  *  2. user clicks the link and is bringed to [reset-password-page].
  *  3. user keyin new password twice and submit.
- *  4. front-end call verify-link ([POST]:'server-host/api/v1/user/verification/password/:[token]')
+ *  4. front-end call verify-link ([PUT]:'server-host/api/v1/user/verification/password/:[token]')
  * [NOTE]: front-end [reset-password-page] 也必須隨著 verify-link 失效。用戶回到上一頁會被導向到 landing page
  * 
  * At here:
