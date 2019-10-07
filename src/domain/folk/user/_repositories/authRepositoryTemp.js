@@ -653,7 +653,7 @@ AuthRepository.prototype.findOrCreateVerification = async function (type, accoun
   throw new Error(`user not found`)
 }
 
-AuthRepository.prototype.getVerifyingUserByCode = async function (token, code, selectedFields = null) {
+AuthRepository.prototype.getVerifyUserByCode = async function (token, code, selectedFields = null) {
   console.log(`verification: ${JSON.stringify({token, code}, null, 2)}`)
   for (const userInfo of userDB.values()) {
     const userVerify = userInfo.verificaiton
@@ -665,7 +665,7 @@ AuthRepository.prototype.getVerifyingUserByCode = async function (token, code, s
   return undefined // throw new Error(`user not found`)
 }
 
-AuthRepository.prototype.getVerifyingUserWithValidPeriods = async function (token, reset, selectedFields = null) {
+AuthRepository.prototype.getVerifyUserWithoutExpired = async function (token, reset, selectedFields = null) {
   console.log(`token: ${JSON.stringify(token, null, 2)}`)
   for (const userInfo of userDB.values()) {
     const userVerify = userInfo.verificaiton

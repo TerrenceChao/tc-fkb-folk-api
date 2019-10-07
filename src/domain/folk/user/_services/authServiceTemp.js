@@ -21,13 +21,7 @@ AuthService.prototype.signup = async function (signupInfo) {
 
   var user = await this.authRepo.createAccountUser(signupInfo)
 
-  // var auth = await this.createSession({
-  //   region: user.region,
-  //   uid: user.uid,
-  //   email: user.email,
-  // })
-
-  return await this.findOrCreateVerification('email', user.email) // _.assignIn(user, { auth })
+  return await this.findOrCreateVerification('email', user.email)
 }
 
 /**
@@ -151,26 +145,24 @@ AuthService.prototype.findOrCreateVerification = async function (type, account, 
  */
 AuthService.prototype.getVerifiedUser = async function (verifyInfo) {
   const { token, code } = verifyInfo
-  var userInfo = await this.authRepo.getVerifyingUserByCode(token, code)
-  if (userInfo == null) {
-    return undefined
-  }
+  const IDX_AUTH = 0
 
-  userInfo.verificaiton = null
-
-  const AUTH = 1
-  return Promise.all([
-      this.authRepo.deleteVerification(userInfo),
+  return Promise.resolve(this.authRepo.getVerifyUserByCode(token, code))
+    .then(userInfo => userInfo == null ? Promise.reject(new Error(`verification fail!`)) : userInfo)
+    .then(userInfo => Promise.all([
       this.createSession({
         region: userInfo.region,
         uid: userInfo.uid,
         email: userInfo.email,
-      })
+      }),
+      this.authRepo.deleteVerification(userInfo),
     ])
     .then((result) => {
-      userInfo.auth = result[AUTH]
+      userInfo.auth = result[IDX_AUTH]
+      delete userInfo.verificaiton
+      
       return userInfo
-    })
+    }))
 
   // return {
   //   region: 'tw',
@@ -195,39 +187,42 @@ AuthService.prototype.getVerifiedUser = async function (verifyInfo) {
  * token 隱含的資訊，已經能讓後端服務知道 token 要去哪一個區域(region)
  *  (Tokyo, Taipei, Sydney ...) 找尋用戶資料了
  */
-AuthService.prototype.getVerifiedUserAndResetPassowrd = async function (verifyInfo, newPassword) {
+AuthService.prototype.getVerifiedUserWithNewAuthorized = async function (verifyInfo, newPassword) {
   const { token, reset } = verifyInfo
-  var userInfo = await this.authRepo.getVerifyingUserWithValidPeriods(token, reset)
-  if (userInfo == null) {
-    return undefined
+  try {
+    var userInfo = await this.authRepo.getVerifyUserWithoutExpired(token, reset)
+    if (userInfo == null) {
+      throw new Error(`verification fail or expired!`)
+    }
+
+    /**
+     * TODO: [Database.userInfo.verificaiton.reset] 這邊需要檢查是否超過現在的時間:
+     * 如果認證逾時的話 (前提是 reset != null), 需要清除驗證資訊 (包括 verify-token, code, reset),
+     * 讓使用者能夠再次發[新的驗證資訊]
+     */
+    var expiredTime = userInfo.verificaiton.reset // Database's record
+      if (expiredTime != null && Date.now() > expiredTime) {
+        await this.authRepo.deleteVerification(userInfo)
+        throw new Error(`verification fail or expired!`)
+    } 
+  } catch (err) {
+    return Promise.reject(err)
   }
 
-  /**
-   * TODO: [Database.userInfo.verificaiton.reset] 這邊需要檢查是否超過現在的時間:
-   * 如果認證逾時的話 (前提是 reset != null), 需要清除驗證資訊 (包括 verify-token, code, reset),
-   * 讓使用者能夠再次發[新的驗證資訊]
-   */
-  var expiredTime = userInfo.verificaiton.reset // Database's record
-  if (expiredTime != null && Date.now() > expiredTime) {
-    await this.authRepo.deleteVerification(userInfo)
-    return undefined
-  } 
-
-  userInfo.verificaiton = null
-  await this.resetPassword(userInfo, newPassword)
-
   
-  const AUTH = 1
+  const IDX_AUTH = 0
   return Promise.all([
-      this.authRepo.deleteVerification(userInfo),
       this.createSession({
         region: userInfo.region,
         uid: userInfo.uid,
         email: userInfo.email,
-      })
+      }),
+      this.refreshAuthentication(userInfo, newPassword),
     ])
     .then((result) => {
-      userInfo.auth = result[AUTH]
+      userInfo.auth = result[IDX_AUTH]
+      delete userInfo.verificaiton
+
       return userInfo
     })
 
@@ -269,6 +264,22 @@ AuthService.prototype.resetPassword = async function (accountInfo, newPassword, 
 }
 
 /**
+ * TODO: 在同一筆紀錄上同時 resset password / delete verification
+ * [日後做資料庫sharding時可能需要除了uid以外的資訊]
+ * accountInfo 至少要有 {region, uid}
+ */
+AuthService.prototype.refreshAuthentication = async function (accountInfo, newPassword, oldPassword = null) {
+  // TODO: 在同一筆紀錄上同時 resset password / delete verification
+  return Promise.all([
+    this.resetPassword(accountInfo, newPassword, oldPassword),
+    this.authRepo.deleteVerification(accountInfo)
+  ])
+    .then(() => true)
+}
+
+/**
+ * TODO: [若原本存在舊的session，將會被清除，重新建立一個新的]
+ * 
  * [日後做資料庫sharding時可能需要除了uid以外的資訊]
  * accountInfo 至少要有 {region, uid}
  * 這裡不是只輸入 uid
@@ -297,6 +308,11 @@ AuthService.prototype.isLoggedInByMock = async function (accountIdentify) {
   return false
 }
 
+/**
+ * TODO:
+ * 1. [必定要刪除session資訊]
+ * 2. ...
+ */
 AuthService.prototype.logout = async function (accountInfo) {
   return true
 }

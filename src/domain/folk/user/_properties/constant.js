@@ -14,9 +14,23 @@ exports.PUBLIC_USER_INFO = process.env.PUBLIC_USER_INFO ?
     'givenName',
     'familyName',
     'fullName',
-    'gender',
     'profileLink',
     'profilePic',
+    'gender',
+  ]
+
+  exports.PRIVATE_USER_INFO = process.env.PRIVATE_USER_INFO ?
+  process.env.PRIVATE_USER_INFO.split(',') : [
+    'region',
+    'uid',
+    'givenName',
+    'familyName',
+    'fullName',
+    'profileLink',
+    'profilePic',
+    'gender',
+    'lang',
+    'auth',
   ]
 
 exports.PRIVATE_CONTACT_INFO = process.env.PRIVATE_CONTACT_INFO ?

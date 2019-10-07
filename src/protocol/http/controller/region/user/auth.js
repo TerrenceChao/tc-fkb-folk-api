@@ -6,6 +6,7 @@ var { authService } = require('../../../../../domain/folk/user/_services/authSer
 var { friendService } = require('../../../../../domain/circle/_services/friendServiceTemp')
 var httpHandler = require('../../../../../library/httpHandler')
 var util = require('../../../../../property/util')
+const PRIVATE_USER_INFO = require('../../../../../domain/folk/user/_properties/constant').PRIVATE_USER_INFO
 
 
 /**
@@ -33,9 +34,8 @@ exports.authorized = async (req, res, next) => {
 
   Promise.resolve(httpHandler.parseReqInFields(req, ['token', 'code']))
     .then(verifyInfo => authService.getVerifiedUser(verifyInfo))
-    .then(userInfo => userInfo === undefined ? Promise.reject(new Error(`verification fail!`)) : userInfo)
     .then(userInfo => Promise.all([
-      userInfo,
+      _.pick(userInfo, PRIVATE_USER_INFO),
       messageService.authenticate(_.assignIn(userInfo, { clientuseragent })),
       notificationService.register(_.omit(userInfo, ['auth'])),
     ]))
@@ -55,15 +55,12 @@ exports.authorized = async (req, res, next) => {
 exports.login = async (req, res, next) => {
   var clientuseragent = req.headers.clientuseragent
   var { friendLimit, friendSkip } = req.query
-  // password is encrypted 
-  var { email, password } = req.body
+  var { email, password } = req.body  // password is encrypted 
   res.locals.data = util.customizedDefault(res.locals.data)
 
-  // authService.login create session info
-  Promise.resolve(authService.login(email, password))
-    // *** 等三項服務的速度會太慢嗎？有必要拆開？
-    .then(userInfo => Promise.all([
-      userInfo,
+  Promise.resolve(authService.login(email, password)) // authService.login create session info
+    .then(userInfo => Promise.all([ // *** 等三項服務的速度會太慢嗎？有必要拆開？
+      _.pick(userInfo, PRIVATE_USER_INFO),
       messageService.authenticate(_.assignIn(userInfo, { clientuseragent })),
       notificationService.init(userInfo),
       friendService.list(userInfo, friendLimit, friendSkip),
@@ -179,9 +176,8 @@ exports.checkVerificationWithCode = async (req, res, next) => {
 
   Promise.resolve(httpHandler.parseReqInFields(req, ['token', 'code']))
     .then(verifyInfo => authService.getVerifiedUser(verifyInfo))
-    .then(userInfo => userInfo === undefined ? Promise.reject(new Error(`verification fail!`)) : userInfo)
     .then(userInfo => Promise.all([
-      userInfo,
+      _.pick(userInfo, PRIVATE_USER_INFO),
       messageService.authenticate(_.assignIn(userInfo, { clientuseragent })),
       notificationService.init(userInfo),
       friendService.list(userInfo),
@@ -247,10 +243,9 @@ exports.checkVerificationWithPassword = async (req, res, next) => {
   res.locals.data = util.customizedDefault(res.locals.data)
 
   Promise.resolve(_.pick(req.params, ['token', 'reset']))
-    .then(verifyInfo => authService.getVerifiedUserAndResetPassowrd(verifyInfo, newPassword))
-    .then(userInfo => userInfo === undefined ? Promise.reject(new Error(`verification fail or expired!`)) : userInfo)
+    .then(verifyInfo => authService.getVerifiedUserWithNewAuthorized(verifyInfo, newPassword))
     .then(userInfo => Promise.all([
-      userInfo,
+      _.pick(userInfo, PRIVATE_USER_INFO),
       messageService.authenticate(_.assignIn(userInfo, { clientuseragent })),
       notificationService.init(userInfo),
       friendService.list(userInfo),
