@@ -33,7 +33,7 @@ exports.authorized = async (req, res, next) => {
 
   Promise.resolve(httpHandler.parseReqInFields(req, ['token', 'code']))
     .then(verifyInfo => authService.getVerifiedUser(verifyInfo))
-    .then(userInfo => userInfo == null ? Promise.reject(new Error(`verification fail!`)) : userInfo)
+    .then(userInfo => userInfo === undefined ? Promise.reject(new Error(`verification fail!`)) : userInfo)
     .then(userInfo => Promise.all([
       userInfo,
       messageService.authenticate(_.assignIn(userInfo, { clientuseragent })),
@@ -179,7 +179,7 @@ exports.checkVerificationWithCode = async (req, res, next) => {
 
   Promise.resolve(httpHandler.parseReqInFields(req, ['token', 'code']))
     .then(verifyInfo => authService.getVerifiedUser(verifyInfo))
-    .then(userInfo => userInfo == null ? Promise.reject(new Error(`verification fail!`)) : userInfo)
+    .then(userInfo => userInfo === undefined ? Promise.reject(new Error(`verification fail!`)) : userInfo)
     .then(userInfo => Promise.all([
       userInfo,
       messageService.authenticate(_.assignIn(userInfo, { clientuseragent })),
@@ -248,7 +248,7 @@ exports.checkVerificationWithPassword = async (req, res, next) => {
 
   Promise.resolve(_.pick(req.params, ['token', 'reset']))
     .then(verifyInfo => authService.getVerifiedUserAndResetPassowrd(verifyInfo, newPassword))
-    .then(userInfo => userInfo == null ? Promise.reject(new Error(`verification fail or expired!`)) : userInfo)
+    .then(userInfo => userInfo === undefined ? Promise.reject(new Error(`verification fail or expired!`)) : userInfo)
     .then(userInfo => Promise.all([
       userInfo,
       messageService.authenticate(_.assignIn(userInfo, { clientuseragent })),
@@ -260,24 +260,13 @@ exports.checkVerificationWithPassword = async (req, res, next) => {
     .catch(err => next(err))
 }
 
+/**
+ * [NOTE] validate session info by region/uid/token
+ */
 exports.isLoggedIn = async (req, res, next) => {
-  // validate session info by region/uid/token
-  // If yes, to someone's profile
   Promise.resolve(httpHandler.parseReqInFields(req, ['region', 'uid', 'token']))
     .then(accountIdentify => authService.isLoggedIn(accountIdentify))
     .then(loggedIn => loggedIn === true ? null : Promise.reject(new Error(`user is NOT logged in`)))
-    .then(() => next())
-    .catch(err => next(err))
-}
-
-/**
- * 跟 verification 相關的流程，需檢查 session 是否[尚未登入]. 
- * 當用戶已登入時，一定要在req帶上region,uid,token...etc等資訊避免重複驗證流程導致錯誤
- */
-exports.isNotLoggedIn = async (req, res, next) => {
-  Promise.resolve(httpHandler.parseReqInFields(req, ['region', 'uid', 'token']))
-    .then(accountIdentify => authService.isLoggedInByMock(accountIdentify))
-    .then(loggedIn => loggedIn === true ? Promise.reject(new Error(`user is logged in`)) : null)
     .then(() => next())
     .catch(err => next(err))
 }

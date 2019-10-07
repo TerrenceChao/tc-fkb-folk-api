@@ -38,7 +38,6 @@ router.post('/signup',
  */
 router.put('/register/newborn/:token',
   userReq.verificationValidator,
-  auth.isNotLoggedIn, // 跟 verification 相關的流程，需檢查 session 是否[尚未登入]. 
   auth.authorized,    // 確認後刪除 registration info (token/code)
   generalRes.createdSuccess
   // front-end redirect to landing page
@@ -92,7 +91,6 @@ router.put('/verification',
  */
 router.put('/verification/code/:token',
   userReq.verificationValidator,
-  auth.isNotLoggedIn,             // 跟 verification 相關的流程，需檢查 session 是否[尚未登入]. 
   auth.checkVerificationWithCode, // 確認後刪除 verification info (token/code)
   generalRes.createdSuccess
   // front-end redirect to landing page
@@ -124,7 +122,6 @@ router.put('/password/reset',
 router.put('/verification/password/:token/:reset',
   userReq.verificationValidator,
   userReq.newPasswordValidator, // 檢查兩次輸入的新密碼是否相同
-  auth.isNotLoggedIn,           // 跟 verification 相關的流程，需檢查 session 是否[尚未登入]. 
   auth.checkVerificationWithPassword, /** 檢查 verify token 後，直接變更新密碼，然後刪除 verification info (token/code) */
   generalRes.createdSuccess
   // front-end redirect to landing page

@@ -153,7 +153,7 @@ AuthService.prototype.getVerifiedUser = async function (verifyInfo) {
   const { token, code } = verifyInfo
   var userInfo = await this.authRepo.getVerifyingUserByCode(token, code)
   if (userInfo == null) {
-    return false
+    return undefined
   }
 
   userInfo.verificaiton = null
@@ -168,7 +168,6 @@ AuthService.prototype.getVerifiedUser = async function (verifyInfo) {
       })
     ])
     .then((result) => {
-      console.log(`\nuserInfo.auth`, result[AUTH], `\n`)
       userInfo.auth = result[AUTH]
       return userInfo
     })
@@ -185,7 +184,7 @@ AuthService.prototype.getVerifiedUser = async function (verifyInfo) {
   //   gender: 'male',
   //   birth: '2019-08-01',
   //   auth: { token: `xxxx`, }
-  // } || false
+  // } || undefined
 }
 
 /**
@@ -200,7 +199,7 @@ AuthService.prototype.getVerifiedUserAndResetPassowrd = async function (verifyIn
   const { token, reset } = verifyInfo
   var userInfo = await this.authRepo.getVerifyingUserWithValidPeriods(token, reset)
   if (userInfo == null) {
-    return false
+    return undefined
   }
 
   /**
@@ -211,7 +210,7 @@ AuthService.prototype.getVerifiedUserAndResetPassowrd = async function (verifyIn
   var expiredTime = userInfo.verificaiton.reset // Database's record
   if (expiredTime != null && Date.now() > expiredTime) {
     await this.authRepo.deleteVerification(userInfo)
-    return false
+    return undefined
   } 
 
   userInfo.verificaiton = null
@@ -228,7 +227,6 @@ AuthService.prototype.getVerifiedUserAndResetPassowrd = async function (verifyIn
       })
     ])
     .then((result) => {
-      console.log(`\nuserInfo.auth`, result[AUTH], `\n`)
       userInfo.auth = result[AUTH]
       return userInfo
     })
@@ -245,7 +243,7 @@ AuthService.prototype.getVerifiedUserAndResetPassowrd = async function (verifyIn
   //   gender: 'male',
   //   birth: '2019-08-01',
   //   auth: { token: `xxxx`, }
-  // } || false
+  // } || undefined
 }
 
 // /**
