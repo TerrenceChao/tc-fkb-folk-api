@@ -602,7 +602,7 @@ AuthRepository.prototype.getAccountUser = async function (userInfo, password) {
   return _.omit(Object.create(userDB.get(userInfo.email)), ['phone', 'verificaiton', 'friendList'])
 }
 
-AuthRepository.prototype.createVerification = async function (type, account, reset = null) {
+AuthRepository.prototype.findOrCreateVerification = async function (type, account, reset = null) {
   if (type === 'phone') {
     for (const userInfo of userDB.values()) {
       if (account === userInfo.phone) {
@@ -624,7 +624,7 @@ AuthRepository.prototype.createVerification = async function (type, account, res
   throw new Error(`user not found`)
 }
 
-AuthRepository.prototype.validateVerification = async function (verificaiton) {
+AuthRepository.prototype.getUserByVerification = async function (verificaiton) {
   console.log(`verification: ${JSON.stringify(verificaiton, null, 2)}`)
   for (const userInfo of userDB.values()) {
     const userVerify = userInfo.verificaiton
@@ -635,7 +635,11 @@ AuthRepository.prototype.validateVerification = async function (verificaiton) {
       return _.omit(userInfo, ['phone', 'verificaiton', 'friendList'])
     }
   }
-  throw new Error(`user not found`)
+  return undefined // throw new Error(`user not found`)
+}
+
+AuthRepository.prototype.deleteVerification = async function (userInfo) {
+  return true
 }
 
 module.exports = new AuthRepository()

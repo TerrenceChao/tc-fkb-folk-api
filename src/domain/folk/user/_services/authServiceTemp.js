@@ -27,7 +27,7 @@ AuthService.prototype.signup = async function (signupInfo) {
   //   email: user.email,
   // })
 
-  return await this.createVerification('email', user.email) // _.assignIn(user, { auth })
+  return await this.findOrCreateVerification('email', user.email) // _.assignIn(user, { auth })
 }
 
 /**
@@ -67,7 +67,7 @@ AuthService.prototype.searchAccount = async function (type, account) {
  * 為了維持 verification 的有效性，
  * [當database中有token,code,reset等資訊時，不再更新。]
  */
-AuthService.prototype.createVerification = async function (type, account, expireTimeLimit = false) {
+AuthService.prototype.findOrCreateVerification = async function (type, account, expireTimeLimit = false) {
   if (type !== 'email' && type !== 'phone') {
     var err = new Error('invalid verification type, [email, phone] are available types')
     err.status = 404
@@ -76,7 +76,7 @@ AuthService.prototype.createVerification = async function (type, account, expire
 
   var date = new Date()
   var reset = expireTimeLimit ? date.setMinutes(date.getMinutes() + expirationMins) : null
-  const partialUserData = await this.authRepo.createVerification(type, account, reset)
+  const partialUserData = await this.authRepo.findOrCreateVerification(type, account, reset)
 
   return {
     type,
@@ -135,8 +135,28 @@ AuthService.prototype.createVerification = async function (type, account, expire
  * token 隱含的資訊，已經能讓後端服務知道 token 要去哪一個區域(region)
  *  (Tokyo, Taipei, Sydney ...) 找尋用戶資料了
  */
-AuthService.prototype.validateVerification = async function (verificaiton) {
-  return await this.authRepo.validateVerification(verificaiton)
+AuthService.prototype.getVerifiedUser = async function (verificaiton) {
+  var userInfo = await this.authRepo.getUserByVerification(verificaiton)
+  if (userInfo == null) {
+    return false
+  }
+
+  const DELETED = 0
+  const AUTH = 1
+
+  return Promise.all([
+      this.authRepo.deleteVerification(userInfo),
+      this.createSession({
+        region: userInfo.region,
+        uid: userInfo.uid,
+        email: userInfo.email,
+      })
+    ])
+    .then((result) => {
+      userInfo.auth = result[AUTH]
+      return userInfo
+    })
+
   // return {
   //   region: 'tw',
   //   lang: 'zh-tw',
@@ -147,17 +167,65 @@ AuthService.prototype.validateVerification = async function (verificaiton) {
   //   givenName: 'terrence',
   //   familyName: 'chao',
   //   gender: 'male',
-  //   birth: '2019-08-01'
-  // }
+  //   birth: '2019-08-01',
+  //   auth: { token: `xxxx`, }
+  // } || false
 }
 
 /**
- * [日後做資料庫sharding時可能需要除了uid以外的資訊]
- * 所以這裡不是只輸入 uid
+ * 輸入參數 verificaiton 有兩種：
+ * 1. [verificaiton={token:xxxx,code:123456}] token & code
+ * 2. [verificaiton={token:xxxx,reset:1565022954420}] token & reset (reset 具時效性)
+ * token 隱含的資訊，已經能讓後端服務知道 token 要去哪一個區域(region)
+ *  (Tokyo, Taipei, Sydney ...) 找尋用戶資料了
  */
-AuthService.prototype.deleteVerification = async function (accountInfo) {
-  return true
+AuthService.prototype.getVerifiedUserAndResetPassowrd = async function (verificaiton, newPassword) {
+  var userInfo = await this.authRepo.getUserByVerification(verificaiton)
+  if (userInfo == null) {
+    return false
+  }
+
+  await this.resetPassword(userInfo, newPassword)
+
+  
+  const DELETED = 0
+  const AUTH = 1
+
+  return Promise.all([
+      this.authRepo.deleteVerification(userInfo),
+      this.createSession({
+        region: userInfo.region,
+        uid: userInfo.uid,
+        email: userInfo.email,
+      })
+    ])
+    .then((result) => {
+      userInfo.auth = result[AUTH]
+      return userInfo
+    })
+
+  // return {
+  //   region: 'tw',
+  //   lang: 'zh-tw',
+  //   uid: '345b1c4c-128c-4286-8431-78d16d285f38',
+  //   email: 'terrence@gmail.com',
+  //   profileLink: '5678iolf-tw',
+  //   profilePic: '/ftyuil5678ijk/78iokkl',
+  //   givenName: 'terrence',
+  //   familyName: 'chao',
+  //   gender: 'male',
+  //   birth: '2019-08-01',
+  //   auth: { token: `xxxx`, }
+  // } || false
 }
+
+// /**
+//  * [日後做資料庫sharding時可能需要除了uid以外的資訊]
+//  * 所以這裡不是只輸入 uid
+//  */
+// AuthService.prototype.eraseVerification = async function (accountInfo) {
+//   return true
+// }
 
 /**
  * [日後做資料庫sharding時可能需要除了uid以外的資訊]
