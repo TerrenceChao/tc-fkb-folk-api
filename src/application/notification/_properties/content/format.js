@@ -1,6 +1,6 @@
 function genVerifyEmailFormat(verifyInfo) {
   var content = verifyInfo.content
-  Array.apply(null, ['token', 'code', 'reset', 'verifyLink', 'resetLink']).forEach(field => {
+  Array.apply(null, ['reset', 'code', 'verify-token']).forEach(field => {
     content[field] = verifyInfo[field]
   })
 
@@ -13,7 +13,7 @@ function genVerifyEmailFormat(verifyInfo) {
 
 function genVerifySMSFormat(verifyInfo) {
   var content = verifyInfo.content
-  Array.apply(null, ['token', 'code']).forEach(field => {
+  Array.apply(null, ['code', 'verify-token']).forEach(field => {
     content[field] = verifyInfo[field]
   })
 

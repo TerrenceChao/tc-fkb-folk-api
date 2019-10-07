@@ -76,9 +76,18 @@ AuthService.prototype.findOrCreateVerification = async function (type, account, 
 
   var date = new Date()
   var reset = expireTimeLimit ? date.setMinutes(date.getMinutes() + expirationMins) : null
+
+  /**
+   * TODO: [authRepo.findOrCreateVerification...]
+   * 透過 type, account 找到用戶的 [region,uid] 來建立 verification 是比較好的作法。
+   * 
+   * TODO: 請善用 findOrCreateVerification 第三個欄位: selectedFields
+   */
   const partialUserData = await this.authRepo.findOrCreateVerification(type, account, reset)
 
   return {
+    region: partialUserData.region,
+    uid: partialUserData.uid,
     type,
     account,
     /**
@@ -86,12 +95,16 @@ AuthService.prototype.findOrCreateVerification = async function (type, account, 
      * lang: 'zh-tw' 在 sendVerification 時,
      * notificationService(透過 redis 發送) 用中文的 template 會變成亂碼
      */
-    content: _.pick(partialUserData, ['region', 'lang', 'givenName', 'familyName', 'gender']),
+    content: _.omit(partialUserData, ['region', 'uid', 'verificaiton']),
     /**
      * token 隱含的資訊，已經能讓後端服務知道 token 要去哪一個區域(region)
      *  (Tokyo, Taipei, Sydney ...) 找尋用戶資料了
+     * 
+     * [NOTE] 以'verify-token'命名是因為你不知道從這個 function 丟出去的結果會走向哪裡，
+     * 他很有可能和 session/auth 相關的 token 搞混。因此強制性的命名。
      */
-    token: partialUserData.verificaiton.token,
+    'verify-token': partialUserData.verificaiton.token,
+    // token: partialUserData.verificaiton.token,
     code: partialUserData.verificaiton.code,
     /**
      * for reset password directly (with expiration expiration time: 10 mins)
@@ -129,21 +142,23 @@ AuthService.prototype.findOrCreateVerification = async function (type, account, 
 }
 
 /**
- * 輸入參數 verificaiton 有兩種：
- * 1. [verificaiton={token:xxxx,code:123456}] token & code
- * 2. [verificaiton={token:xxxx,reset:1565022954420}] token & reset (reset 具時效性)
+ * 輸入參數 verifyInfo 有兩種：
+ * 1. [verifyInfo={token:xxxx,code:123456}] token & code
+ * 2. [verifyInfo={token:xxxx,reset:1565022954420}] token & reset (reset 具時效性)
+ * [這裡屬於第一種]
  * token 隱含的資訊，已經能讓後端服務知道 token 要去哪一個區域(region)
  *  (Tokyo, Taipei, Sydney ...) 找尋用戶資料了
  */
-AuthService.prototype.getVerifiedUser = async function (verificaiton) {
-  var userInfo = await this.authRepo.getUserByVerification(verificaiton)
+AuthService.prototype.getVerifiedUser = async function (verifyInfo) {
+  const { token, code } = verifyInfo
+  var userInfo = await this.authRepo.getVerifyingUserByCode(token, code)
   if (userInfo == null) {
     return false
   }
 
-  const DELETED = 0
-  const AUTH = 1
+  userInfo.verificaiton = null
 
+  const AUTH = 1
   return Promise.all([
       this.authRepo.deleteVerification(userInfo),
       this.createSession({
@@ -153,6 +168,7 @@ AuthService.prototype.getVerifiedUser = async function (verificaiton) {
       })
     ])
     .then((result) => {
+      console.log(`\nuserInfo.auth`, result[AUTH], `\n`)
       userInfo.auth = result[AUTH]
       return userInfo
     })
@@ -173,24 +189,36 @@ AuthService.prototype.getVerifiedUser = async function (verificaiton) {
 }
 
 /**
- * 輸入參數 verificaiton 有兩種：
- * 1. [verificaiton={token:xxxx,code:123456}] token & code
- * 2. [verificaiton={token:xxxx,reset:1565022954420}] token & reset (reset 具時效性)
+ * 輸入參數 verifyInfo 有兩種：
+ * 1. [verifyInfo={token:xxxx,code:123456}] token & code
+ * 2. [verifyInfo={token:xxxx,reset:1565022954420}] token & reset (reset 具時效性)
+ * [這裡屬於第二種]
  * token 隱含的資訊，已經能讓後端服務知道 token 要去哪一個區域(region)
  *  (Tokyo, Taipei, Sydney ...) 找尋用戶資料了
  */
-AuthService.prototype.getVerifiedUserAndResetPassowrd = async function (verificaiton, newPassword) {
-  var userInfo = await this.authRepo.getUserByVerification(verificaiton)
+AuthService.prototype.getVerifiedUserAndResetPassowrd = async function (verifyInfo, newPassword) {
+  const { token, reset } = verifyInfo
+  var userInfo = await this.authRepo.getVerifyingUserWithValidPeriods(token, reset)
   if (userInfo == null) {
     return false
   }
 
+  /**
+   * TODO: [Database.userInfo.verificaiton.reset] 這邊需要檢查是否超過現在的時間:
+   * 如果認證逾時的話 (前提是 reset != null), 需要清除驗證資訊 (包括 verify-token, code, reset),
+   * 讓使用者能夠再次發[新的驗證資訊]
+   */
+  var expiredTime = userInfo.verificaiton.reset // Database's record
+  if (expiredTime != null && Date.now() > expiredTime) {
+    await this.authRepo.deleteVerification(userInfo)
+    return false
+  } 
+
+  userInfo.verificaiton = null
   await this.resetPassword(userInfo, newPassword)
 
   
-  const DELETED = 0
   const AUTH = 1
-
   return Promise.all([
       this.authRepo.deleteVerification(userInfo),
       this.createSession({
@@ -200,6 +228,7 @@ AuthService.prototype.getVerifiedUserAndResetPassowrd = async function (verifica
       })
     ])
     .then((result) => {
+      console.log(`\nuserInfo.auth`, result[AUTH], `\n`)
       userInfo.auth = result[AUTH]
       return userInfo
     })

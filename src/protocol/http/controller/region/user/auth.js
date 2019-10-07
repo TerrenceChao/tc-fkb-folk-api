@@ -28,11 +28,11 @@ exports.signup = async (req, res, next) => {
  * 除了沒有朋友以外，其他流程與[checkVerificationWithCode]無異。
  */
 exports.authorized = async (req, res, next) => {
-  var clientuseragent = req.headers.clientuseragent,
-    verifyInfo = httpHandler.parseReqInFields(req, ['token', 'code'])
+  var clientuseragent = req.headers.clientuseragent
   res.locals.data = util.customizedDefault(res.locals.data)
 
-  Promise.resolve(authService.getVerifiedUser(verifyInfo))
+  Promise.resolve(httpHandler.parseReqInFields(req, ['token', 'code']))
+    .then(verifyInfo => authService.getVerifiedUser(verifyInfo))
     .then(userInfo => userInfo == null ? Promise.reject(new Error(`verification fail!`)) : userInfo)
     .then(userInfo => Promise.all([
       userInfo,
@@ -117,7 +117,7 @@ exports.searchSocialAccount = async (req, res, next) => {
  * for those users who forget their login account || password.
  * At here:
  * A. forget login account:
- *  1. seatch user's account
+ *  1. seatch user's account (fuzzy search)
  *  2. create verify token & code with same email/phone in DB
  *  3. send 'verify info' (by email OR sms). The content of 'verify info' including:
  *      a. verify-link => 可有可無
@@ -174,11 +174,11 @@ exports.sendVerifyInfo = async (req, res, next) => {
  *  3. redirect to landing page or profile. ( important! important! important! )
  */
 exports.checkVerificationWithCode = async (req, res, next) => {
-  var clientuseragent = req.headers.clientuseragent,
-    verifyInfo = httpHandler.parseReqInFields(req, ['token', 'code'])
+  var clientuseragent = req.headers.clientuseragent
   res.locals.data = util.customizedDefault(res.locals.data)
 
-  Promise.resolve(authService.getVerifiedUser(verifyInfo))
+  Promise.resolve(httpHandler.parseReqInFields(req, ['token', 'code']))
+    .then(verifyInfo => authService.getVerifiedUser(verifyInfo))
     .then(userInfo => userInfo == null ? Promise.reject(new Error(`verification fail!`)) : userInfo)
     .then(userInfo => Promise.all([
       userInfo,
@@ -233,7 +233,7 @@ exports.resetPassword = async (req, res, next) => {
  * At here:
  *  1. validate user is logged in? leave if yes.
  *  2. [check-verify-token/reset] in DB. If valid, [update-passowrd] in DB without checking the old one.
- *  3. delete the verify token & code from DB
+ *  3. delete the verify token & code & reset(expiredTime) from DB
  *  4. create session info (sessionID/cookie)  ( important! important! important! )
  *  5. response session info & userID to front-end
  * 
@@ -243,12 +243,12 @@ exports.resetPassword = async (req, res, next) => {
  */
 exports.checkVerificationWithPassword = async (req, res, next) => {
   var clientuseragent = req.headers.clientuseragent,
-    verifyInfo = _.pick(req.params, ['token', 'reset']),
     newPassword = req.body.password // encrypted
   res.locals.data = util.customizedDefault(res.locals.data)
 
-  Promise.resolve(authService.getVerifiedUserAndResetPassowrd(verifyInfo, newPassword))
-    .then(userInfo => userInfo == null ? Promise.reject(new Error(`verification fail!`)) : userInfo)
+  Promise.resolve(_.pick(req.params, ['token', 'reset']))
+    .then(verifyInfo => authService.getVerifiedUserAndResetPassowrd(verifyInfo, newPassword))
+    .then(userInfo => userInfo == null ? Promise.reject(new Error(`verification fail or expired!`)) : userInfo)
     .then(userInfo => Promise.all([
       userInfo,
       messageService.authenticate(_.assignIn(userInfo, { clientuseragent })),
@@ -263,10 +263,10 @@ exports.checkVerificationWithPassword = async (req, res, next) => {
 exports.isLoggedIn = async (req, res, next) => {
   // validate session info by region/uid/token
   // If yes, to someone's profile
-  var accountIdentify = httpHandler.parseReqInFields(req, ['region', 'uid', 'token'])
-
-  Promise.resolve(authService.isLoggedIn(accountIdentify))
-    .then(result => next())
+  Promise.resolve(httpHandler.parseReqInFields(req, ['region', 'uid', 'token']))
+    .then(accountIdentify => authService.isLoggedIn(accountIdentify))
+    .then(loggedIn => loggedIn === true ? null : Promise.reject(new Error(`user is NOT logged in`)))
+    .then(() => next())
     .catch(err => next(err))
 }
 
@@ -275,9 +275,8 @@ exports.isLoggedIn = async (req, res, next) => {
  * 當用戶已登入時，一定要在req帶上region,uid,token...etc等資訊避免重複驗證流程導致錯誤
  */
 exports.isNotLoggedIn = async (req, res, next) => {
-  var accountIdentify = httpHandler.parseReqInFields(req, ['region', 'uid', 'token'])
-
-  Promise.resolve(authService.isLoggedInByMock(accountIdentify))
+  Promise.resolve(httpHandler.parseReqInFields(req, ['region', 'uid', 'token']))
+    .then(accountIdentify => authService.isLoggedInByMock(accountIdentify))
     .then(loggedIn => loggedIn === true ? Promise.reject(new Error(`user is logged in`)) : null)
     .then(() => next())
     .catch(err => next(err))

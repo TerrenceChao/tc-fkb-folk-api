@@ -155,6 +155,12 @@ AuthRepository.prototype.generateFakeAccounts = async function (amount) {
 }
 
 /**
+ * ===================================================================
+ * friendRepo
+ * ===================================================================
+ */
+
+/**
  * friendRepo
  */
 AuthRepository.prototype.getFriendList = async function (accountInfo, limit, skip) {
@@ -358,6 +364,13 @@ AuthRepository.prototype.removeFriend = async function (accountInfo, targetAccou
 
 
 /**
+ * ===================================================================
+ * invitationRepo
+ * ===================================================================
+ */
+
+
+/**
  * invitationRepo
  */
 AuthRepository.prototype.findOrCreateFriendInvitation = async function (newInvitation) {
@@ -506,6 +519,22 @@ AuthRepository.prototype.removeRelatedInvitation = async function (accountInfo, 
   return deleteRows
 }
 
+
+
+/**
+ * ===================================================================
+ * userRepo
+ * ===================================================================
+ */
+const VERIFICATION_FIELDS = 
+  ['region', 'uid', 'givenName', 'familyName', 'profileLink', 'profilePic',
+    'verificaiton', 'lang', 'gender', // for email/SMS content
+    'email', 'phone'  // for user contact
+  ]
+const DEFAULT_PUBLIC_USER_FIELDS = 
+  ['region', 'uid', 'givenName', 'familyName', 'profileLink', 'profilePic']
+
+
 /**
  * userRepo
  */
@@ -540,7 +569,6 @@ AuthRepository.prototype.updateUser = async function (accountInfo, newUserInfo) 
 /**
  * userRepo
  */
-const DEFAULT_PUBLIC_USER_FIELDS = ['uid', 'region', 'givenName', 'familyName', 'profileLink', 'profilePic']
 AuthRepository.prototype.getPairUsers = async function (accountInfo, targetAccountInfo, defaultFields = DEFAULT_PUBLIC_USER_FIELDS) {
   let user, targetUser
   for (const userInfo of userDB.values()) {
@@ -602,13 +630,14 @@ AuthRepository.prototype.getAccountUser = async function (userInfo, password) {
   return _.omit(Object.create(userDB.get(userInfo.email)), ['phone', 'verificaiton', 'friendList'])
 }
 
-AuthRepository.prototype.findOrCreateVerification = async function (type, account, reset = null) {
+AuthRepository.prototype.findOrCreateVerification = async function (type, account, reset = null, selectedFields = null) {
+  selectedFields = selectedFields == null ? VERIFICATION_FIELDS : selectedFields
   if (type === 'phone') {
     for (const userInfo of userDB.values()) {
       if (account === userInfo.phone) {
         userInfo.verificaiton.reset = reset
         userDB.set(account, userInfo)
-        return _.pick(userInfo, ['verificaiton', 'region', 'lang', 'givenName', 'familyName', 'gender', 'friendList'])
+        return _.pick(userInfo, selectedFields)
       }
     }
     throw new Error(`user not found`)
@@ -618,21 +647,32 @@ AuthRepository.prototype.findOrCreateVerification = async function (type, accoun
   if (userInfo != null) {
     userInfo.verificaiton.reset = reset
     userDB.set(account, userInfo)
-    return _.pick(userInfo, ['verificaiton', 'region', 'lang', 'givenName', 'familyName', 'gender', 'friendList'])
+    return _.pick(userInfo, selectedFields)
   }
 
   throw new Error(`user not found`)
 }
 
-AuthRepository.prototype.getUserByVerification = async function (verificaiton) {
-  console.log(`verification: ${JSON.stringify(verificaiton, null, 2)}`)
+AuthRepository.prototype.getVerifyingUserByCode = async function (token, code, selectedFields = null) {
+  console.log(`verification: ${JSON.stringify({token, code}, null, 2)}`)
   for (const userInfo of userDB.values()) {
     const userVerify = userInfo.verificaiton
     console.log(`userVerify in database: ${JSON.stringify(userVerify, null, 2)}`)
-    // verificaiton.reset 這邊需要檢查是否超過現在的時間
-    if (verificaiton.token === userVerify.token &&
-      (verificaiton.code === userVerify.code || verificaiton.reset != null)) {
-      return _.omit(userInfo, ['phone', 'verificaiton', 'friendList'])
+    if (token === userVerify.token && code === userVerify.code) {
+      return _.pick(userInfo, VERIFICATION_FIELDS)
+    }
+  }
+  return undefined // throw new Error(`user not found`)
+}
+
+AuthRepository.prototype.getVerifyingUserWithValidPeriods = async function (token, reset, selectedFields = null) {
+  console.log(`token: ${JSON.stringify(token, null, 2)}`)
+  for (const userInfo of userDB.values()) {
+    const userVerify = userInfo.verificaiton
+    console.log(`userVerify in database: ${JSON.stringify(userVerify, null, 2)}`)
+    // 在真實需求中 reset 也需要符合
+    if (token === userVerify.token) {
+      return _.pick(userInfo, VERIFICATION_FIELDS)
     }
   }
   return undefined // throw new Error(`user not found`)
