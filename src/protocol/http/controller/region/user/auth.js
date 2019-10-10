@@ -6,7 +6,6 @@ var { authService } = require('../../../../../domain/folk/user/_services/authSer
 var { friendService } = require('../../../../../domain/circle/_services/friendServiceTemp')
 var httpHandler = require('../../../../../library/httpHandler')
 var util = require('../../../../../property/util')
-const PRIVATE_USER_INFO = require('../../../../../domain/folk/user/_properties/constant').PRIVATE_USER_INFO
 
 
 /**
@@ -35,7 +34,7 @@ exports.authorized = async (req, res, next) => {
   Promise.resolve(httpHandler.parseReqInFields(req, ['token', 'code']))
     .then(verifyInfo => authService.getVerifiedUser(verifyInfo))
     .then(userInfo => Promise.all([
-      _.pick(userInfo, PRIVATE_USER_INFO),
+      userService.getPersonalInfo(userInfo),
       messageService.authenticate(_.assignIn(userInfo, { clientuseragent })),
       notificationService.register(_.omit(userInfo, ['auth'])),
     ]))
@@ -60,7 +59,7 @@ exports.login = async (req, res, next) => {
 
   Promise.resolve(authService.login(email, password)) // authService.login create session info
     .then(userInfo => Promise.all([ // *** 等三項服務的速度會太慢嗎？有必要拆開？
-      _.pick(userInfo, PRIVATE_USER_INFO),
+      userService.getPersonalInfo(userInfo),
       messageService.authenticate(_.assignIn(userInfo, { clientuseragent })),
       notificationService.init(userInfo),
       friendService.list(userInfo, friendLimit, friendSkip),
@@ -177,7 +176,7 @@ exports.checkVerificationWithCode = async (req, res, next) => {
   Promise.resolve(httpHandler.parseReqInFields(req, ['token', 'code']))
     .then(verifyInfo => authService.getVerifiedUser(verifyInfo))
     .then(userInfo => Promise.all([
-      _.pick(userInfo, PRIVATE_USER_INFO),
+      userService.getPersonalInfo(userInfo),
       messageService.authenticate(_.assignIn(userInfo, { clientuseragent })),
       notificationService.init(userInfo),
       friendService.list(userInfo),
@@ -245,7 +244,7 @@ exports.checkVerificationWithPassword = async (req, res, next) => {
   Promise.resolve(_.pick(req.params, ['token', 'reset']))
     .then(verifyInfo => authService.getVerifiedUserWithNewAuthorized(verifyInfo, newPassword))
     .then(userInfo => Promise.all([
-      _.pick(userInfo, PRIVATE_USER_INFO),
+      userService.getPersonalInfo(userInfo),
       messageService.authenticate(_.assignIn(userInfo, { clientuseragent })),
       notificationService.init(userInfo),
       friendService.list(userInfo),
@@ -261,9 +260,7 @@ exports.checkVerificationWithPassword = async (req, res, next) => {
 exports.isLoggedIn = async (req, res, next) => {
   Promise.resolve(httpHandler.parseReqInFields(req, ['region', 'uid', 'token']))
     .then(accountIdentify => authService.isLoggedIn(accountIdentify))
-    .then(loggedIn => loggedIn === true ? null : Promise.reject(new Error(`user is NOT logged in`)))
-    .then(() => next())
-    .catch(err => next(err))
+    .then(loggedIn => loggedIn === true ? next() : next(new Error(`user is NOT logged in`)))
 }
 
 exports.checkThenResetPassword = async (req, res, next) => {
