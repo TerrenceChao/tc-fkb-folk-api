@@ -4,7 +4,7 @@ const faker = require('faker')
 var _ = require('lodash')
 
 const TEST_ACCOUNT_DATA = new Map([
-  ['terrence@gmail.com', {
+  ['rfvbnju@hotmail.com', {
     uid: '345b1c4c-128c-4286-8431-78d16d285f38',
     profileLink: '5678iolf-tw',
     profilePic: faker.internet.url(),
@@ -50,19 +50,19 @@ function genAccountData () {
 }
 
 const userDB = new Map()
-  .set('terrence@gmail.com', {
+  .set('rfvbnju@hotmail.com', {
     region: 'tw',
-    uid: TEST_ACCOUNT_DATA.get('terrence@gmail.com').uid,
+    uid: TEST_ACCOUNT_DATA.get('rfvbnju@hotmail.com').uid,
     lang: 'en',
-    email: 'terrence@gmail.com',
+    email: 'rfvbnju@hotmail.com',
     phone: '+886-987-654-321', // (private)
-    profileLink: TEST_ACCOUNT_DATA.get('terrence@gmail.com').profileLink,
-    profilePic: TEST_ACCOUNT_DATA.get('terrence@gmail.com').profilePic,
+    profileLink: TEST_ACCOUNT_DATA.get('rfvbnju@hotmail.com').profileLink,
+    profilePic: TEST_ACCOUNT_DATA.get('rfvbnju@hotmail.com').profilePic,
     givenName: 'terrence',
     familyName: 'chao',
     gender: 'male',
     birth: '1983-08-01',
-    verificaiton: TEST_ACCOUNT_DATA.get('terrence@gmail.com').verificaiton,
+    verificaiton: TEST_ACCOUNT_DATA.get('rfvbnju@hotmail.com').verificaiton,
     friendList: [],
   })
   .set('alice.wang@outlook.com', {
