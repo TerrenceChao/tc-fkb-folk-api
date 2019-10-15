@@ -16,7 +16,7 @@ var util = require('../../../../../property/util')
 exports.sendInvitation = async (req, res, next) => {
   var accountInfo = req.params,
     targetAccountInfo = _.mapKeys(req.body, (value, key) => key.replace('target_', ''))
-  res.locals.data = util.customizedDefault(res.locals.data)
+  res.locals.data = util.init(res.locals.data) 
 
   Promise.resolve(friendService.getRelationship(targetAccountInfo, accountInfo))
     .then(relationship => circleService.handleInviteActivity(invitationService, relationship, accountInfo, targetAccountInfo))
@@ -44,7 +44,7 @@ exports.sendInvitation = async (req, res, next) => {
 exports.replyInvitation = async (req, res, next) => {
   var accountInfo = req.params,
     invitationRes = req.body
-  res.locals.data = util.customizedDefault(res.locals.data)
+  res.locals.data = util.init(res.locals.data)
 
   Promise.resolve(invitationService.handleFriendInvitation(accountInfo, invitationRes))
     .then(replyInvite => notificationService.emitFriendInvitation(res.locals.data = replyInvite))
@@ -55,7 +55,7 @@ exports.replyInvitation = async (req, res, next) => {
 exports.getInvitation = async (req, res, next) => {
   var accountInfo = req.params,
     invitationInfo = req.query
-  res.locals.data = util.customizedDefault(res.locals.data)
+  res.locals.data = util.init(res.locals.data)
 
   Promise.resolve(invitationService.getInvitation(accountInfo, invitationInfo))
     .then(invitation => res.locals.data = invitation)
@@ -66,7 +66,7 @@ exports.getInvitation = async (req, res, next) => {
 exports.getReceivedInvitationList = async (req, res, next) => {
   var accountInfo = req.params,
     query = req.query
-  res.locals.data = util.customizedDefault(res.locals.data)
+  res.locals.data = util.init(res.locals.data)
 
   Promise.resolve(invitationService.getInvitationList(accountInfo, CONSTANT.INVITE_ARROW_RECEIVED, query.limit, query.skip))
     .then(invitationList => res.locals.data = invitationList)
@@ -77,7 +77,7 @@ exports.getReceivedInvitationList = async (req, res, next) => {
 exports.getSentInvitationList = async (req, res, next) => {
   var accountInfo = req.params,
     query = req.query
-  res.locals.data = util.customizedDefault(res.locals.data)
+  res.locals.data = util.init(res.locals.data)
 
   Promise.resolve(invitationService.getInvitationList(accountInfo, CONSTANT.INVITE_ARROW_SENT, query.limit, query.skip))
     .then(invitationList => res.locals.data = invitationList)

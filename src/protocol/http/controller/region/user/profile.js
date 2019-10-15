@@ -29,7 +29,7 @@ var util = require('../../../../../property/util')
 exports.getHeader = async (req, res, next) => {
   var ownerAccountInfo = req.params,
     visitorAccountInfo = _.mapKeys(req.query, (value, key) => key.replace('visitor_', ''))
-  res.locals.data = util.customizedDefault(res.locals.data)
+  res.locals.data = util.init(res.locals.data)
 
   Promise.all([
     friendService.getRelationship(ownerAccountInfo, visitorAccountInfo),

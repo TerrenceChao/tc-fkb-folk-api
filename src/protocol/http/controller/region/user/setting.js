@@ -12,7 +12,7 @@ var util = require('../../../../../property/util')
 
 exports.getUserInfo = async (req, res, next) => {
   var owner = req.params
-  res.locals.data = util.customizedDefault(res.locals.data)
+  res.locals.data = util.init(res.locals.data)
 
   Promise.resolve(settingService.getUserInfo(owner))
     .then(userInfo => res.locals.data = _.assignIn(res.locals.data, userInfo))
@@ -44,7 +44,7 @@ exports.updateUserInfo = async (req, res, next) => {
       category: CATEGORIES.FRIEND_EVENT,
       channels: CHANNELS.PUSH,
     }
-  res.locals.data = util.customizedDefault(res.locals.data)
+  res.locals.data = util.init(res.locals.data)
 
   Promise.resolve(settingService.updateUserInfo(accountInfo, userInfo))
     .then(updated => updated === true ? res.locals.data = _.assignIn(res.locals.data, userInfo) : Promise.reject(new Error(`Update user info fail`)))

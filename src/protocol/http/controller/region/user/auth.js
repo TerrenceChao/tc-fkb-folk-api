@@ -12,7 +12,7 @@ var util = require('../../../../../property/util')
  * 除了在資料庫建立用戶資訊外，另外需要寄送驗證信件給用戶，以便確認身份。
  */
 exports.signup = async (req, res, next) => {
-  res.locals.data = util.customizedDefault(res.locals.data)
+  res.locals.data = util.init(res.locals.data)
 
   Promise.resolve(authService.signup(req.body))
     .then(verification => Promise.all([
@@ -29,7 +29,7 @@ exports.signup = async (req, res, next) => {
  */
 exports.authorized = async (req, res, next) => {
   var clientuseragent = req.headers.clientuseragent
-  res.locals.data = util.customizedDefault(res.locals.data)
+  res.locals.data = util.init(res.locals.data)
 
   Promise.resolve(httpHandler.parseReqInFields(req, ['token', 'code']))
     .then(verifyInfo => authService.getVerifiedUser(verifyInfo))
@@ -55,7 +55,7 @@ exports.login = async (req, res, next) => {
   var clientuseragent = req.headers.clientuseragent
   var { friendLimit, friendSkip } = req.query
   var { email, password } = req.body  // password is encrypted 
-  res.locals.data = util.customizedDefault(res.locals.data)
+  res.locals.data = util.init(res.locals.data)
 
   Promise.resolve(authService.login(email, password)) // authService.login create session info
     .then(userInfo => Promise.all([ // *** 等三項服務的速度會太慢嗎？有必要拆開？
@@ -171,7 +171,7 @@ exports.sendVerifyInfo = async (req, res, next) => {
  */
 exports.checkVerificationWithCode = async (req, res, next) => {
   var clientuseragent = req.headers.clientuseragent
-  res.locals.data = util.customizedDefault(res.locals.data)
+  res.locals.data = util.init(res.locals.data)
 
   Promise.resolve(httpHandler.parseReqInFields(req, ['token', 'code']))
     .then(verifyInfo => authService.getVerifiedUser(verifyInfo))
@@ -239,7 +239,7 @@ exports.resetPassword = async (req, res, next) => {
 exports.checkVerificationWithPassword = async (req, res, next) => {
   var clientuseragent = req.headers.clientuseragent,
     newPassword = req.body.password // encrypted
-  res.locals.data = util.customizedDefault(res.locals.data)
+  res.locals.data = util.init(res.locals.data)
 
   Promise.resolve(_.pick(req.params, ['token', 'reset']))
     .then(verifyInfo => authService.getVerifiedUserWithNewAuthorized(verifyInfo, newPassword))

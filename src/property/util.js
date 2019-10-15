@@ -4,7 +4,7 @@ const _ = require('lodash')
  * @param {Object} obj
  * @param {*} defultValue
  */
-function customizedDefault(obj, defultValue = {}) {
+function init(obj, defultValue = {}) {
   return obj === undefined ? obj = defultValue : obj
 }
 
@@ -43,7 +43,7 @@ function delay(time, timeoutObj = null) {
 }
 
 module.exports = {
-  customizedDefault,
+  init,
   hasKeys,
   cloneAndAssign,
   cloneAndAssignIn,
