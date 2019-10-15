@@ -51,13 +51,16 @@ SettingService.prototype.getPublicUserInfo = async function (accountInfo) {
 
   return {
     region: 'us',
-    lang: 'en',
     uid: '6d23430a-ccef-47b7-b1eb-2cf70e6bd9ca',
-    email: 'alice.wang@outlook.com',
-    givenName: 'alice',
-    familyName: 'wang',
+    lang: 'en',
     gender: 'female',
     birth: '2019-08-01',
+    email: 'alice.wang@outlook.com',
+    phone: '+886-987-654-321',
+    givenName: 'alice',
+    familyName: 'wang',
+    profileLink: 'xxxxxxxxxxx',
+    profilePic: 'xxxxxxxxxxx',
   }
 }
 
@@ -79,14 +82,16 @@ SettingService.prototype.updateUserInfo = async function (accountInfo, userInfo)
 
   return {
     region: 'tw',
-    lang: 'zh-tw',
     uid: '6d23430a-ccef-47b7-b1eb-2cf70e6bd9ca',
-    email: 'terrence@gmail.com',
+    lang: 'zh-tw',
+    gender: 'male',
+    birth: '2013-12-12',
+    // email: 'terrence@gmail.com',
     phone: '+886-123-456-789', // (private)
     givenName: 'albert',
     familyName: 'chao',
-    gender: 'male',
-    birth: '2013-12-12'
+    // profileLink: 'xxxxxxxxxxx',
+    profilePic: 'xxxxxxxxxxx',
   }
 }
 

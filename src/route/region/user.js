@@ -105,7 +105,7 @@ router.put('/verification/code/:token',
  * 沒辦法了，因為 [checkVerificationWithCode] 階段已經刪除 token/code, 無法回上一頁
  * session info (sessionID/cookie) has registered after [POST]:'/verification/code/:token'
  */
-router.put('/password/reset',
+router.put('/:uid/:region/password/reset',
   userReq.accountIdentifyValidator,
   userReq.newPasswordValidator, // 檢查兩次輸入的新密碼是否相同
   auth.isLoggedIn, // 已登入狀態 => validate session info by uid (req.params.uid)

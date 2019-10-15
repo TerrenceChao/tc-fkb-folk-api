@@ -16,7 +16,7 @@ const TEST_ACCOUNT_DATA = new Map([
   }],
   ['alice.wang@outlook.com', {
     uid: 'c32f7185-31aa-40c3-b0a2-d0b68b35c783',
-    profileLink: 'fyuiol-mnbv-en',
+    profileLink: 'alice.wang',
     profilePic: faker.internet.url(),
     verificaiton: {
       token: 's.kdfjbnsjfv%SDFsdfbfxgnd&llk',
@@ -26,7 +26,7 @@ const TEST_ACCOUNT_DATA = new Map([
   }],
   ['joanna28@hotmail.com', {
     uid: '6d23430a-ccef-47b7-b1eb-2cf70e6bd9ca',
-    profileLink: 'alice.wang',
+    profileLink: 'fyuiol-mnbv-en',
     profilePic: faker.internet.url(),
     verificaiton: {
       token: 'askdjfk.jH&vkadhfbk.degsahrf.KGYGY&llk',
@@ -539,10 +539,11 @@ const DEFAULT_PUBLIC_USER_FIELDS =
  * userRepo
  */
 AuthRepository.prototype.getUser = async function (accountInfo, selectedFields = ['*']) {
-  const PW_FIELDS = ['password', 'newPassword', 'newPasswordConfirm']
+  const PW_FIELDS = ['verificaiton', 'password', 'newPassword', 'newPasswordConfirm', 'friendList']
   for (const userInfo of userDB.values()) {
     if (userInfo.uid === accountInfo.uid && userInfo.region === accountInfo.region) {
-      return selectedFields === ['*'] ? _.omit(userInfo, PW_FIELDS) : _.pick(userInfo, selectedFields)
+      let partialUserInfo = _.omit(userInfo, PW_FIELDS)
+      return _.isEqual(selectedFields.sort(), ['*'].sort()) ? partialUserInfo : _.pick(partialUserInfo, selectedFields)
     }
   }
 

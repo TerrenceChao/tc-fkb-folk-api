@@ -199,7 +199,7 @@ exports.checkVerificationWithCode = async (req, res, next) => {
  *  1. redirect to landing page or profile. ( important! important! important! )
  */
 exports.resetPassword = async (req, res, next) => {
-  var accountInfo = _.pick(req.body, ['uid', 'region']),
+  var accountInfo = _.pick(req.params, ['uid', 'region']),
     newPassword = req.body.newPassword // encrypted
 
   Promise.resolve(authService.resetPassword(accountInfo, newPassword))
@@ -264,7 +264,7 @@ exports.isLoggedIn = async (req, res, next) => {
 }
 
 exports.checkThenResetPassword = async (req, res, next) => {
-  var accountInfo = _.pick(req.body, ['uid', 'region']),
+  var accountInfo = _.pick(req.params, ['uid', 'region']),
     oldPassword = req.body.password // encrypted
     newPassword = req.body.newPassword // encrypted
 
