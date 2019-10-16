@@ -36,10 +36,10 @@ router.post('/signup',
  * 
  * 雖然只能作用一次，但同樣的 url 不會使後端資源造成不同的結果 (都是清除驗證資訊，建立session) [idempotent]
  */
-router.put('/register/newborn/:token',
+router.put('/newborn/code/:token',
   userReq.verificationValidator,
   auth.authorized,    // 確認後刪除 registration info (token/code)
-  generalRes.createdSuccess
+  generalRes.success
   // front-end redirect to landing page
 )
 
@@ -77,7 +77,7 @@ router.get('/search/social',
  * send verify info (through email or sms)
  * 在驗證資訊尚未被清除前 (驗證時清除)，不論作用幾次結果都相同。[idempotent]
  */
-router.put('/verification',
+router.put('/verification/send',
   userReq.accountValidator,
   auth.sendVerifyInfo,
   generalRes.success
@@ -92,7 +92,7 @@ router.put('/verification',
 router.put('/verification/code/:token',
   userReq.verificationValidator,
   auth.checkVerificationWithCode, // 確認後刪除 verification info (token/code)
-  generalRes.createdSuccess
+  generalRes.success
   // front-end redirect to landing page
 )
 
@@ -123,7 +123,7 @@ router.put('/verification/password/:token/:reset',
   userReq.verificationValidator,
   userReq.newPasswordValidator, // 檢查兩次輸入的新密碼是否相同
   auth.checkVerificationWithPassword, /** 檢查 verify token 後，直接變更新密碼，然後刪除 verification info (token/code) */
-  generalRes.createdSuccess
+  generalRes.success
   // front-end redirect to landing page
 )
 

@@ -44,6 +44,23 @@ exports.authorized = async (req, res, next) => {
 }
 
 
+
+function initProcess(userInfo, req, res, next) {
+  var clientuseragent = req.headers.clientuseragent
+  var { friendLimit, friendSkip } = req.query
+
+  return Promise.all([
+      userService.getPersonalInfo(userInfo),
+      messageService.authenticate(_.assignIn(userInfo, { clientuseragent })),
+      notificationService.init(userInfo),
+      friendService.list(userInfo, friendLimit, friendSkip),
+    ])
+    .then(serviceInfoList => res.locals.data = userService.packetRegisterInfo(serviceInfoList))
+    .then(() => next())
+    .catch(err => next(err))
+}
+
+
 /**
  * login 時，
  * 1. 預設取得所有朋友的資訊 (朋友清單)，
@@ -52,20 +69,11 @@ exports.authorized = async (req, res, next) => {
  * 3. 建立 notification service 的消息通知機制
  */
 exports.login = async (req, res, next) => {
-  var clientuseragent = req.headers.clientuseragent
-  var { friendLimit, friendSkip } = req.query
   var { email, password } = req.body  // password is encrypted 
   res.locals.data = util.init(res.locals.data)
 
   Promise.resolve(authService.login(email, password)) // authService.login create session info
-    .then(userInfo => Promise.all([ // *** 等三項服務的速度會太慢嗎？有必要拆開？
-      userService.getPersonalInfo(userInfo),
-      messageService.authenticate(_.assignIn(userInfo, { clientuseragent })),
-      notificationService.init(userInfo),
-      friendService.list(userInfo, friendLimit, friendSkip),
-    ]))
-    .then(serviceInfoList => res.locals.data = userService.packetRegisterInfo(serviceInfoList))
-    .then(() => next())
+    .then(userInfo => initProcess(userInfo, req, res, next))
     .catch(err => next(err))
 }
 
@@ -98,7 +106,7 @@ exports.searchSocialAccount = async (req, res, next) => {
 }
 
 /**
- * http method PUT ([PUT]:'server-host/api/v1/user/verification)
+ * http method PUT ([PUT]:'server-host/api/v1/user/verification/send)
  * 發送的前提是，你已經知道 account 了 (email OR phone), 所以
  * 發送 verifyInfo 時會伴隨著 email/phone 資訊 (寄信或發簡訊)，並且
  * 回應 token 資訊給前端。
@@ -144,7 +152,7 @@ exports.sendVerifyInfo = async (req, res, next) => {
 
 /**
  * http method PUT
- * 從 'sendVerifyInfo' ([PUT]:'server-host/api/v1/user/verification) 以後，
+ * front-end 在執行 'sendVerifyInfo' ([PUT]:'server-host/api/v1/user/verification/send) 以後，
  * front-end 得到了 verify-link ([PUT]:'server-host/api/v1/user/verification/code/:[token]')，
  * 用戶將從 email OR sms 得知 verify code。
  * 只要經過第一次驗證成功後，這樣的 verify-link 就會失效。
@@ -170,19 +178,11 @@ exports.sendVerifyInfo = async (req, res, next) => {
  *  3. redirect to landing page or profile. ( important! important! important! )
  */
 exports.checkVerificationWithCode = async (req, res, next) => {
-  var clientuseragent = req.headers.clientuseragent
   res.locals.data = util.init(res.locals.data)
 
   Promise.resolve(httpHandler.parseReqInFields(req, ['token', 'code']))
     .then(verifyInfo => authService.getVerifiedUser(verifyInfo))
-    .then(userInfo => Promise.all([
-      userService.getPersonalInfo(userInfo),
-      messageService.authenticate(_.assignIn(userInfo, { clientuseragent })),
-      notificationService.init(userInfo),
-      friendService.list(userInfo),
-    ]))
-    .then(serviceInfoList => res.locals.data = userService.packetRegisterInfo(serviceInfoList))
-    .then(() => next())
+    .then(userInfo => initProcess(userInfo, req, res, next))
     .catch(err => next(err))
 }
 
@@ -209,7 +209,7 @@ exports.resetPassword = async (req, res, next) => {
 
 /**
  * http method PUT
- * front-end 在執行 'sendVerifyInfo' ([PUT]:'server-host/api/v1/user/verification) 以後，
+ * front-end 在執行 'sendVerifyInfo' ([PUT]:'server-host/api/v1/user/verification/send) 以後，
  * 並不會從 response 中拿到這裡的 verify-link，而是用戶透過點擊信箱內的 [變更密碼] 而導向到 front-end 的
  * 某一個輸入密碼的頁面，其頁面會呼叫這裡的 verify-link：
  * ([PUT]:'server-host/api/v1/user/verification/password/:[token]')。
@@ -237,20 +237,12 @@ exports.resetPassword = async (req, res, next) => {
  *  2. redirect to landing page or profile. ( important! important! important! )
  */
 exports.checkVerificationWithPassword = async (req, res, next) => {
-  var clientuseragent = req.headers.clientuseragent,
-    newPassword = req.body.password // encrypted
+  var  newPassword = req.body.password // encrypted
   res.locals.data = util.init(res.locals.data)
 
   Promise.resolve(_.pick(req.params, ['token', 'reset']))
     .then(verifyInfo => authService.getVerifiedUserWithNewAuthorized(verifyInfo, newPassword))
-    .then(userInfo => Promise.all([
-      userService.getPersonalInfo(userInfo),
-      messageService.authenticate(_.assignIn(userInfo, { clientuseragent })),
-      notificationService.init(userInfo),
-      friendService.list(userInfo),
-    ]))
-    .then(serviceInfoList => res.locals.data = userService.packetRegisterInfo(serviceInfoList))
-    .then(() => next())
+    .then(userInfo => initProcess(userInfo, req, res, next))
     .catch(err => next(err))
 }
 
