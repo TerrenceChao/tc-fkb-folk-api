@@ -5,7 +5,7 @@ const CIRCLE_CONST = require('../_properties/constant')
 const friendRepo = require('../../folk/user/_repositories/authRepositoryTemp')
 const inviteRepo = require('../../folk/user/_repositories/authRepositoryTemp')
 
-function FriendService(friendRepo, inviteRepo) {
+function FriendService (friendRepo, inviteRepo) {
   this.friendRepo = friendRepo
   this.inviteRepo = inviteRepo
   console.log(`init ${arguments.callee.name} (template)`)
@@ -17,32 +17,32 @@ function FriendService(friendRepo, inviteRepo) {
  */
 FriendService.prototype.list = async function (accountInfo, limit = CONSTANT.LIMIT, skip = CONSTANT.SKIP) {
   return await this.friendRepo.getFriendList(accountInfo, limit, skip)
-  
-  return [
-    // 僅傳回最低限量可供顯示的資料即可
-    {
-      region: 'us',
-      uid: '3d6002e2-f834-4fee-89bb-8a118cc345ee',
-      profileLink: '/rfvbnju',
-      profilePic: '/rfvbnju6ytghjkopoiuy',
-      // no email. its private
-      // no phone num. its private,
-      givenName: 'lydia',
-      familyName: 'wang',
-      allowFollowMe: true, // TODO: 重要。但開始有 post 時才有用
-    },
-    {
-      region: 'uk',
-      uid: '3fb6e6a1-abc1-4f6f-99d9-57ae6f4e759a',
-      profileLink: '/asdfghjnjkoj',
-      profilePic: '/asdfghjnjkojhgyu78iokjhgtfrgtyh',
-      // no email. its private
-      // no phone num. its private
-      givenName: 'albert',
-      familyName: 'lin',
-      allowFollowMe: false, // TODO: 重要。但開始有 post 時才有用
-    }
-  ]
+
+  // return [
+  //   // 僅傳回最低限量可供顯示的資料即可
+  //   {
+  //     region: 'us',
+  //     uid: '3d6002e2-f834-4fee-89bb-8a118cc345ee',
+  //     profileLink: '/rfvbnju',
+  //     profilePic: '/rfvbnju6ytghjkopoiuy',
+  //     // no email. its private
+  //     // no phone num. its private,
+  //     givenName: 'lydia',
+  //     familyName: 'wang',
+  //     allowFollowMe: true, // TODO: 重要。但開始有 post 時才有用
+  //   },
+  //   {
+  //     region: 'uk',
+  //     uid: '3fb6e6a1-abc1-4f6f-99d9-57ae6f4e759a',
+  //     profileLink: '/asdfghjnjkoj',
+  //     profilePic: '/asdfghjnjkojhgyu78iokjhgtfrgtyh',
+  //     // no email. its private
+  //     // no phone num. its private
+  //     givenName: 'albert',
+  //     familyName: 'lin',
+  //     allowFollowMe: false, // TODO: 重要。但開始有 post 時才有用
+  //   }
+  // ]
 }
 
 /**
@@ -59,7 +59,7 @@ FriendService.prototype.list = async function (accountInfo, limit = CONSTANT.LIM
  */
 // FriendService.prototype.listByRegion = async function (accountInfo, friendsRegion, limit = CONSTANT.LIMIT, skip = CONSTANT.SKIP) {
 //   return await this.friendRepo.getFriendListByRegion(accountInfo, friendsRegion, limit, skip)
-  
+
 //   return [
 //     // 僅傳回最低限量可供顯示的資料即可
 //     {
@@ -93,17 +93,17 @@ FriendService.prototype.list = async function (accountInfo, limit = CONSTANT.LIM
 FriendService.prototype.findOne = async function (accountInfo, targetAccountInfo) {
   return await this.friendRepo.getFriend(accountInfo, targetAccountInfo)
 
-  return {
-    region: targetAccountInfo.target_region,
-    uid: targetAccountInfo.target_uid,
-    profileLink: '/asdfghjnjkoj',
-    profilePic: '/asdfghjnjkojhgyu78iokjhgtfrgtyh',
-    // no email. its private
-    // no phone num. its private
-    givenName: 'albert',
-    familyName: 'lin',
-    allowFollowMe: true, // TODO: 重要。但開始有 post 時才有用
-  }
+  // return {
+  //   region: targetAccountInfo.target_region,
+  //   uid: targetAccountInfo.target_uid,
+  //   profileLink: '/asdfghjnjkoj',
+  //   profilePic: '/asdfghjnjkojhgyu78iokjhgtfrgtyh',
+  //   // no email. its private
+  //   // no phone num. its private
+  //   givenName: 'albert',
+  //   familyName: 'lin',
+  //   allowFollowMe: true, // TODO: 重要。但開始有 post 時才有用
+  // }
 }
 
 /**
@@ -113,10 +113,10 @@ FriendService.prototype.findOne = async function (accountInfo, targetAccountInfo
 FriendService.prototype.remove = async function (accountInfo, targetAccountInfo) {  
   return await this.friendRepo.removeFriend(accountInfo, targetAccountInfo)
 
-  return {
-    uid: targetAccountInfo.target_uid,
-    region: targetAccountInfo.target_region
-  }
+  // return {
+  //   uid: targetAccountInfo.target_uid,
+  //   region: targetAccountInfo.target_region
+  // }
 }
 
 /**
@@ -151,8 +151,8 @@ FriendService.prototype.getRelationship = async function (ownerAccountInfo, visi
       type: CIRCLE_CONST.RELATION_STATUS_STRANGER,
       relation: 'stranger'
     }
-  } 
-  
+  }
+
   const inviter = invitation.inviter
   const recipient = invitation.recipient
   // 3. user (accountInfo) is invited
@@ -160,7 +160,7 @@ FriendService.prototype.getRelationship = async function (ownerAccountInfo, visi
     return {
       type: CIRCLE_CONST.RELATION_STATUS_BE_INVITED,
       relation: 'you are invited',
-      invitation,
+      invitation
     }
   }
 
@@ -168,7 +168,7 @@ FriendService.prototype.getRelationship = async function (ownerAccountInfo, visi
   if (inviter.uid === visitorAccountInfo.uid && inviter.region === visitorAccountInfo.region) {
     return {
       type: CIRCLE_CONST.RELATION_STATUS_INVITED,
-      relation: 'invitation has sent',
+      relation: 'invitation has sent'
     }
   }
 }

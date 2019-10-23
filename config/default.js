@@ -10,7 +10,7 @@ const ROOT = getParentDirPath(__dirname, project.name)
  * @param {string} specifyDir
  * @returns {string}
  */
-function getParentDirPath(currentDir, specifyDir) {
+function getParentDirPath (currentDir, specifyDir) {
   if (specifyDir == null) {
     return path.resolve(currentDir, '../')
   }

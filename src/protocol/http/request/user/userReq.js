@@ -67,14 +67,14 @@ exports.visitorAccountInfoValidator = (req, res, next) => {
  *[token隱含的資訊必須可知region]
  */
 exports.verificationValidator = (req, res, next) => {
-  // 檢查欄位中，「token」很重要！token 隱含的資訊必須可知 region 
+  // 檢查欄位中，「token」很重要！token 隱含的資訊必須可知 region
   // 'verify code' format check
   next()
 }
 
 exports.passwordValidator = (req, res, next) => {
   if (req.body.password === undefined) {
-    var err = new Error(`password is required`)
+    var err = new Error('password is required')
     err.status = 422
     next(err)
   }
@@ -88,13 +88,13 @@ exports.newPasswordValidator = (req, res, next) => {
     newPasswordConfirm
   } = req.body // both password are encrypted
   if (newPassword === undefined || newPasswordConfirm === undefined) {
-    var err = new Error(`new password is required`)
+    const err = new Error('new password is required')
     err.status = 422
     next(err)
   }
 
   if (newPassword !== newPasswordConfirm) {
-    var err = new Error(`new passwords are not matched`)
+    const err = new Error('new passwords are not matched')
     err.status = 422
     next(err)
   }

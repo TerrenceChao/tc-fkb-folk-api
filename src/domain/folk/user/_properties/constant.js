@@ -1,11 +1,9 @@
-
 exports.ACCOUT_IDENTITY = process.env.ACCOUT_IDENTITY ?
   process.env.ACCOUT_IDENTITY.split(',') : ['region', 'uid']
 
 // account events
 exports.ACCOUNT_EVENT_REGISTRATION = 'account_event_registration'
 exports.ACCOUNT_EVENT_VALIDATE_ACCOUNT = 'account_event_validate_account'
-
 
 exports.PUBLIC_USER_INFO = process.env.PUBLIC_USER_INFO ?
   process.env.PUBLIC_USER_INFO.split(',') : [
@@ -16,10 +14,10 @@ exports.PUBLIC_USER_INFO = process.env.PUBLIC_USER_INFO ?
     'fullName',
     'profileLink',
     'profilePic',
-    'gender',
+    'gender'
   ]
 
-  exports.PRIVATE_USER_INFO = process.env.PRIVATE_USER_INFO ?
+exports.PRIVATE_USER_INFO = process.env.PRIVATE_USER_INFO ?
   process.env.PRIVATE_USER_INFO.split(',') : [
     'region',
     'uid',
@@ -30,7 +28,7 @@ exports.PUBLIC_USER_INFO = process.env.PUBLIC_USER_INFO ?
     'profilePic',
     'gender',
     'lang',
-    'auth',
+    'auth'
   ]
 
 exports.PRIVATE_CONTACT_INFO = process.env.PRIVATE_CONTACT_INFO ?

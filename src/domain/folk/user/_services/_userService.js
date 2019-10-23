@@ -1,7 +1,7 @@
 const _ = require('lodash')
 const PRIVATE_USER_INFO = require('../_properties/constant').PRIVATE_USER_INFO
 
-function UserService() {
+function UserService () {
   console.log(`init ${arguments.callee.name}`)
 }
 
@@ -21,12 +21,11 @@ UserService.prototype.packetProfileHeader = function (responsData) {
   }, {})
 }
 
-
 const REGISTER_INFO_PARTS = {
   0: 'userInfo',
   1: 'msgInfo',
   2: 'notifyInfo',
-  3: 'friendList',
+  3: 'friendList'
 }
 
 UserService.prototype.packetRegisterInfo = function (serviceInfoList) {

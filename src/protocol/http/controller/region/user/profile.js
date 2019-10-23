@@ -11,8 +11,8 @@ var util = require('../../../../../property/util')
  * 2. you are friends.
  * 3. show options (Y/n) if you are invited.
  * 4. show state:'invitation has sent' if you invited he/she.
- * 5. show state:'invite' if he/she is a stranger. 
- * 
+ * 5. show state:'invite' if he/she is a stranger.
+ *
  * TODO: 
  * B. Assume user has a long long story/history, such as
  *    photos, music, blogs, travels ... separate these parts as [batch-loading].
@@ -27,15 +27,15 @@ var util = require('../../../../../property/util')
  * 5. stranger
  */
 exports.getHeader = async (req, res, next) => {
-  var ownerAccountInfo = req.params,
-    visitorAccountInfo = _.mapKeys(req.query, (value, key) => key.replace('visitor_', ''))
+  var ownerAccountInfo = req.params
+  var visitorAccountInfo = _.mapKeys(req.query, (value, key) => key.replace('visitor_', ''))
   res.locals.data = util.init(res.locals.data)
 
   Promise.all([
     friendService.getRelationship(ownerAccountInfo, visitorAccountInfo),
     settingService.getPublicUserInfo(ownerAccountInfo)
   ])
-    .then(responsData => res.locals.data = userService.packetProfileHeader(responsData))
+    .then(responsData => (res.locals.data = userService.packetProfileHeader(responsData)))
     .then(() => next())
     .catch(err => next(err))
 }

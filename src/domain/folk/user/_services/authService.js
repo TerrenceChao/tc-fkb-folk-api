@@ -7,7 +7,7 @@ function AuthService (authRepo) {
 }
 
 AuthService.prototype.signup = async function (userInfo) {
-  
+
 }
 
 module.exports = {

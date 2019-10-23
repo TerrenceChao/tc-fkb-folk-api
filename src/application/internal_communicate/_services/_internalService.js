@@ -1,5 +1,4 @@
 
-
-function InternalService() {}
+function InternalService () {}
 
 module.exports = new InternalService()

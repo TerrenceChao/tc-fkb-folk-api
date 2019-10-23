@@ -1,7 +1,7 @@
 // TODO: for temporary
 const userRepo = require('../_repositories/authRepositoryTemp')
 
-function SettingService(userRepo) {
+function SettingService (userRepo) {
   this.userRepo = userRepo
   console.log(`init ${arguments.callee.name}`)
 }

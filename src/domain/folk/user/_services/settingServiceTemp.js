@@ -1,8 +1,7 @@
 const CONSTANT = require('../../user/_properties/constant')
 const userRepo = require('../_repositories/authRepositoryTemp')
 
-
-function SettingService(userRepo) {
+function SettingService (userRepo) {
   this.userRepo = userRepo
   console.log(`init ${arguments.callee.name} (template)`)
 }
@@ -17,21 +16,21 @@ SettingService.prototype.getUserInfo = async function (accountInfo) {
     return user
   }
 
-  throw new Error(`User not found`)
-  // var err = new Error(`SettingService causes error!`)
+  throw new Error('User not found')
+  // var err = new Error('SettingService causes error!')
   // err.status = 501
   // throw err
 
-  return {
-    region: 'us',
-    lang: 'en',
-    uid: '6d23430a-ccef-47b7-b1eb-2cf70e6bd9ca',
-    email: 'alice.wang@outlook.com',
-    givenName: 'alice',
-    familyName: 'wang',
-    gender: 'female',
-    birth: '2019-08-01',
-  }
+  // return {
+  //   region: 'us',
+  //   lang: 'en',
+  //   uid: '6d23430a-ccef-47b7-b1eb-2cf70e6bd9ca',
+  //   email: 'alice.wang@outlook.com',
+  //   givenName: 'alice',
+  //   familyName: 'wang',
+  //   gender: 'female',
+  //   birth: '2019-08-01',
+  // }
 }
 
 /**
@@ -44,24 +43,24 @@ SettingService.prototype.getPublicUserInfo = async function (accountInfo) {
     return user
   }
 
-  throw new Error(`User not found`)
-  // var err = new Error(`SettingService causes error!`)
+  throw new Error('User not found')
+  // var err = new Error('SettingService causes error!')
   // err.status = 501
   // throw err
 
-  return {
-    region: 'us',
-    uid: '6d23430a-ccef-47b7-b1eb-2cf70e6bd9ca',
-    lang: 'en',
-    gender: 'female',
-    birth: '2019-08-01',
-    email: 'alice.wang@outlook.com',
-    phone: '+886-987-654-321',
-    givenName: 'alice',
-    familyName: 'wang',
-    profileLink: 'xxxxxxxxxxx',
-    profilePic: 'xxxxxxxxxxx',
-  }
+  // return {
+  //   region: 'us',
+  //   uid: '6d23430a-ccef-47b7-b1eb-2cf70e6bd9ca',
+  //   lang: 'en',
+  //   gender: 'female',
+  //   birth: '2019-08-01',
+  //   email: 'alice.wang@outlook.com',
+  //   phone: '+886-987-654-321',
+  //   givenName: 'alice',
+  //   familyName: 'wang',
+  //   profileLink: 'xxxxxxxxxxx',
+  //   profilePic: 'xxxxxxxxxxx',
+  // }
 }
 
 /**
@@ -74,25 +73,25 @@ SettingService.prototype.updateUserInfo = async function (accountInfo, userInfo)
     return updated
   }
 
-  throw new Error(`Update user info fail`) 
+  throw new Error('Update user info fail')
 
-  // var err = new Error(`SettingService causes error!`)
+  // var err = new Error('SettingService causes error!')
   // err.status = 501
   // throw err
 
-  return {
-    region: 'tw',
-    uid: '6d23430a-ccef-47b7-b1eb-2cf70e6bd9ca',
-    lang: 'zh-tw',
-    gender: 'male',
-    birth: '2013-12-12',
-    // email: 'terrence@gmail.com',
-    phone: '+886-123-456-789', // (private)
-    givenName: 'albert',
-    familyName: 'chao',
-    // profileLink: 'xxxxxxxxxxx',
-    profilePic: 'xxxxxxxxxxx',
-  }
+  // return {
+  //   region: 'tw',
+  //   uid: '6d23430a-ccef-47b7-b1eb-2cf70e6bd9ca',
+  //   lang: 'zh-tw',
+  //   gender: 'male',
+  //   birth: '2013-12-12',
+  //   // email: 'terrence@gmail.com',
+  //   phone: '+886-123-456-789', // (private)
+  //   givenName: 'albert',
+  //   familyName: 'chao',
+  //   // profileLink: 'xxxxxxxxxxx',
+  //   profilePic: 'xxxxxxxxxxx',
+  // }
 }
 
 module.exports = {

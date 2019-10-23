@@ -2,10 +2,10 @@ var hasKeys = require('../../../../property/util').hasKeys
 const ACCOUT_IDENTITY = require('./constant').ACCOUT_IDENTITY
 
 /**
- * @param {Object} accountA 
- * @param {Object} accountB 
+ * @param {Object} accountA
+ * @param {Object} accountB
  */
-function equalAccounts(accountA, accountB) {
+function equalAccounts (accountA, accountB) {
   ACCOUT_IDENTITY.forEach(field => {
     if (accountA[field] !== accountB[field]) {
       return false
@@ -16,9 +16,9 @@ function equalAccounts(accountA, accountB) {
 }
 
 /**
- * @param {Object} accountInfo 
+ * @param {Object} accountInfo
  */
-function validAccount(accountInfo) {
+function validAccount (accountInfo) {
   return hasKeys(accountInfo, ACCOUT_IDENTITY)
 }
 

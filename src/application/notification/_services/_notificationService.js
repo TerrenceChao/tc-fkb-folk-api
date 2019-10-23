@@ -6,10 +6,9 @@ const {
   CATEGORIES,
   CHANNELS,
   SENDERS,
-  RECEIVERS,
+  RECEIVERS
 } = require('../_properties/constant')
 var form = require('../_properties/content/format')
-var redisEmitter = require('../../../../infrastructure/notification/RedisEmitter')
 var validAccount = require('../../../domain/folk/user/_properties/util').validAccount
 var delay = require('../../../property/util').delay
 var util = require('../_properties/util')
@@ -20,10 +19,10 @@ const CHANNEL_TYPES = {
 }
 
 /**
- * @param {NotificationService} service 
- * @param {Object} userInfo 
+ * @param {NotificationService} service
+ * @param {Object} userInfo
  */
-function registerRequest(service, userInfo) {
+function registerRequest (service, userInfo) {
   return util.syncPublishRequest(USER_CONST.ACCOUNT_EVENT_REGISTRATION, {
     category: CATEGORIES.PERSONAL,
     channels: [CHANNELS.INTERNAL_SEARCH],
@@ -36,10 +35,9 @@ function registerRequest(service, userInfo) {
   }, service.init, userInfo)
 }
 
-
-function NotificationService() {
+function NotificationService () {
   // init test
-  util.syncPublishRequestTest(`publish connection testing...`, this.init, null)
+  util.syncPublishRequestTest('publish connection testing...', this.init, null)
 }
 
 NotificationService.prototype.register = function (userInfo) {
@@ -55,7 +53,7 @@ NotificationService.prototype.register = function (userInfo) {
  * A. 以 client 端的角度來看，又區分為線上線下
  * 線上：會 pop-up 至 client 端. 用戶明顯感受到被通知
  * 線下：client 端背景做了一些資料更新，用戶不知道
- * 
+ *
  * B. 以發送類型的角度，區分 email, SMS, app-push, web-push
  */
 NotificationService.prototype.init = function (userInfo) {
@@ -73,7 +71,7 @@ NotificationService.prototype.init = function (userInfo) {
 }
 
 NotificationService.prototype.emitRegistration = function (verification) {
-  notifyInfo = form.genVerifyFormat(verification)
+  var notifyInfo = form.genVerifyFormat(verification)
 
   util.publishRequest(USER_CONST.ACCOUNT_EVENT_REGISTRATION, {
     category: CATEGORIES.PERSONAL,
@@ -82,7 +80,7 @@ NotificationService.prototype.emitRegistration = function (verification) {
     receivers: [{ email: notifyInfo.to }],
     packet: {
       event: USER_CONST.ACCOUNT_EVENT_REGISTRATION,
-      content: notifyInfo.content,
+      content: notifyInfo.content
     }
   })
 }
@@ -104,7 +102,7 @@ NotificationService.prototype.emitRegistration = function (verification) {
  */
 NotificationService.prototype.emitVerification = function (verification) {
   const type = verification.type
-  notifyInfo = form.genVerifyFormat(verification)
+  var notifyInfo = form.genVerifyFormat(verification)
 
   // send email/SMS to user .... it tests by redis. (notifyInfo.type/to/content)
   // redisEmitter.publish(notifyInfo.to, notifyInfo.content)
@@ -116,7 +114,7 @@ NotificationService.prototype.emitVerification = function (verification) {
     receivers: [{ [type]: notifyInfo.to }],
     packet: {
       event: USER_CONST.ACCOUNT_EVENT_VALIDATE_ACCOUNT,
-      content: notifyInfo.content,
+      content: notifyInfo.content
     }
   })
 }
@@ -131,7 +129,7 @@ NotificationService.prototype.emitFriendInvitation = function (invitation) {
   const inviteEvent = invitation.header.inviteEvent
   const sender = _.pick(invitation[SENDERS[inviteEvent]], ACCOUT_IDENTITY)
   const receiver = _.pick(invitation[RECEIVERS[inviteEvent]], ACCOUT_IDENTITY)
-  
+
   util.publishRequest(inviteEvent, {
     category: CATEGORIES.INVITE_EVENT_FRIEND,
     channels: CHANNELS.PUSH,

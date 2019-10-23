@@ -1,10 +1,8 @@
-const _ = require('lodash')
 const HTTP = require('../_properties/constant').HTTP
 var delay = require('../../../property/util').delay
 var util = require('../_properties/util')
 
-
-function MessageService() {
+function MessageService () {
   // init test
   util.authRequestTest('authenticate connnection testing...')
 }

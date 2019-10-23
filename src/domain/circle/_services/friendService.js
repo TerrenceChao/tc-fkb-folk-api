@@ -1,11 +1,10 @@
 const CONSTANT = require('../../../property/constant')
-const CIRCLE_CONST = require('../_properties/constant')
 
 // TODO: for temporary
 const friendRepo = require('../../folk/user/_repositories/authRepositoryTemp')
 const inviteRepo = require('../../folk/user/_repositories/authRepositoryTemp')
 
-function FriendService(friendRepo, inviteRepo) {
+function FriendService (friendRepo, inviteRepo) {
   this.friendRepo = friendRepo
   this.inviteRepo = inviteRepo
   console.log(`init ${arguments.callee.name}`)
@@ -46,7 +45,7 @@ FriendService.prototype.findOne = async function (accountInfo, targetAccountInfo
  * remove someone's (accountInfo) friend.
  * TODO: this.friendRepo.removeFriend 在同區域時,會刪除兩筆紀錄; 在不同區域時只會刪除一筆
  */
-FriendService.prototype.remove = async function (accountInfo, targetAccountInfo) {  
+FriendService.prototype.remove = async function (accountInfo, targetAccountInfo) {
 
 }
 

@@ -3,7 +3,7 @@ const authRepo = require('../_repositories/authRepositoryTemp')
 
 const expirationMins = parseInt(process.env.EXPIRATION_TIME)
 
-function AuthService(authRepo) {
+function AuthService (authRepo) {
   this.authRepo = authRepo
   console.log(`init ${arguments.callee.name} (template)`)
 }
@@ -13,9 +13,9 @@ function AuthService(authRepo) {
  * region!region!region!region!region!region!
  */
 AuthService.prototype.signup = async function (signupInfo) {
-  // create record in account 
+  // create record in account
 
-  // var err = new Error(`AuthService causes error!`)
+  // var err = new Error('AuthService causes error!')
   // err.status = 501
   // throw err
 
@@ -30,8 +30,7 @@ AuthService.prototype.signup = async function (signupInfo) {
  * 2. return user info
  */
 AuthService.prototype.login = async function (email, password) {
-
-  // var err = new Error(`AuthService causes error!`)
+  // var err = new Error('AuthService causes error!')
   // err.status = 501
   // throw err
   var user = await this.authRepo.getAccountUser({ email }, password)
@@ -39,9 +38,9 @@ AuthService.prototype.login = async function (email, password) {
   var auth = await this.createSession({
     region: user.region,
     uid: user.uid,
-    email: user.email,
+    email: user.email
   })
-  
+
   return _.assignIn(user, { auth })
 }
 
@@ -74,7 +73,7 @@ AuthService.prototype.findOrCreateVerification = async function (type, account, 
   /**
    * TODO: [authRepo.findOrCreateVerification...]
    * 透過 type, account 找到用戶的 [region,uid] 來建立 verification 是比較好的作法。
-   * 
+   *
    * TODO: 請善用 findOrCreateVerification 第三個欄位: selectedFields
    */
   const partialUserData = await this.authRepo.findOrCreateVerification(type, account, reset)
@@ -93,7 +92,7 @@ AuthService.prototype.findOrCreateVerification = async function (type, account, 
     /**
      * token 隱含的資訊，已經能讓後端服務知道 token 要去哪一個區域(region)
      *  (Tokyo, Taipei, Sydney ...) 找尋用戶資料了
-     * 
+     *
      * [NOTE] 以'verify-token'命名是因為你不知道從這個 function 丟出去的結果會走向哪裡，
      * 他很有可能和 session/auth 相關的 token 搞混。因此強制性的命名。
      */
@@ -111,7 +110,7 @@ AuthService.prototype.findOrCreateVerification = async function (type, account, 
   //   account,
   //   content: {
   //     region: 'tw',
-      
+
   //    /**
   //      * [NOTE] content 會在 notification-service 才組成[真正的email內容]
   //      * lang: 'zh-tw' 在 sendVerification 時,
@@ -148,21 +147,21 @@ AuthService.prototype.getVerifiedUser = async function (verifyInfo) {
   const IDX_AUTH = 0
 
   return Promise.resolve(this.authRepo.getVerifyUserByCode(token, code))
-    .then(userInfo => userInfo == null ? Promise.reject(new Error(`verification fail!`)) : userInfo)
+    .then(userInfo => userInfo == null ? Promise.reject(new Error('verification fail!')) : userInfo)
     .then(userInfo => Promise.all([
       this.createSession({
         region: userInfo.region,
         uid: userInfo.uid,
-        email: userInfo.email,
+        email: userInfo.email
       }),
-      this.authRepo.deleteVerification(userInfo),
+      this.authRepo.deleteVerification(userInfo)
     ])
-    .then((result) => {
-      userInfo.auth = result[IDX_AUTH]
-      delete userInfo.verificaiton
-      
-      return userInfo
-    }))
+      .then(result => {
+        userInfo.auth = result[IDX_AUTH]
+        delete userInfo.verificaiton
+
+        return userInfo
+      }))
 
   // return {
   //   region: 'tw',
@@ -175,7 +174,7 @@ AuthService.prototype.getVerifiedUser = async function (verifyInfo) {
   //   familyName: 'chao',
   //   gender: 'male',
   //   birth: '2019-08-01',
-  //   auth: { token: `xxxx`, }
+  //   auth: { token: 'xxxx', }
   // } || undefined
 }
 
@@ -192,7 +191,7 @@ AuthService.prototype.getVerifiedUserWithNewAuthorized = async function (verifyI
   try {
     var userInfo = await this.authRepo.getVerifyUserWithoutExpired(token, reset)
     if (userInfo == null) {
-      throw new Error(`verification fail or expired!`)
+      throw new Error('verification fail or expired!')
     }
 
     /**
@@ -201,24 +200,23 @@ AuthService.prototype.getVerifiedUserWithNewAuthorized = async function (verifyI
      * 讓使用者能夠再次發[新的驗證資訊]
      */
     var expiredTime = userInfo.verificaiton.reset // Database's record
-      if (expiredTime != null && Date.now() > expiredTime) {
-        await this.authRepo.deleteVerification(userInfo)
-        throw new Error(`verification fail or expired!`)
-    } 
+    if (expiredTime != null && Date.now() > expiredTime) {
+      await this.authRepo.deleteVerification(userInfo)
+      throw new Error('verification fail or expired!')
+    }
   } catch (err) {
     return Promise.reject(err)
   }
 
-  
   const IDX_AUTH = 0
   return Promise.all([
-      this.createSession({
-        region: userInfo.region,
-        uid: userInfo.uid,
-        email: userInfo.email,
-      }),
-      this.refreshAuthentication(userInfo, newPassword),
-    ])
+    this.createSession({
+      region: userInfo.region,
+      uid: userInfo.uid,
+      email: userInfo.email
+    }),
+    this.refreshAuthentication(userInfo, newPassword)
+  ])
     .then((result) => {
       userInfo.auth = result[IDX_AUTH]
       delete userInfo.verificaiton
@@ -237,7 +235,7 @@ AuthService.prototype.getVerifiedUserWithNewAuthorized = async function (verifyI
   //   familyName: 'chao',
   //   gender: 'male',
   //   birth: '2019-08-01',
-  //   auth: { token: `xxxx`, }
+  //   auth: { token: 'xxxx', }
   // } || undefined
 }
 
@@ -279,7 +277,7 @@ AuthService.prototype.refreshAuthentication = async function (accountInfo, newPa
 
 /**
  * TODO: [若原本存在舊的session，將會被清除，重新建立一個新的]
- * 
+ *
  * [日後做資料庫sharding時可能需要除了uid以外的資訊]
  * accountInfo 至少要有 {region, uid}
  * 這裡不是只輸入 uid
@@ -316,7 +314,6 @@ AuthService.prototype.isLoggedInByMock = async function (accountIdentify) {
 AuthService.prototype.logout = async function (accountInfo) {
   return true
 }
-
 
 module.exports = {
   authService: new AuthService(authRepo),

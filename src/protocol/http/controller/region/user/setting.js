@@ -15,7 +15,7 @@ exports.getUserInfo = async (req, res, next) => {
   res.locals.data = util.init(res.locals.data)
 
   Promise.resolve(settingService.getUserInfo(owner))
-    .then(userInfo => res.locals.data = _.assignIn(res.locals.data, userInfo))
+    .then(userInfo => (res.locals.data = _.assignIn(res.locals.data, userInfo)))
     .then(() => next())
     .catch(err => next(err))
 }
@@ -24,30 +24,30 @@ exports.getUserInfo = async (req, res, next) => {
  * TODO: 跨區域的通知朋友是跑不掉的
  */
 exports.updateUserInfo = async (req, res, next) => {
-  var accountInfo = req.params,
-    userInfo = _.assignIn(req.body, accountInfo),
-    message = {
-      sender: accountInfo,
-      packet: {
-        event: CONSTANT.SETTING_EVENT_UPDATE_PUBLIC_INFO,
-        content: _.pick(userInfo, CONSTANT.PUBLIC_USER_INFO)
-      }
-    },
-    updateSearchQuery = {
-      // registerRegion: accountInfo.region,
-      category: CATEGORIES.PERSONAL,
-      channels: [CHANNELS.INTERNAL_SEARCH],
-      receivers: [accountInfo]
-    },
-    notifyFriend = {
-      // registerRegion: accountInfo.region,
-      category: CATEGORIES.FRIEND_EVENT,
-      channels: CHANNELS.PUSH,
+  var accountInfo = req.params
+  var userInfo = _.assignIn(req.body, accountInfo)
+  var message = {
+    sender: accountInfo,
+    packet: {
+      event: CONSTANT.SETTING_EVENT_UPDATE_PUBLIC_INFO,
+      content: _.pick(userInfo, CONSTANT.PUBLIC_USER_INFO)
     }
+  }
+  var updateSearchQuery = {
+    // registerRegion: accountInfo.region,
+    category: CATEGORIES.PERSONAL,
+    channels: [CHANNELS.INTERNAL_SEARCH],
+    receivers: [accountInfo]
+  }
+  var notifyFriend = {
+    // registerRegion: accountInfo.region,
+    category: CATEGORIES.FRIEND_EVENT,
+    channels: CHANNELS.PUSH
+  }
   res.locals.data = util.init(res.locals.data)
 
   Promise.resolve(settingService.updateUserInfo(accountInfo, userInfo))
-    .then(updated => updated === true ? res.locals.data = _.assignIn(res.locals.data, userInfo) : Promise.reject(new Error(`Update user info fail`)))
+    .then(updated => updated === true ? (res.locals.data = _.assignIn(res.locals.data, userInfo)) : Promise.reject(new Error('Update user info fail')))
     .then(() => notificationService.emitEvent(_.assignIn(message, updateSearchQuery)))
     .then(() => circleService.handleNotifyAllFriendsActivity(friendService, notificationService, accountInfo, _.assignIn(message, notifyFriend)))
     .then(() => next())

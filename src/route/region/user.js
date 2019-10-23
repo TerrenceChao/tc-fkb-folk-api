@@ -20,7 +20,7 @@ router.post('/signup',
   userReq.registerInfoValidator,
   userReq.userInfoValidator,
   userReq.newPasswordValidator,
-  auth.signup,  // create user & send registration email
+  auth.signup, // create user & send registration email
   generalRes.createdSuccess
   /**
    * options to the landing page:
@@ -33,12 +33,12 @@ router.post('/signup',
  * options to the landing page:
  * 1. 註冊後需要透過驗證信中的[verify-code]登入主畫面,
  * 2. 或是透過驗證信中點擊[verify-link]轉到主畫面.
- * 
+ *
  * 雖然只能作用一次，但同樣的 url 不會使後端資源造成不同的結果 (都是清除驗證資訊，建立session) [idempotent]
  */
 router.put('/newborn/code/:token',
   userReq.verificationValidator,
-  auth.authorized,    // 確認後刪除 registration info (token/code)
+  auth.authorized, // 確認後刪除 registration info (token/code)
   generalRes.success
   // front-end redirect to landing page
 )
@@ -100,7 +100,7 @@ router.put('/verification/code/:token',
  * 當透過[驗證碼]登入時，以下兩步驟是一組的：
  * 1. ['/verification/code/:token']
  * 2. ['/password/reset'] (已透過 step 1 登入)
- * 
+ *
  * 如果用戶在前端要回到上一頁？
  * 沒辦法了，因為 [checkVerificationWithCode] 階段已經刪除 token/code, 無法回上一頁
  * session info (sessionID/cookie) has registered after [POST]:'/verification/code/:token'

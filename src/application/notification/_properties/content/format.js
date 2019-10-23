@@ -1,19 +1,6 @@
-function genVerifyEmailFormat(verifyInfo) {
+function genVerifyEmailFormat (verifyInfo) {
   var content = verifyInfo.content
-  Array.apply(null, ['reset', 'code', 'verify-token']).forEach(field => {
-    content[field] = verifyInfo[field]
-  })
-
-  return {
-    channel: verifyInfo.type,
-    to: verifyInfo.account,
-    content,
-  }
-}
-
-function genVerifySMSFormat(verifyInfo) {
-  var content = verifyInfo.content
-  Array.apply(null, ['code', 'verify-token']).forEach(field => {
+  Array(['reset', 'code', 'verify-token']).forEach(field => {
     content[field] = verifyInfo[field]
   })
 
@@ -24,7 +11,20 @@ function genVerifySMSFormat(verifyInfo) {
   }
 }
 
-function genVerifyFormat(verifyInfo) {
+function genVerifySMSFormat (verifyInfo) {
+  var content = verifyInfo.content
+  Array(['code', 'verify-token']).forEach(field => {
+    content[field] = verifyInfo[field]
+  })
+
+  return {
+    channel: verifyInfo.type,
+    to: verifyInfo.account,
+    content
+  }
+}
+
+function genVerifyFormat (verifyInfo) {
   var transformation = {
     email: genVerifyEmailFormat,
     phone: genVerifySMSFormat
@@ -33,7 +33,6 @@ function genVerifyFormat(verifyInfo) {
   return transformation[verifyInfo.type](verifyInfo)
 }
 
-
 module.exports = {
-  genVerifyFormat,
+  genVerifyFormat
 }

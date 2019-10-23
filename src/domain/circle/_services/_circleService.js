@@ -5,7 +5,7 @@ const {
 } = require('../../../application/notification/_properties/constant')
 const CONSTANT = require('../_properties/constant')
 
-function CircleService() {
+function CircleService () {
   console.log(`init ${arguments.callee.name}`)
 }
 
@@ -13,11 +13,11 @@ CircleService.prototype.handleInviteActivity = async function (invitationService
   switch (relationship.type) {
     // 1. user self
     case CONSTANT.RELATION_STATUS_SELF:
-      return Promise.reject(new Error(`You cannot send invitation to yourself`))
+      return Promise.reject(new Error('You cannot send invitation to yourself'))
 
     // 2. are aleady friends
     case CONSTANT.RELATION_STATUS_FRIEND:
-      return Promise.reject(new Error(`You are already friends`))
+      return Promise.reject(new Error('You are already friends'))
 
     // 3. add friend & notify
     case CONSTANT.RELATION_STATUS_BE_INVITED:
@@ -29,7 +29,7 @@ CircleService.prototype.handleInviteActivity = async function (invitationService
       return Promise.resolve(invitationService.inviteToBeFriend(accountInfo, targetAccountInfo))
 
     default:
-      return Promise.reject(new Error(`The type of relationship is not defined`))
+      return Promise.reject(new Error('The type of relationship is not defined'))
   }
 }
 
@@ -38,7 +38,7 @@ CircleService.prototype.handleInviteActivity = async function (invitationService
  */
 CircleService.prototype.handleNotifyUnfriendActivity = function (notificationService, accountInfo, targetAccountInfo) {
   // const registerRegion = accountInfo.region
-  
+
   // 跟自己說
   notificationService.emitEvent({
     // registerRegion,

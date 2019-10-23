@@ -1,4 +1,3 @@
-const _ = require('lodash')
 const httpHandler = require('../../../library/httpHandler')
 const {
   HTTP,
@@ -6,44 +5,43 @@ const {
   CHANNELS
 } = require('./constant')
 
-
 /**
- * 
- * @param {string} event 
- * @param {Object} message 
+ *
+ * @param {string} event
+ * @param {Object} message
  */
-function publishRequest(event, message) {
-  let options = HTTP.PUBLISH.OPTIONS
+function publishRequest (event, message) {
+  const options = HTTP.PUBLISH.OPTIONS
   options.body = message
 
   httpHandler.request('[notification-service]', event, options)
 }
 
 /**
- * 
- * @param {string} event 
- * @param {Object} message 
- * @param {function} callback 
- * @param {*} data 
+ *
+ * @param {string} event
+ * @param {Object} message
+ * @param {function} callback
+ * @param {*} data
  */
-function syncPublishRequest(event, message, callback, data) {
-  let options = HTTP.PUBLISH.OPTIONS
+function syncPublishRequest (event, message, callback, data) {
+  const options = HTTP.PUBLISH.OPTIONS
   options.body = message
 
   return httpHandler.syncRequest('[notification-service]', event, options, callback, data)
 }
 
 /**
- * 
- * @param {string} event 
- * @param {function} callback 
- * @param {*} data 
+ *
+ * @param {string} event
+ * @param {function} callback
+ * @param {*} data
  */
-function syncPublishRequestTest(event, callback, data) {
-  let options = HTTP.PUBLISH.OPTIONS
+function syncPublishRequestTest (event, callback, data) {
+  const options = HTTP.PUBLISH.OPTIONS
   options.body = {
     category: CATEGORIES.PERSONAL,
-    channels: [CHANNELS.INTERNAL_SEARCH],
+    channels: CHANNELS.PUSH,
     sender: null,
     receivers: [{
       uid: 'test',
@@ -51,17 +49,16 @@ function syncPublishRequestTest(event, callback, data) {
     }],
     packet: {
       event: 'test',
-      content: 'test',
+      content: 'test'
     }
   }
 
   return httpHandler.syncRequest('[notification-service]', event, options, callback, data)
 }
 
-
 module.exports = {
   publishRequest,
   syncPublishRequest,
   // test
-  syncPublishRequestTest,
+  syncPublishRequestTest
 }

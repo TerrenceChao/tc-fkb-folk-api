@@ -1,5 +1,4 @@
 const LIMIT = 12
-
 const SKIP = 0
 
 module.exports = {
@@ -7,7 +6,7 @@ module.exports = {
   SKIP,
   HTTP: {
     HEADERS: {
-      'content-type': 'application/json',
+      'content-type': 'application/json'
     },
     PREFIX: process.env.PREFIX,
     SUCCESS: 200,
@@ -15,7 +14,6 @@ module.exports = {
     VALIDATE_ERROR: 422,
     RETRY_LIMIT: parseInt(process.env.REQ_RETRY_LIMIT) || 3,
     DELAY: parseInt(process.env.REQ_DELAY) || 500,
-    TIMEOUT: parseInt(process.env.REQ_TIMEOUT) || 100,
-  },
+    TIMEOUT: parseInt(process.env.REQ_TIMEOUT) || 100
+  }
 }
-
