@@ -1,13 +1,13 @@
+const config = require('config').notification
 const HTTP = require('../../../property/constant').HTTP
 const CIRCILE_CONST = require('../../../domain/circle/_properties/constant')
-const PUBLISH_URL = `${process.env.NOTIFICATION_MQ_HOST}${process.env.NOTIFICATION_MQ_PATH_PUBLISH}`
 
 module.exports = {
   HTTP: {
     PUBLISH: {
       OPTIONS: {
         method: 'POST',
-        url: PUBLISH_URL,
+        url: config[config.specify].publishUrl,
         headers: HTTP.HEADERS,
         body: {},
         json: true
