@@ -110,8 +110,13 @@ FriendService.prototype.findOne = async function (accountInfo, targetAccountInfo
  * remove someone's (accountInfo) friend.
  * TODO: this.friendRepo.removeFriend 在同區域時,會刪除兩筆紀錄; 在不同區域時只會刪除一筆
  */
-FriendService.prototype.remove = async function (accountInfo, targetAccountInfo) {  
-  return await this.friendRepo.removeFriend(accountInfo, targetAccountInfo)
+FriendService.prototype.remove = async function (accountInfo, targetAccountInfo) {
+  // return await this.friendRepo.removeFriend(accountInfo, targetAccountInfo)
+  return Promise.all([
+    this.friendRepo.removeFriend(accountInfo, targetAccountInfo),
+    this.friendRepo.removeFriend(targetAccountInfo, accountInfo)
+  ])
+    .then(result => result[0])
 
   // return {
   //   uid: targetAccountInfo.target_uid,

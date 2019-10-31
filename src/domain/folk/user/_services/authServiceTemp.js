@@ -1,7 +1,11 @@
-var _ = require('lodash')
+const _ = require('lodash')
+const config = require('config').auth
+const util = require('../../../../property/util')
+const cache = require('../../../../library/cacheHandler')
 const authRepo = require('../_repositories/authRepositoryTemp')
 
-const expirationMins = parseInt(process.env.EXPIRATION_TIME)
+const registerExpiration = config.expire.register
+const verifyExpiration = config.expire.verify
 
 function AuthService (authRepo) {
   this.authRepo = authRepo
@@ -13,15 +17,85 @@ function AuthService (authRepo) {
  * region!region!region!region!region!region!
  */
 AuthService.prototype.signup = async function (signupInfo) {
-  // create record in account
+  /**
+   * TODO: 註冊程序
+   * 1. 建立揮發性資料在 cache (redis): 設定 1 小時之後刪除。(除非已經寫入 DB)
+   * 2. 等到 user 輸入 verify code 再真的寫入 DB
+   *
+   * exe:
+   * a. find or create verification (without saving DB).
+   *  (當然有可能有其他一樣的帳號: 重複的 email/phone 註冊 (不同人？但尚未認證) 的可能，[覆蓋過去就好]。
+   *   若要做到完整需要 FIFO, 不過想想實境似乎不需要，因為用戶不見得知道孰先孰後。
+   *   況且[有可能是同一個用戶忘了密碼或個資之類的需要重複填寫註冊資料]。)
+   * b. wirte [signupInfo-with-verification] into redis ...
+   */
+  var date = new Date()
+  var reset = date.setMinutes(date.getMinutes() + registerExpiration)
+  var verification = util.genVerification(signupInfo, reset, true)
+  signupInfo.verificaiton = verification
 
-  // var err = new Error('AuthService causes error!')
-  // err.status = 501
-  // throw err
+  // TODO: cache 尚未設定 expire
+  // TODO: 用 cache.pipeline() 是錯誤的用法。這裡只是實驗效果。若有錯誤將 crash!!!
+  return cache.pipeline()
+    .set(verification['verify-token'], Buffer.from(JSON.stringify(signupInfo)))
+    .exec((err, results) => {
+      if (err) {
+        console.error(err)
+        throw new Error('signup fail')
+      }
+    })
+    .then(() => _.assign(verification, {
+      type: 'email',
+      account: signupInfo.email,
+      content: _.omit(signupInfo, ['region', 'uid', 'verificaiton'])
+    }))
+    .catch(err => Promise.reject(err))
+}
 
-  var user = await this.authRepo.createAccountUser(signupInfo)
+/**
+ * @param {{ token: string, code: string|number }} verifyInfo
+ */
+AuthService.prototype.createVerifiedUser = async function (verifyInfo) {
+  /**
+   * TODO: 註冊程序
+   * 1. 建立揮發性資料在 cache (redis): 設定 1 小時之後刪除。(除非已經寫入 DB)
+   * 2. 等到 user 輸入 verify code 再真的寫入 DB
+   *
+   * exe:
+   * a. read [signupInfo-by-verifyInfo] from redis ...
+   * b. write [signupInfo-by-verifyInfo] into DB.
+   * c. delete temporary [signupInfo-by-verifyInfo] in redis.
+   */
 
-  return await this.findOrCreateVerification('email', user.email)
+  // TODO: 用 cache.pipeline() 是錯誤的用法。這裡只是實驗效果。若有錯誤將 crash!!!
+  return cache.pipeline()
+    .getBuffer(verifyInfo.token, (err, buf) => {
+      if (err) {
+        console.error(err)
+        return new Error('invalid token')
+      }
+
+      const signupInfo = JSON.parse(buf.toString())
+      const verificaiton = signupInfo.verificaiton
+      if (verifyInfo.token !== verificaiton['verify-token'] || verifyInfo.code !== verificaiton.code) {
+        return new Error('invalid registration')
+      }
+    })
+    .exec()
+    .then(async buf => {
+      const signupInfo = JSON.parse(buf[0][1].toString())
+      /**
+       * TODO: [createAccountUser] 用 [authRepo.createAccount] & [authRepo.createUser] 兩個 methods 取代.
+       */
+      var user = await this.authRepo.createAccountUser(signupInfo)
+      /**
+       * TODO: 記得建立 ＤＢ 記錄以後才能刪除 cache 紀錄
+       */
+      cache.del(verifyInfo.token)
+
+      return user
+    })
+    .catch(err => Promise.reject(err))
 }
 
 /**
@@ -33,7 +107,7 @@ AuthService.prototype.login = async function (email, password) {
   // var err = new Error('AuthService causes error!')
   // err.status = 501
   // throw err
-  var user = await this.authRepo.getAccountUser({ email }, password)
+  var user = await this.authRepo.getAuthorizedUser(email, password)
 
   var auth = await this.createSession({
     region: user.region,
@@ -60,7 +134,7 @@ AuthService.prototype.searchAccount = async function (type, account) {
  * 為了維持 verification 的有效性，
  * [當database中有token,code,reset等資訊時，不再更新。]
  */
-AuthService.prototype.findOrCreateVerification = async function (type, account, expireTimeLimit = false) {
+AuthService.prototype.findOrCreateVerification = async function (type, account, expireTimeLimit = false, cache = false) {
   if (type !== 'email' && type !== 'phone') {
     var err = new Error('invalid verification type, [email, phone] are available types')
     err.status = 404
@@ -68,11 +142,15 @@ AuthService.prototype.findOrCreateVerification = async function (type, account, 
   }
 
   var date = new Date()
-  var reset = expireTimeLimit ? date.setMinutes(date.getMinutes() + expirationMins) : null
+  var reset = expireTimeLimit ? date.setMinutes(date.getMinutes() + verifyExpiration) : null
 
   /**
    * TODO: [authRepo.findOrCreateVerification...]
-   * 透過 type, account 找到用戶的 [region,uid] 來建立 verification 是比較好的作法。
+   * 1. 透過 type, account 找到用戶的 [region,uid] 來建立 verification 是比較好的作法。(獨立的 function, 與 repository 無關！！)
+   * 2. func 輸入參數已經變更：
+   *    findOrCreateVerification = async function (type, account, verification, selectedFields)
+   *
+   * TODO: [findOrCreateVerification] 這裡將指為單純回傳 table: Accounts & Auths 中的資訊。實際應用時，需要其他業務邏輯結合 table: Users 中的欄位
    *
    * TODO: 請善用 findOrCreateVerification 第三個欄位: selectedFields
    */

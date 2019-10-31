@@ -23,6 +23,7 @@ function getParentDirPath (currentDir, specifyDir) {
 
 module.exports = {
   auth: require('./_auth'),
+  cache: require('./_cache'),
   database: require('./_database'),
   message: require('./_message'),
   notification: require('./_notification')

@@ -58,6 +58,14 @@ InvitationService.prototype.getInvitationList = async function (accountInfo, inv
 
 }
 
+InvitationService.prototype.getSentInvitationList = async function (accountInfo, limit = CONSTANT.LIMIT, skip = CONSTANT.SKIP) {
+
+}
+
+InvitationService.prototype.getReceivedInvitationList = async function (accountInfo, limit = CONSTANT.LIMIT, skip = CONSTANT.SKIP) {
+
+}
+
 module.exports = {
   invitationService: new InvitationService(userRepo, friendRepo, inviteRepo),
   InvitationService

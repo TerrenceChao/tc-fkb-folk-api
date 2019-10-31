@@ -31,7 +31,7 @@ exports.authorized = async (req, res, next) => {
   res.locals.data = util.init(res.locals.data)
 
   Promise.resolve(httpHandler.parseReqInFields(req, ['token', 'code']))
-    .then(verifyInfo => authService.getVerifiedUser(verifyInfo))
+    .then(verifyInfo => authService.createVerifiedUser(verifyInfo))
     .then(userInfo => Promise.all([
       userService.getPersonalInfo(userInfo),
       messageService.authenticate(_.assignIn(userInfo, { clientuseragent })),

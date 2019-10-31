@@ -251,15 +251,6 @@ AuthRepository.prototype.addFriend = async function (accountInfo, targetAccountI
           familyName: friendInfo.familyName,
           allowFollowMe: null, // TODO: 重要。但開始有 post 時才有用
         })
-        friendInfo.friendList.push({
-          region: userInfo.region,
-          uid: userInfo.uid,
-          profileLink: userInfo.profileLink,
-          profilePic: userInfo.profilePic,
-          givenName: userInfo.givenName,
-          familyName: userInfo.familyName,
-          allowFollowMe: null, // TODO: 重要。但開始有 post 時才有用
-        })
         return friendInfo
       }
     }
@@ -302,22 +293,22 @@ AuthRepository.prototype.removeFriend = async function (accountInfo, targetAccou
     removedFriend = friend
   }
 
-  // remove targetAccountInfo's friend (accountInfo)
-  for (const userInfo of userDB.values()) {
-    if (userInfo.uid !== targetAccountInfo.uid || userInfo.region !== targetAccountInfo.region) {
-      continue
-    }
-    // remove friend (will be stranger)
-    let friend = userInfo.friendList.find(friend =>
-      friend.uid === accountInfo.uid &&
-      friend.region === accountInfo.region
-    )
-    if (friend !== undefined) {
-      userInfo.friendList = userInfo.friendList.filter(friend => 
-        !(friend.uid === friend.uid && friend.region === friend.region)
-      )
-    }
-  }
+  // // remove targetAccountInfo's friend (accountInfo)
+  // for (const userInfo of userDB.values()) {
+  //   if (userInfo.uid !== targetAccountInfo.uid || userInfo.region !== targetAccountInfo.region) {
+  //     continue
+  //   }
+  //   // remove friend (will be stranger)
+  //   let friend = userInfo.friendList.find(friend =>
+  //     friend.uid === accountInfo.uid &&
+  //     friend.region === accountInfo.region
+  //   )
+  //   if (friend !== undefined) {
+  //     userInfo.friendList = userInfo.friendList.filter(friend => 
+  //       !(friend.uid === friend.uid && friend.region === friend.region)
+  //     )
+  //   }
+  // }
 
   return removedFriend
 }
@@ -451,6 +442,34 @@ AuthRepository.prototype.getInvitationList = async function (accountInfo, invite
   const list = []
   for (const inv of invitationDB.values()) {
     if (inv[role].uid === accountInfo.uid && inv[role].region === accountInfo.region) {
+      list.push(inv)
+    }
+  }
+
+  return list.slice(skip, skip + limit)
+}
+
+/**
+ * invitationRepo
+ */
+AuthRepository.prototype.getSentInvitationList = async function (accountInfo, limit, skip) {
+  const list = []
+  for (const inv of invitationDB.values()) {
+    if (inv.inviter.uid === accountInfo.uid && inv.inviter.region === accountInfo.region) {
+      list.push(inv)
+    }
+  }
+
+  return list.slice(skip, skip + limit)
+}
+
+/**
+ * invitationRepo
+ */
+AuthRepository.prototype.getReceivedInvitationList = async function (accountInfo, limit, skip) {
+  const list = []
+  for (const inv of invitationDB.values()) {
+    if (inv.recipient.uid === accountInfo.uid && inv.recipient.region === accountInfo.region) {
       list.push(inv)
     }
   }
@@ -609,6 +628,9 @@ AuthRepository.prototype.searchAccount = async function(type, account) {
   throw new Error(`user not found`)
 }
 
+/**
+ * TODO: [createAccountUser] 用 [authRepo.createAccount] & [authRepo.createUser] 兩個 methods 取代.
+ */
 AuthRepository.prototype.createAccountUser = async function (signupInfo) {
   // 測試用的特例
   if (TEST_ACCOUNT_DATA.has(signupInfo.email)) {
@@ -627,10 +649,13 @@ AuthRepository.prototype.createAccountUser = async function (signupInfo) {
   return _.omit(Object.create(userDB.get(signupInfo.email)), ['verificaiton', 'friendList'])
 }
 
-AuthRepository.prototype.getAccountUser = async function (userInfo, password) {
-  return _.omit(Object.create(userDB.get(userInfo.email)), ['phone', 'verificaiton', 'friendList'])
+AuthRepository.prototype.getAuthorizedUser = async function (email, password) {
+  return _.omit(Object.create(userDB.get(email)), ['phone', 'verificaiton', 'friendList'])
 }
 
+/**
+ * TODO: [findOrCreateVerification] 這裡將指為單純回傳 table: Accounts & Auths 中的資訊。實際應用時，需要上層結合 table: Users 中的欄位
+ */
 AuthRepository.prototype.findOrCreateVerification = async function (type, account, reset = null, selectedFields = null) {
   selectedFields = selectedFields == null ? VERIFICATION_FIELDS : selectedFields
   if (type === 'phone') {

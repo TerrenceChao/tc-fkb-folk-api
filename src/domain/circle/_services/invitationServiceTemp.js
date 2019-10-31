@@ -153,7 +153,10 @@ InvitationService.prototype.handleFriendInvitation = async function (accountInfo
       })
       .catch(err => console.error(`\n${JSON.stringify(err, null, 2)}`))
 
-    await this.friendRepo.addFriend(recipient, inviter)
+    Promise.all([
+      this.friendRepo.addFriend(recipient, inviter),
+      this.friendRepo.addFriend(inviter, recipient)
+    ]).then(() => console.log('add friend success for each other'))
   }
 
   // （改用 invitationRes 回傳）What does 'removedInvitation' look like?
@@ -304,6 +307,14 @@ InvitationService.prototype.getInvitationList = async function (accountInfo, inv
   //     // sensitive: {} // private & sensitive data
   //   }
   // ]
+}
+
+InvitationService.prototype.getSentInvitationList = async function (accountInfo, limit = CONSTANT.LIMIT, skip = CONSTANT.SKIP) {
+  return await this.inviteRepo.getSentInvitationList(accountInfo, limit, skip)
+}
+
+InvitationService.prototype.getReceivedInvitationList = async function (accountInfo, limit = CONSTANT.LIMIT, skip = CONSTANT.SKIP) {
+  return await this.inviteRepo.getReceivedInvitationList(accountInfo, limit, skip)
 }
 
 module.exports = {
