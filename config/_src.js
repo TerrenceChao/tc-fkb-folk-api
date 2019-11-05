@@ -3,7 +3,6 @@ var path = require('path')
 module.exports = function (root) {
   var src = path.join(root, 'src')
   var protocol = path.join(src, 'protocol')
-  var application = path.join(src, 'application')
   var domain = path.join(src, 'domain')
   var library = path.join(src, 'library')
 
@@ -12,38 +11,37 @@ module.exports = function (root) {
   var middleware = path.join(protocol, 'http', 'middleware')
   var request = path.join(protocol, 'http', 'request')
   var response = path.join(protocol, 'http', 'response')
-  var errorHandler = path.join(protocol, 'http', 'errorHandler')
 
   return {
     // protocol
-    middleware,
-    userRequest: path.join(request, 'user'),
-    circleRequest: path.join(request, 'circle'),
-    feedsRequest: path.join(request, 'feeds'),
-
-    userController: path.join(controller, 'user'),
-    circleController: path.join(controller, 'circle'),
-    feedsController: path.join(controller, 'feeds'),
-
-    userResponse: path.join(response, 'user'),
-    circleResponse: path.join(response, 'circle'),
-    feedsResponse: path.join(response, 'feeds'),
-    errorHandler,
-    
-    // domain
-    feedsDomain: path.join(domain, 'feeds'),
-    feeds: {
-      postDomain: path.join(domain, 'feeds', 'post'),
+    request: {
+      circle: path.join(request, 'circle'),
+      user: path.join(request, 'user')
+    },
+    controller: {
+      region: {
+        circle: path.join(controller, 'region', 'circle'),
+        user: path.join(request, 'region', 'user')
+      }
+    },
+    response: {
+      circle: path.join(response, 'circle'),
+      user: path.join(response, 'user')
     },
 
-    folkDomain: path.join(domain, 'folk'),
-    // folk: {
-    //   circleDomain: {
+    // domain
+    domain: {
+      circle: path.join(domain, 'circle'),
+      folk: path.join(domain, 'folk'),
+      user: path.join(domain, 'folk', 'user')
+    },
 
-    //   },
-    //   userDomain: {
+    // repository
+    repository: {
+      circle: path.join(domain, 'circle', '_repositories'),
+      user: path.join(domain, 'folk', 'user', '_repositories')
+    },
 
-    //   }
-    // },
+    library
   }
 }

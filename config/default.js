@@ -2,7 +2,7 @@ require('dotenv').config()
 var fs = require('fs')
 var path = require('path')
 var project = JSON.parse(fs.readFileSync('package.json'))
-const ROOT = getParentDirPath(__dirname, project.name)
+const root = getParentDirPath(__dirname, project.name)
 
 /**
  * @private
@@ -26,5 +26,7 @@ module.exports = {
   cache: require('./_cache'),
   database: require('./_database'),
   message: require('./_message'),
-  notification: require('./_notification')
+  notification: require('./_notification'),
+  src: require('./_src')(root),
+  test: require('./_test')(root)
 }
