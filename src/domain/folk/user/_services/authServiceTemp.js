@@ -84,6 +84,9 @@ AuthService.prototype.createVerifiedUser = async function (verifyInfo) {
     .exec()
     .then(async buf => {
       const signupInfo = JSON.parse(buf[0][1].toString())
+      signupInfo.verificaiton.token = signupInfo.verificaiton['verify-token']
+      delete signupInfo.verificaiton['verify-token']
+
       /**
        * TODO: [createAccountUser] 用 [authRepo.createAccount] & [authRepo.createUser] 兩個 methods 取代.
        */

@@ -507,9 +507,11 @@ AuthRepository.prototype.getReceivedInvitationList = async function (accountInfo
  * 導致雙方都是邀請者/受邀者，所以刪除時 需考慮這種情況 (刪除至多 2 筆資訊)
  * accountInfo (uid, region)
  * targetAccountInfo (uid, region)
- * 
+ *
  * [跨區域操作時使用]
  * softDelete: 跨區域操作時使用，若雙邊操作需要 rollback 有機會補教。等雙邊都 commit 再硬刪除 (hard delete)
+ *
+ * TODO: 將參數改為四個：(accountInfo, targetAccountInfo, [event], softDelete)
  */
 AuthRepository.prototype.removeRelatedInvitation = async function (accountInfo, targetAccountInfo, softDelete = false) {
   let deleteRows = 0

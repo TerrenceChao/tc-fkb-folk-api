@@ -161,6 +161,20 @@ router.put('/:uid/:region/setting/info',
   generalRes.success
 )
 
+router.get('/:uid/:region/setting/contact',
+  userReq.accountIdentifyValidator,
+  auth.isLoggedIn, // validate session info by uid (req.params.uid)
+  // TODO: get user's contact >>> setting.getUserContact
+  generalRes.success
+)
+
+router.put('/:uid/:region/setting/contact',
+  userReq.accountIdentifyValidator,
+  auth.isLoggedIn, // validate session info by uid (req.params.uid)
+  // TODO: update user's contact >>> setting.updateUserContact
+  generalRes.success
+)
+
 router.put('/:uid/:region/setting/password',
   userReq.accountIdentifyValidator,
   userReq.passwordValidator,
