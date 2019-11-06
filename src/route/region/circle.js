@@ -2,9 +2,9 @@ var express = require('express')
 var router = express.Router()
 var userReq = require('../../protocol/http/request/user/userReq')
 var circleReq = require('../../protocol/http/request/circle/circleReq')
-var auth = require('../../protocol/http/controller/region/user/auth')
-var invite = require('../../protocol/http/controller/region/circle/invite')
-var friend = require('../../protocol/http/controller/region/circle/friend')
+var auth = require('../../protocol/http/v1/controller/region/user/auth')
+var invite = require('../../protocol/http/v1/controller/region/circle/invite')
+var friend = require('../../protocol/http/v1/controller/region/circle/friend')
 var generalRes = require('../../protocol/http/response/generalRes')
 
 /* GET circle listing. */

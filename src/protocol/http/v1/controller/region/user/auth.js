@@ -1,11 +1,11 @@
 var _ = require('lodash')
-var messageService = require('../../../../../application/message/_services/_messageService')
-var notificationService = require('../../../../../application/notification/_services/_notificationService')
-var userService = require('../../../../../domain/folk/user/_services/_userService')
-var { authService } = require('../../../../../domain/folk/user/_services/authServiceTemp')
-var { friendService } = require('../../../../../domain/circle/_services/friendServiceTemp')
-var httpHandler = require('../../../../../library/httpHandler')
-var util = require('../../../../../property/util')
+var messageService = require('../../../../../../application/message/_services/_messageService')
+var notificationService = require('../../../../../../application/notification/_services/_notificationService')
+var userService = require('../../../../../../domain/folk/user/_services/_userService')
+var { authService } = require('../../../../../../domain/folk/user/_services/authServiceTemp')
+var { friendService } = require('../../../../../../domain/circle/_services/friendServiceTemp')
+var httpHandler = require('../../../../../../library/httpHandler')
+var util = require('../../../../../../property/util')
 
 /**
  * 除了在資料庫建立用戶資訊外，另外需要寄送驗證信件給用戶，以便確認身份。

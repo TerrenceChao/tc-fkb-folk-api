@@ -1,8 +1,8 @@
 var _ = require('lodash')
-var userService = require('../../../../../domain/folk/user/_services/_userService')
-var { friendService } = require('../../../../../domain/circle/_services/friendServiceTemp')
-var { settingService } = require('../../../../../domain/folk/user/_services/settingServiceTemp')
-var util = require('../../../../../property/util')
+var userService = require('../../../../../../domain/folk/user/_services/_userService')
+var { friendService } = require('../../../../../../domain/circle/_services/friendServiceTemp')
+var { settingService } = require('../../../../../../domain/folk/user/_services/settingServiceTemp')
+var util = require('../../../../../../property/util')
 
 /**
  * About profile:
