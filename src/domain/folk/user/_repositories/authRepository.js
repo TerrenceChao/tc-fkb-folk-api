@@ -5,7 +5,7 @@ const Repository = require('../../../../library/repository')
 
 const VALID_FIELDS = new Map([
   // Accounts
-  ['uid', 'a.id'],
+  ['uid', 'a.id AS uid'],
   ['region', 'a.region'],
   ['email', 'a.email'],
   ['alternateEmail', 'a.alternate_email'],
@@ -290,7 +290,7 @@ AuthRepository.prototype.createAccountUser = async function (signupInfo) {
 
 /**
  * [NOTE] email 不可變更！不像 linkedIn 可以替換信箱
- * @param {{ uid: string, region: string }} accountIdentity
+ * @param {{ uid: string, region: string }} account
  * @param {{
  *    alternateEmail: string|null,
  *    countryCode: string|null,
@@ -298,7 +298,7 @@ AuthRepository.prototype.createAccountUser = async function (signupInfo) {
  *    device: Object|null
  * }} newContactInfo
  */
-AuthRepository.prototype.updateContact = async function (accountIdentity, newContactInfo) {
+AuthRepository.prototype.updateContact = async function (account, newContactInfo) {
   const updatedFields = parseContactUpdateFields(newContactInfo)
   let idx = 1
 
@@ -313,27 +313,27 @@ AuthRepository.prototype.updateContact = async function (accountIdentity, newCon
     RETURNING id AS uid, region, email, alternate_email, country_code, phone, device
     `,
     [
-      accountIdentity.uid,
-      accountIdentity.region
+      account.uid,
+      account.region
     ],
     0)
 }
 
 /**
- * @param {{ uid: string, region: string }} accountIdentity
+ * @param {{ uid: string, region: string }} account
  * @param {string} newPassword
  * @param {string|null} oldPassword
  */
-AuthRepository.prototype.resetPassword = async function (accountIdentity, newPassword, oldPassword = null) {
+AuthRepository.prototype.resetPassword = async function (account, newPassword, oldPassword = null) {
   const condition = oldPassword === null ? '' : '"Auths".pw_hash = $4::varchar AND'
   const params = oldPassword === null ? [
     newPassword,
-    accountIdentity.uid,
-    accountIdentity.region
+    account.uid,
+    account.region
   ] : [
     newPassword,
-    accountIdentity.uid,
-    accountIdentity.region,
+    account.uid,
+    account.region,
     oldPassword
   ]
 
@@ -483,10 +483,10 @@ AuthRepository.prototype.getVerifyUserWithoutExpired = async function (token, re
 /**
  * TODO: 若要在 "Accounts", "Auths", "Users" 找尋同一用戶的多個欄位資料，
  * [selectedFields在AuthRepository僅能選擇"Accounts","Auths"，若加上"Users"在這次查詢的成本太高]，需要用另一次的 query 查詢
- * @param {{ uid: string, region: string }} accountIdentity
+ * @param {{ uid: string, region: string }} account
  * @param {string[]|null} selectedFields
  */
-AuthRepository.prototype.deleteVerification = async function (accountIdentity, selectedFields = null) {
+AuthRepository.prototype.deleteVerification = async function (account, selectedFields = null) {
   let idx = 1
   selectedFields = parseSelectFields(selectedFields)
 
@@ -503,8 +503,8 @@ AuthRepository.prototype.deleteVerification = async function (accountIdentity, s
     RETURNING ${selectedFields}, user_id AS uid, a.region, verification;
     `,
     [
-      accountIdentity.uid,
-      accountIdentity.region
+      account.uid,
+      account.region
     ],
     0)
 }

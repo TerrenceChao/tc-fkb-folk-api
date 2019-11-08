@@ -34,12 +34,12 @@ function InvitationRepository (pool) {
  * TODO: 
  * 改變 function params 輸入參數。
  * 在 Service 層使用時需要調整格式 (無論輸出/輸入)
- * @param {{ uid: string, region: string }} inviterAccountIdentity
- * @param {{ uid: string, region: string }} recipientAccountIdentity
+ * @param {{ uid: string, region: string }} inviterAccount
+ * @param {{ uid: string, region: string }} recipientAccount
  * @param {string} event
  * @param {Object} info
  */
-InvitationRepository.prototype.findOrCreateFriendInvitation = async function (inviterAccountIdentity, recipientAccountIdentity, event, info) {
+InvitationRepository.prototype.findOrCreateInvitation = async function (inviterAccount, recipientAccount, event, info) {
   let idx = 1
   return this.query(
     `
@@ -63,10 +63,10 @@ InvitationRepository.prototype.findOrCreateFriendInvitation = async function (in
     `,
     [
       uuidv4(),
-      inviterAccountIdentity.uid,
-      inviterAccountIdentity.region,
-      recipientAccountIdentity.uid,
-      recipientAccountIdentity.region,
+      inviterAccount.uid,
+      inviterAccount.region,
+      recipientAccount.uid,
+      recipientAccount.region,
       event,
       JSON.stringify(info),
       null,
@@ -78,16 +78,16 @@ InvitationRepository.prototype.findOrCreateFriendInvitation = async function (in
 }
 
 /**
- * @param {{ uid: string, region: string }} accountIdentity
+ * @param {{ uid: string, region: string }} account
  * @param {{ iid: string }|{ event: string }|{ iid: string, event: string }} invitationInfo
  */
-InvitationRepository.prototype.getInvitation = async function (accountIdentity, invitationInfo) {
+InvitationRepository.prototype.getInvitation = async function (account, invitationInfo) {
   let { conditions, params } = parseConditions(invitationInfo)
   params = [
-    accountIdentity.uid,
-    accountIdentity.region,
-    accountIdentity.uid,
-    accountIdentity.region
+    account.uid,
+    account.region,
+    account.uid,
+    account.region
   ].concat(params)
 
   return this.query(
@@ -108,10 +108,10 @@ InvitationRepository.prototype.getInvitation = async function (accountIdentity, 
 }
 
 /**
- * @param {{ uid: string, region: string }} accountIdentity
- * @param {{ uid: string, region: string }} targetAccountIdentity
+ * @param {{ uid: string, region: string }} account
+ * @param {{ uid: string, region: string }} targetAccount
  */
-InvitationRepository.prototype.getInvitationByRoles = async function (accountIdentity, targetAccountIdentity) {
+InvitationRepository.prototype.getInvitationByRoles = async function (account, targetAccount) {
   let idx = 1
   return this.query(
     `
@@ -132,24 +132,24 @@ InvitationRepository.prototype.getInvitationByRoles = async function (accountIde
     LIMIT 1;
     `,
     [
-      accountIdentity.uid,
-      accountIdentity.region,
-      targetAccountIdentity.uid,
-      targetAccountIdentity.region,
-      accountIdentity.uid,
-      accountIdentity.region,
-      targetAccountIdentity.uid,
-      targetAccountIdentity.region
+      account.uid,
+      account.region,
+      targetAccount.uid,
+      targetAccount.region,
+      account.uid,
+      account.region,
+      targetAccount.uid,
+      targetAccount.region
     ],
     0)
 }
 
 /**
- * @param {{ uid: string, region: string }} accountIdentity
+ * @param {{ uid: string, region: string }} account
  * @param {number} limit
  * @param {number} skip
  */
-InvitationRepository.prototype.getSentInvitationList = async function (accountIdentity, limit, skip) {
+InvitationRepository.prototype.getSentInvitationList = async function (account, limit, skip) {
   let idx = 1
   return this.query(
     `
@@ -162,19 +162,19 @@ InvitationRepository.prototype.getSentInvitationList = async function (accountId
     OFFSET $${idx++}::int LIMIT $${idx++}::int;
     `,
     [
-      accountIdentity.uid,
-      accountIdentity.region,
+      account.uid,
+      account.region,
       skip,
       limit
     ])
 }
 
 /**
- * @param {{ uid: string, region: string }} accountIdentity
+ * @param {{ uid: string, region: string }} account
  * @param {number} limit
  * @param {number} skip
  */
-InvitationRepository.prototype.getReceivedInvitationList = async function (accountIdentity, limit, skip) {
+InvitationRepository.prototype.getReceivedInvitationList = async function (account, limit, skip) {
   let idx = 1
   return this.query(
     `
@@ -187,8 +187,8 @@ InvitationRepository.prototype.getReceivedInvitationList = async function (accou
     OFFSET $${idx++}::int LIMIT $${idx++}::int;
     `,
     [
-      accountIdentity.uid,
-      accountIdentity.region,
+      account.uid,
+      account.region,
       skip,
       limit
     ])
@@ -203,30 +203,46 @@ InvitationRepository.prototype.getReceivedInvitationList = async function (accou
  *
  * [跨區域操作時使用]
  * softDelete: 跨區域操作時使用，若雙邊操作需要 rollback 有機會補教。等雙邊都 commit 再硬刪除 (hard delete)
- * @param {{ uid: string, region: string }} inviterAccountIdentity
- * @param {{ uid: string, region: string }} recipientAccountIdentity
+ * @param {{ uid: string, region: string }} inviterAccount
+ * @param {{ uid: string, region: string }} recipientAccount
  * @param {string} event
  * @param {boolean} softDelete
  */
-InvitationRepository.prototype.removeRelatedInvitation = async function (inviterAccountIdentity, recipientAccountIdentity, event, softDelete = false) {
+InvitationRepository.prototype.removeRelatedInvitation = async function (inviterAccount, recipientAccount, event, softDelete = false) {
   let idx = 1
   const operation = softDelete === true ? `UPDATE "Invitations" SET deleted_at = NOW() AT time zone 'utc'` : 'DELETE FROM "Invitations"'
   return this.query(
     `
     ${operation}
     WHERE 
-      inviter_uid = $${idx++}::uuid AND
-      inviter_region = $${idx++}::varchar AND
-      recipient_uid = $${idx++}::uuid AND
-      recipient_region = $${idx++}::varchar AND
-      event = $${idx++}
+      (
+        inviter_uid = $${idx++}::uuid AND
+        inviter_region = $${idx++}::varchar AND
+        recipient_uid = $${idx++}::uuid AND
+        recipient_region = $${idx++}::varchar AND
+        event = $${idx++}
+      )
+      OR
+      (
+        recipient_uid = $${idx++}::uuid AND
+        recipient_region = $${idx++}::varchar AND
+        inviter_uid = $${idx++}::uuid AND
+        inviter_region = $${idx++}::varchar AND
+        event = $${idx++}
+      )
     RETURNING *;
     `,
     [
-      inviterAccountIdentity.uid,
-      inviterAccountIdentity.region,
-      recipientAccountIdentity.uid,
-      recipientAccountIdentity.region,
+      inviterAccount.uid,
+      inviterAccount.region,
+      recipientAccount.uid,
+      recipientAccount.region,
+      event,
+
+      inviterAccount.uid,
+      inviterAccount.region,
+      recipientAccount.uid,
+      recipientAccount.region,
       event
     ])
 }

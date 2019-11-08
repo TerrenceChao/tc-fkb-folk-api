@@ -29,10 +29,10 @@ describe('repository: Invitations', () => {
     const inviter = { uid: userA.uid, region: userA.region }
     const recipient = { uid: userB.uid, region: userB.region }
     const event = 'invite_event_friend_invite'
-    const info = genDBInvitationInfo()
+    const info = genDBInvitationInfo(userA, userB)
 
     // act
-    const invitation = await invitationRepo.findOrCreateFriendInvitation(inviter, recipient, event, info)
+    const invitation = await invitationRepo.findOrCreateInvitation(inviter, recipient, event, info)
 
     // assert
     expect(invitation.inviter_uid).to.equals(userA.uid)
@@ -48,11 +48,11 @@ describe('repository: Invitations', () => {
     const inviter = { uid: userA.uid, region: userA.region }
     const recipient = { uid: userB.uid, region: userB.region }
     const event = 'invite_event_friend_invite'
-    const info = genDBInvitationInfo()
+    const info = genDBInvitationInfo(userA, userB)
 
     // act
-    const invitation = await invitationRepo.findOrCreateFriendInvitation(inviter, recipient, event, info)
-    const newInvitation = await invitationRepo.findOrCreateFriendInvitation(inviter, recipient, event, info)
+    const invitation = await invitationRepo.findOrCreateInvitation(inviter, recipient, event, info)
+    const newInvitation = await invitationRepo.findOrCreateInvitation(inviter, recipient, event, info)
 
     // assert
     expect(newInvitation.inviter_uid).to.equals(inviter.uid)
@@ -101,7 +101,7 @@ describe('repository: Invitations', () => {
     var userD
     const signupInfoD = genSignupInfo()
     const event = 'invite_event_friend_invite'
-    const info = genDBInvitationInfo()
+    const info = genDBInvitationInfo(signupInfoC, signupInfoD)
     var inviter
     var recipient
     var sourceInvitation
@@ -120,7 +120,7 @@ describe('repository: Invitations', () => {
       inviter = { uid: userC.uid, region: userC.region }
       recipient = { uid: userD.uid, region: userD.region }
 
-      sourceInvitation = await invitationRepo.findOrCreateFriendInvitation(inviter, recipient, event, info)
+      sourceInvitation = await invitationRepo.findOrCreateInvitation(inviter, recipient, event, info)
       const iid = sourceInvitation.iid
       testCases[0].params = [inviter, { iid }]
       testCases[1].params = [inviter, { event }]
@@ -155,7 +155,7 @@ describe('repository: Invitations', () => {
     var userD
     const signupInfoD = genSignupInfo()
     const event = 'invite_event_friend_invite'
-    const info = genDBInvitationInfo()
+    const info = genDBInvitationInfo(signupInfoC, signupInfoD)
     var inviter
     var recipient
     var sourceInvitation
@@ -170,7 +170,7 @@ describe('repository: Invitations', () => {
       inviter = { uid: userC.uid, region: userC.region }
       recipient = { uid: userD.uid, region: userD.region }
 
-      sourceInvitation = await invitationRepo.findOrCreateFriendInvitation(inviter, recipient, event, info)
+      sourceInvitation = await invitationRepo.findOrCreateInvitation(inviter, recipient, event, info)
       testCases[0].params = [inviter, recipient]
       testCases[1].params = [recipient, inviter]
     })

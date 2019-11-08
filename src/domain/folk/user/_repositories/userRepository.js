@@ -5,19 +5,13 @@ const Repository = require('../../../../library/repository')
 
 const VALID_FIELDS = new Map([
   // Accounts
-  ['uid', 'a.id'],
+  ['uid', 'a.id AS uid'],
   ['region', 'a.region'],
   ['email', 'a.email'],
-  ['alternateEmail', 'a.alternate_mail'],
+  ['alternateEmail', 'a.alternate_email'],
   ['countryCode', 'a.country_code'],
   ['phone', 'a.phone'],
   ['device', 'a.device'],
-  // // Auths
-  // ['pwHash', 'au.pw_hash'],
-  // ['pwSalt', 'au.pw_salt'],
-  // ['lock', 'au.lock'],
-  // ['attempt', 'au.attempt'],
-  // ['verification', 'au.verification']
   // Users
   ['beSearched', 'u.be_searched'],
   ['givenName', 'u.given_name'],
@@ -160,10 +154,10 @@ UserRepository.prototype.getAuthorizedUser = async function (email, password, se
 }
 
 /**
- * @param {{ uid: string, region: string }} accountIdentity
+ * @param {{ uid: string, region: string }} account
  * @param {string[]|null} selectedFields
  */
-UserRepository.prototype.getUser = async function (accountIdentity, selectedFields = null) {
+UserRepository.prototype.getUser = async function (account, selectedFields = null) {
   let idx = 1
   selectedFields = parseSelectFields(selectedFields)
 
@@ -178,23 +172,23 @@ UserRepository.prototype.getUser = async function (accountIdentity, selectedFiel
       a.region = $${idx++}::varchar;
     `,
     [
-      accountIdentity.uid,
-      accountIdentity.region
+      account.uid,
+      account.region
     ],
     0)
 }
 
 /**
  * 需要結合 Account 中的 region
- * @param {{ uid: string, region: string }} accountIdentity
- * @param {{ uid: string, region: string }} targetAccountIdentity
+ * @param {{ uid: string, region: string }} account
+ * @param {{ uid: string, region: string }} targetAccount
  * @param {string[]|null} selectedFields
  */
-UserRepository.prototype.getPairUsers = async function (accountIdentity, targetAccountIdentity, selectedFields = null) {
+UserRepository.prototype.getPairUsers = async function (account, targetAccount, selectedFields = null) {
   let idx = 1
   const order = {
-    [accountIdentity.uid]: 0,
-    [targetAccountIdentity.uid]: 1
+    [account.uid]: 0,
+    [targetAccount.uid]: 1
   }
   selectedFields = parseSelectFields(selectedFields)
 
@@ -209,16 +203,16 @@ UserRepository.prototype.getPairUsers = async function (accountIdentity, targetA
       (a.id = $${idx++}::uuid AND a.region = $${idx++}::varchar);
     `,
     [
-      accountIdentity.uid,
-      accountIdentity.region,
-      targetAccountIdentity.uid,
-      targetAccountIdentity.region
+      account.uid,
+      account.region,
+      targetAccount.uid,
+      targetAccount.region
     ])
 }
 
 /**
  * userRepo
- * @param {{ uid: string, region: string }} accountIdentity
+ * @param {{ uid: string, region: string }} account
  * @param {{
  *    beSearched: boolean|null,
  *    givenName: string|null,
@@ -230,7 +224,7 @@ UserRepository.prototype.getPairUsers = async function (accountIdentity, targetA
  * }} newUserInfo
  * @param {string[]|null} selectedFields
  */
-UserRepository.prototype.updateUser = async function (accountIdentity, newUserInfo, selectedFields = null) {
+UserRepository.prototype.updateUser = async function (account, newUserInfo, selectedFields = null) {
   let idx = 1
   const updatedFields = parseUserUpdateFields(newUserInfo)
   selectedFields = parseSelectFields(selectedFields)
@@ -248,8 +242,8 @@ UserRepository.prototype.updateUser = async function (accountIdentity, newUserIn
     RETURNING ${selectedFields}, a.region, a.id AS uid;
     `,
     [
-      accountIdentity.uid,
-      accountIdentity.region
+      account.uid,
+      account.region
     ],
     0)
 }

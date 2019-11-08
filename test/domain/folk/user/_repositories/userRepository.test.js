@@ -79,14 +79,14 @@ describe('repository: Users', () => {
     const userB = await authRepo.createAccountUser(signupInfoB)
 
     // act
-    const accountIdentity = { uid: userA.uid, region: userA.region }
-    const targetAccountIdentity = { uid: userB.uid, region: userB.region }
-    let users = await userRepo.getPairUsers(accountIdentity, targetAccountIdentity, CHECK_FIELDS)
+    const account = { uid: userA.uid, region: userA.region }
+    const targetAccount = { uid: userB.uid, region: userB.region }
+    let users = await userRepo.getPairUsers(account, targetAccount, CHECK_FIELDS)
 
     // arrange
     const order = {
-      [accountIdentity.uid]: 0,
-      [targetAccountIdentity.uid]: 1
+      [account.uid]: 0,
+      [targetAccount.uid]: 1
     }
 
     users = users

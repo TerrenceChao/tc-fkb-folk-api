@@ -12,15 +12,7 @@ module.exports = {
       inviterUid: {
         allowNull: false,
         type: Sequelize.UUID,
-        field: 'inviter_uid',
-        references: {
-          model: {
-            tableName: 'Accounts'
-          },
-          key: 'id'
-        },
-        onDelete: 'SET NULL',
-        onUpdate: 'CASCADE'
+        field: 'inviter_uid'
       },
       inviterRegion: {
         allowNull: false,
@@ -30,15 +22,7 @@ module.exports = {
       recipientUid: {
         allowNull: false,
         type: Sequelize.UUID,
-        field: 'recipient_uid',
-        references: {
-          model: {
-            tableName: 'Accounts'
-          },
-          key: 'id'
-        },
-        onDelete: 'SET NULL',
-        onUpdate: 'CASCADE'
+        field: 'recipient_uid'
       },
       recipientRegion: {
         allowNull: false,

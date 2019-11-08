@@ -33,15 +33,19 @@ function genSignupInfo () {
   }
 }
 
-function genDBInvitationInfo () {
+function genDBInvitationInfo (userA, userB) {
   return {
     inviter: {
       profileLink: faker.internet.url(),
-      profilePic: faker.internet.url()
+      profilePic: faker.internet.url(),
+      givenName: userA.given_name || userA.givenName,
+      familyName: userA.family_name || userA.familyName
     },
     recipient: {
       profileLink: faker.internet.url(),
-      profilePic: faker.internet.url()
+      profilePic: faker.internet.url(),
+      givenName: userB.given_name || userB.givenName,
+      familyName: userB.family_name || userB.familyName
     },
     header: {
       data: {

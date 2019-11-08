@@ -27,15 +27,7 @@ module.exports = {
       friendId: {
         allowNull: false,
         type: Sequelize.UUID,
-        field: 'friend_id',
-        references: {
-          model: {
-            tableName: 'Accounts'
-          },
-          key: 'id'
-        },
-        onDelete: 'CASCADE',
-        onUpdate: 'CASCADE'
+        field: 'friend_id'
       },
       friendRegion: {
         allowNull: false,
