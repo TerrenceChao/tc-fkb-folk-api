@@ -1,7 +1,7 @@
 const util = require('util')
 const _ = require('lodash')
 const uuidv4 = require('uuid/v4')
-const types = require('config').database.types
+const pool = require('config').database.pool
 const Repository = require('../../../library/repository')
 
 function parseConditions (obj) {
@@ -39,7 +39,7 @@ function InvitationRepository (pool) {
  * @param {string} event
  * @param {Object} info
  */
-InvitationRepository.prototype.findOrCreateInvitation = async function (inviterAccount, recipientAccount, event, info) {
+InvitationRepository.prototype.createOrUpdateInvitation = async function (inviterAccount, recipientAccount, event, info) {
   let idx = 1
   return this.query(
     `
@@ -198,8 +198,8 @@ InvitationRepository.prototype.getReceivedInvitationList = async function (accou
  * invitationRepo
  * 不論是否跨區域，有可能雙方幾乎同時發送了邀請，也同時建立了invitation records,
  * 導致雙方都是邀請者/受邀者，所以刪除時 需考慮這種情況 (刪除至多 2 筆資訊)
- * accountInfo (uid, region)
- * targetAccountInfo (uid, region)
+ * account (uid, region)
+ * targetAccount (uid, region)
  *
  * [跨區域操作時使用]
  * softDelete: 跨區域操作時使用，若雙邊操作需要 rollback 有機會補教。等雙邊都 commit 再硬刪除 (hard delete)
@@ -247,4 +247,7 @@ InvitationRepository.prototype.removeRelatedInvitation = async function (inviter
     ])
 }
 
-module.exports = InvitationRepository
+module.exports = {
+  invitationRepository: new InvitationRepository(pool),
+  InvitationRepository
+}

@@ -139,7 +139,7 @@ router.get('/:uid/:region/logout',
 // profile (get someone's profile, not only userself)
 router.get('/:uid/:region/profile',
   userReq.accountIdentifyValidator,
-  userReq.visitorAccountInfoValidator,
+  userReq.visitorAccountValidator,
   auth.isLoggedIn, // validate session info by uid (req.params.uid)
   profile.getHeader,
   generalRes.success

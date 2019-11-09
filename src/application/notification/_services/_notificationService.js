@@ -30,7 +30,7 @@ function registerRequest (service, userInfo) {
     receivers: [_.pick(userInfo, USER_CONST.ACCOUT_IDENTITY)],
     packet: {
       event: USER_CONST.ACCOUNT_EVENT_REGISTRATION,
-      content: _.pick(userInfo, USER_CONST.PUBLIC_USER_INFO),
+      content: _.pick(userInfo, USER_CONST.USER_PUBLIC_INFO)
     }
   }, service.init, userInfo)
 }
@@ -57,7 +57,7 @@ NotificationService.prototype.register = function (userInfo) {
  * B. 以發送類型的角度，區分 email, SMS, app-push, web-push
  */
 NotificationService.prototype.init = function (userInfo) {
-  if (! validAccount(userInfo)) {
+  if (!validAccount(userInfo)) {
     return userInfo
   }
 
@@ -165,7 +165,7 @@ NotificationService.prototype.emitEvent = function (message) {
   util.publishRequest(message.packet.event, message)
 }
 
-NotificationService.prototype.quit = function (accountInfo) {
+NotificationService.prototype.quit = function (account) {
   return true
 }
 

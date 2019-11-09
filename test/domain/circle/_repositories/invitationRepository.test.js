@@ -2,8 +2,8 @@ const { expect } = require('chai')
 const path = require('path')
 const config = require('config')
 const Repository = require(path.join(config.src.library, 'Repository'))
-const AuthRepository = require(path.join(config.src.repository.user, 'authRepository'))
-const InvitationRepository = require(path.join(config.src.repository.circle, 'invitationRepository'))
+const { AuthRepository } = require(path.join(config.src.repository.user, 'authRepository'))
+const { InvitationRepository } = require(path.join(config.src.repository.circle, 'invitationRepository'))
 const { genSignupInfo, genDBInvitationInfo } = require(path.join(config.test.common, 'mock'))
 const { assertInvitation, sortJSONByKeys } = require(path.join(config.test.common, 'assert'))
 
@@ -32,7 +32,7 @@ describe('repository: Invitations', () => {
     const info = genDBInvitationInfo(userA, userB)
 
     // act
-    const invitation = await invitationRepo.findOrCreateInvitation(inviter, recipient, event, info)
+    const invitation = await invitationRepo.createOrUpdateInvitation(inviter, recipient, event, info)
 
     // assert
     expect(invitation.inviter_uid).to.equals(userA.uid)
@@ -51,8 +51,8 @@ describe('repository: Invitations', () => {
     const info = genDBInvitationInfo(userA, userB)
 
     // act
-    const invitation = await invitationRepo.findOrCreateInvitation(inviter, recipient, event, info)
-    const newInvitation = await invitationRepo.findOrCreateInvitation(inviter, recipient, event, info)
+    const invitation = await invitationRepo.createOrUpdateInvitation(inviter, recipient, event, info)
+    const newInvitation = await invitationRepo.createOrUpdateInvitation(inviter, recipient, event, info)
 
     // assert
     expect(newInvitation.inviter_uid).to.equals(inviter.uid)
@@ -120,7 +120,7 @@ describe('repository: Invitations', () => {
       inviter = { uid: userC.uid, region: userC.region }
       recipient = { uid: userD.uid, region: userD.region }
 
-      sourceInvitation = await invitationRepo.findOrCreateInvitation(inviter, recipient, event, info)
+      sourceInvitation = await invitationRepo.createOrUpdateInvitation(inviter, recipient, event, info)
       const iid = sourceInvitation.iid
       testCases[0].params = [inviter, { iid }]
       testCases[1].params = [inviter, { event }]
@@ -170,7 +170,7 @@ describe('repository: Invitations', () => {
       inviter = { uid: userC.uid, region: userC.region }
       recipient = { uid: userD.uid, region: userD.region }
 
-      sourceInvitation = await invitationRepo.findOrCreateInvitation(inviter, recipient, event, info)
+      sourceInvitation = await invitationRepo.createOrUpdateInvitation(inviter, recipient, event, info)
       testCases[0].params = [inviter, recipient]
       testCases[1].params = [recipient, inviter]
     })

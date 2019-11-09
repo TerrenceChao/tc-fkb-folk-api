@@ -7,11 +7,11 @@ function SettingService (userRepo) {
 }
 
 /**
- * accountInfo 至少有 uid, region,
+ * account 至少有 uid, region,
  * 額外的資訊才有 email, phone, ....
  */
-SettingService.prototype.getUserInfo = async function (accountInfo) {
-  const user = await this.userRepo.getUser(accountInfo)
+SettingService.prototype.getUserInfo = async function (account) {
+  const user = await this.userRepo.getUser(account)
   if (user != null) {
     return user
   }
@@ -34,11 +34,11 @@ SettingService.prototype.getUserInfo = async function (accountInfo) {
 }
 
 /**
- * accountInfo 至少有 uid, region,
+ * account 至少有 uid, region,
  * 額外的資訊才有 email, phone, ....
  */
-SettingService.prototype.getPublicUserInfo = async function (accountInfo) {
-  const user = await this.userRepo.getUser(accountInfo, CONSTANT.PUBLIC_USER_INFO)
+SettingService.prototype.getPublicUserInfo = async function (account) {
+  const user = await this.userRepo.getUser(account, CONSTANT.USER_PUBLIC_INFO)
   if (user != null) {
     return user
   }
@@ -64,11 +64,11 @@ SettingService.prototype.getPublicUserInfo = async function (accountInfo) {
 }
 
 /**
- * accountInfo 至少有 uid, region,
+ * account 至少有 uid, region,
  * 額外的資訊才有 email, phone, ....
  */
-SettingService.prototype.updateUserInfo = async function (accountInfo, userInfo) {
-  const updated = await this.userRepo.updateUser(accountInfo, userInfo)
+SettingService.prototype.updateUserInfo = async function (account, userInfo) {
+  const updated = await this.userRepo.updateUser(account, userInfo)
   if (updated == true) {
     return updated
   }

@@ -1,6 +1,6 @@
 const util = require('util')
 const _ = require('lodash')
-const types = require('config').database.types
+const pool = require('config').database.pool
 const Repository = require('../../../../library/repository')
 
 const VALID_FIELDS = new Map([
@@ -248,4 +248,7 @@ UserRepository.prototype.updateUser = async function (account, newUserInfo, sele
     0)
 }
 
-module.exports = UserRepository
+module.exports = {
+  userRepository: new UserRepository(pool),
+  UserRepository
+}

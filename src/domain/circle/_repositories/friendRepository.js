@@ -1,6 +1,6 @@
 const util = require('util')
 const _ = require('lodash')
-const types = require('config').database.types
+const pool = require('config').database.pool
 const Repository = require('../../../library/repository')
 
 util.inherits(FriendRepository, Repository)
@@ -26,7 +26,7 @@ FriendRepository.prototype.addFriend = async function (account, targetUserInfo) 
     INSERT INTO "Friends" (user_id, friend_id, friend_region, public_info, deleted_at)
     VALUES
     ($${idx++}::uuid, $${idx++}::uuid, $${idx++}::varchar, $${idx++}::jsonb, $${idx++}::timestamp) 
-    RETURNING *;
+    RETURNING user_id AS uid, friend_id, friend_region, public_info;
     `,
     [
       account.uid,
@@ -57,7 +57,7 @@ FriendRepository.prototype.makeFriends = async function (userInfo, targetUserInf
     VALUES 
     ($${idx++}::uuid, $${idx++}::uuid, $${idx++}::varchar, $${idx++}::jsonb, $${idx++}::timestamp),
     ($${idx++}::uuid, $${idx++}::uuid, $${idx++}::varchar, $${idx++}::jsonb, $${idx++}::timestamp)
-    RETURNING *;
+    RETURNING user_id AS uid, friend_id, friend_region, public_info;
     `,
     [
       userInfo.uid,
@@ -83,8 +83,8 @@ FriendRepository.prototype.getFriend = async function (account, targetAccount) {
   let idx = 1
   return this.query(
     `
-    SELECT user_id, friend_id, friend_region, public_info
-    FROM "Friends" AS f
+    SELECT user_id AS uid, category, friend_id, friend_region, public_info
+    FROM "Friends"
     WHERE
       deleted_at IS NULL AND
       user_id = $${idx++}::uuid AND
@@ -109,8 +109,8 @@ FriendRepository.prototype.getFriendList = async function (account, limit, skip)
   let idx = 1
   return this.query(
     `
-    SELECT user_id, friend_id, friend_region, public_info
-    FROM "Friends" AS f
+    SELECT user_id AS uid, category, friend_id, friend_region, public_info
+    FROM "Friends"
     WHERE
       deleted_at IS NULL AND
       user_id = $${idx++}::uuid
@@ -146,7 +146,7 @@ FriendRepository.prototype.updateFriend = async function (account, targetAccount
       user_id = $${idx++}::uuid AND
       friend_id = $${idx++}::uuid AND
       friend_region = $${idx++}::varchar
-    RETURNING *;
+    RETURNING user_id AS uid, friend_id, friend_region, public_info;
     `,
     [
       JSON.stringify(publicInfo),
@@ -176,7 +176,7 @@ FriendRepository.prototype.removeFriend = async function (account, targetAccount
       user_id = $${idx++}::uuid AND
       friend_id = $${idx++}::uuid AND
       friend_region = $${idx++}::varchar
-    RETURNING *;
+    RETURNING user_id AS uid, friend_id, friend_region, public_info;
     `,
     [
       account.uid,
@@ -213,7 +213,7 @@ FriendRepository.prototype.unfriend = async function (account, targetAccount, so
         friend_id = $${idx++}::uuid AND
         friend_region = $${idx++}::varchar
       )
-    RETURNING *;
+    RETURNING user_id AS uid, friend_id, friend_region, public_info;
     `,
     [
       account.uid,
@@ -225,4 +225,7 @@ FriendRepository.prototype.unfriend = async function (account, targetAccount, so
     ])
 }
 
-module.exports = FriendRepository
+module.exports = {
+  friendRepository: new FriendRepository(pool),
+  FriendRepository
+}

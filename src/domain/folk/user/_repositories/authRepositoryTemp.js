@@ -163,11 +163,11 @@ AuthRepository.prototype.generateFakeAccounts = async function (amount) {
 /**
  * friendRepo
  */
-AuthRepository.prototype.getFriendList = async function (accountInfo, limit, skip) {
+AuthRepository.prototype.getFriendList = async function (account, limit, skip) {
   for (const userInfo of userDB.values()) {
-    if (userInfo.uid !== accountInfo.uid || userInfo.region !== accountInfo.region) {
+    if (userInfo.uid !== account.uid || userInfo.region !== account.region) {
       // console.log(` in userDB: ${JSON.stringify(_.pick(userInfo, 'uid', 'region'))}`)
-      // console.log(`search: ${JSON.stringify(_.pick(accountInfo, 'uid', 'region'))}`)
+      // console.log(`search: ${JSON.stringify(_.pick(account, 'uid', 'region'))}`)
       continue
     }
 
@@ -182,9 +182,9 @@ AuthRepository.prototype.getFriendList = async function (accountInfo, limit, ski
  * friendRepo
  * TODO: 僅搜尋特定區域的朋友. 在跨區域機制下提供 dispatch-api 呼叫
  */
-// AuthRepository.prototype.getFriendListByRegion = async function (accountInfo, region, limit, skip) {
+// AuthRepository.prototype.getFriendListByRegion = async function (account, region, limit, skip) {
 //   for (const userInfo of userDB.values()) {
-//     if (userInfo.uid !== accountInfo.uid || userInfo.region !== accountInfo.region) {
+//     if (userInfo.uid !== account.uid || userInfo.region !== account.region) {
 //       continue
 //     }
 
@@ -198,17 +198,17 @@ AuthRepository.prototype.getFriendList = async function (accountInfo, limit, ski
 /**
  * friendRepo
  */
-AuthRepository.prototype.getFriend = async function (accountInfo, targetAccountInfo) {
+AuthRepository.prototype.getFriend = async function (account, targetAccount) {
   for (const userInfo of userDB.values()) {
-    if (userInfo.uid !== accountInfo.uid || userInfo.region !== accountInfo.region) {
+    if (userInfo.uid !== account.uid || userInfo.region !== account.region) {
       // console.log(` in userDB: ${JSON.stringify(_.pick(userInfo, 'uid', 'region'))}`)
-      // console.log(`search: ${JSON.stringify(_.pick(accountInfo, 'uid', 'region'))}`)
+      // console.log(`search: ${JSON.stringify(_.pick(account, 'uid', 'region'))}`)
       continue
     }
 
     return userInfo.friendList.find(friend => 
-      friend.uid === targetAccountInfo.uid &&
-      friend.region === targetAccountInfo.region
+      friend.uid === targetAccount.uid &&
+      friend.region === targetAccount.region
     )
   }
 
@@ -218,30 +218,30 @@ AuthRepository.prototype.getFriend = async function (accountInfo, targetAccountI
 /**
  * friendRepo
  */
-AuthRepository.prototype.addFriend = async function (accountInfo, targetAccountInfo) {
+AuthRepository.prototype.addFriend = async function (account, targetAccount) {
   for (const userInfo of userDB.values()) {
-    if (userInfo.uid !== accountInfo.uid || userInfo.region !== accountInfo.region) {
+    if (userInfo.uid !== account.uid || userInfo.region !== account.region) {
       // console.log(` in userDB: ${JSON.stringify(_.pick(userInfo, 'uid', 'region'))}`)
-      // console.log(`search: ${JSON.stringify(_.pick(accountInfo, 'uid', 'region'))}\n`)
+      // console.log(`search: ${JSON.stringify(_.pick(account, 'uid', 'region'))}\n`)
       continue
     }
 
     // console.log(` in userDB: ${JSON.stringify(_.pick(userInfo, 'uid', 'region'))}`)
-    // console.log(`search: ${JSON.stringify(_.pick(accountInfo, 'uid', 'region'))}\n`)
+    // console.log(`search: ${JSON.stringify(_.pick(account, 'uid', 'region'))}\n`)
 
     // if user has the friend, leave it and return null
     let friend = userInfo.friendList.find(friend => 
-      friend.uid === targetAccountInfo.uid &&
-      friend.region === targetAccountInfo.region
+      friend.uid === targetAccount.uid &&
+      friend.region === targetAccount.region
     )
     if (friend !== undefined) {
       return friend
     }
 
-    // console.log(`targetAccountInfo: ${JSON.stringify(targetAccountInfo)}\n`)
+    // console.log(`targetAccount: ${JSON.stringify(targetAccount)}\n`)
     // add friend
     for (const friendInfo of userDB.values()) {
-      if (friendInfo.uid === targetAccountInfo.uid && friendInfo.region === targetAccountInfo.region) {
+      if (friendInfo.uid === targetAccount.uid && friendInfo.region === targetAccount.region) {
         userInfo.friendList.push({
           region: friendInfo.region,
           uid: friendInfo.uid,
@@ -265,25 +265,25 @@ AuthRepository.prototype.addFriend = async function (accountInfo, targetAccountI
  * TODO: 在同區域時,會刪除兩筆紀錄; 在不同區域時只會刪除一筆.
  * softDelete: 跨區域操作時使用，若雙邊操作需要 rollback 有機會補教。等雙邊都 commit 再硬刪除 (hard delete)
  */
-AuthRepository.prototype.removeFriend = async function (accountInfo, targetAccountInfo, softDelete = false) {
+AuthRepository.prototype.removeFriend = async function (account, targetAccount, softDelete = false) {
   let removedFriend
 
-  // remove accountInfo's friend (targetAccountInfo)
+  // remove account's friend (targetAccount)
   for (const userInfo of userDB.values()) {
-    if (userInfo.uid !== accountInfo.uid || userInfo.region !== accountInfo.region) {
+    if (userInfo.uid !== account.uid || userInfo.region !== account.region) {
       // console.log(` in userDB: ${JSON.stringify(_.pick(userInfo, 'uid', 'region'))}`)
-      // console.log(`search: ${JSON.stringify(_.pick(accountInfo, 'uid', 'region'))}`)
+      // console.log(`search: ${JSON.stringify(_.pick(account, 'uid', 'region'))}`)
 
       continue
     }
 
     // console.log(` in userDB: ${JSON.stringify(_.pick(userInfo, 'uid', 'region'))}`)
-    // console.log(`search: ${JSON.stringify(_.pick(accountInfo, 'uid', 'region'))}`)
+    // console.log(`search: ${JSON.stringify(_.pick(account, 'uid', 'region'))}`)
 
     // remove friend (will be stranger)
     let friend = userInfo.friendList.find(friend =>
-      friend.uid === targetAccountInfo.uid &&
-      friend.region === targetAccountInfo.region
+      friend.uid === targetAccount.uid &&
+      friend.region === targetAccount.region
     )
     if (friend !== undefined) {
       userInfo.friendList = userInfo.friendList.filter(friend => !(friend.uid === friend.uid && friend.region === friend.region))
@@ -293,15 +293,15 @@ AuthRepository.prototype.removeFriend = async function (accountInfo, targetAccou
     removedFriend = friend
   }
 
-  // // remove targetAccountInfo's friend (accountInfo)
+  // // remove targetAccount's friend (account)
   // for (const userInfo of userDB.values()) {
-  //   if (userInfo.uid !== targetAccountInfo.uid || userInfo.region !== targetAccountInfo.region) {
+  //   if (userInfo.uid !== targetAccount.uid || userInfo.region !== targetAccount.region) {
   //     continue
   //   }
   //   // remove friend (will be stranger)
   //   let friend = userInfo.friendList.find(friend =>
-  //     friend.uid === accountInfo.uid &&
-  //     friend.region === accountInfo.region
+  //     friend.uid === account.uid &&
+  //     friend.region === account.region
   //   )
   //   if (friend !== undefined) {
   //     userInfo.friendList = userInfo.friendList.filter(friend => 
@@ -317,17 +317,17 @@ AuthRepository.prototype.removeFriend = async function (accountInfo, targetAccou
  * friendRepo
  */
 // const CONSTANT = require('../../../../circle/_properties/constant')
-// AuthRepository.prototype.relation = async function (ownerAccountInfo, visitorAccountInfo) {
+// AuthRepository.prototype.relation = async function (ownerAccount, visitorAccount) {
 //   for (const userInfo of userDB.values()) {
-//     if (userInfo.uid !== visitorAccountInfo.uid || userInfo.region !== visitorAccountInfo.region) {
+//     if (userInfo.uid !== visitorAccount.uid || userInfo.region !== visitorAccount.region) {
 //       console.log(`visitor in userDB: ${JSON.stringify(_.pick(userInfo, 'uid', 'region'))}`)
-//       console.log(`search visitor: ${JSON.stringify(_.pick(visitorAccountInfo, 'uid', 'region'))}`)
+//       console.log(`search visitor: ${JSON.stringify(_.pick(visitorAccount, 'uid', 'region'))}`)
 //       continue
 //     }
 
 //     // 3. invitation has sent
 //     for (const inv of invitationDB.values()) {
-//       if (inv['inviter'].uid === visitorAccountInfo.uid && inv['inviter'].region === visitorAccountInfo.region) {
+//       if (inv['inviter'].uid === visitorAccount.uid && inv['inviter'].region === visitorAccount.region) {
 //         return {
 //           type: CONSTANT.RELATION_STATUS_INVITED,
 //           relation: 'invitation has sent'
@@ -336,7 +336,7 @@ AuthRepository.prototype.removeFriend = async function (accountInfo, targetAccou
 //     }
 
 //     // 2. stranger
-//     if (undefined === userInfo.friendList.find(friend => friend.uid === ownerAccountInfo.uid && friend.region === ownerAccountInfo.region)) {
+//     if (undefined === userInfo.friendList.find(friend => friend.uid === ownerAccount.uid && friend.region === ownerAccount.region)) {
 //       return {
 //         type: CONSTANT.RELATION_STATUS_STRANGER,
 //         relation: 'stranger'
@@ -385,8 +385,8 @@ AuthRepository.prototype.findOrCreateFriendInvitation = async function (newInvit
  * invitationRepo
  * invitationInfo (iid, region)
  */
-AuthRepository.prototype.getInvitation = async function (accountInfo, invitationInfo) {
-  console.log(`accoutInfo: ${JSON.stringify(accountInfo, null, 2)}`)
+AuthRepository.prototype.getInvitation = async function (account, invitationInfo) {
+  console.log(`accoutInfo: ${JSON.stringify(account, null, 2)}`)
   console.log(`invitationInfo: ${JSON.stringify(invitationInfo, null, 2)}`)
 
   const invitation = invitationDB.get(invitationInfo.iid)
@@ -394,13 +394,13 @@ AuthRepository.prototype.getInvitation = async function (accountInfo, invitation
     return null
   }
 
-  if ((invitation.inviter.uid === accountInfo.uid && invitation.inviter.region === accountInfo.region) ||
-      (invitation.recipient.uid === accountInfo.uid && invitation.recipient.region === accountInfo.region)
+  if ((invitation.inviter.uid === account.uid && invitation.inviter.region === account.region) ||
+      (invitation.recipient.uid === account.uid && invitation.recipient.region === account.region)
       ) {
         return invitation
     }
 
-  throw new Error(`Invitation doesn't belong to user: ${JSON.stringify(accountInfo)}`)
+  throw new Error(`Invitation doesn't belong to user: ${JSON.stringify(account)}`)
 }
 
 /**
@@ -408,21 +408,21 @@ AuthRepository.prototype.getInvitation = async function (accountInfo, invitation
  * roles (inviter, recipient)
  */
 const CONSTANT = require('../../../circle/_properties/constant')
-AuthRepository.prototype.getInvitationByRoles = async function (accountInfo, targetAccountInfo) {
+AuthRepository.prototype.getInvitationByRoles = async function (account, targetAccount) {
   for (const invitation of invitationDB.values()) {
     const inviter = invitation.inviter
     const recipient = invitation.recipient
 
     // 3. user has sent invitation to someone
-    if (inviter.uid === accountInfo.uid && inviter.region === accountInfo.region &&
-      recipient.uid === targetAccountInfo.uid && recipient.region === targetAccountInfo.region) {
-        return invitation
+    if (inviter.uid === account.uid && inviter.region === account.region &&
+      recipient.uid === targetAccount.uid && recipient.region === targetAccount.region) {
+      return invitation
     }
 
-    // 4. user (accountInfo) is invited
-    if (inviter.uid === targetAccountInfo.uid && inviter.region === targetAccountInfo.region &&
-      recipient.uid === accountInfo.uid && recipient.region === accountInfo.region) {
-        return invitation
+    // 4. user (account) is invited
+    if (inviter.uid === targetAccount.uid && inviter.region === targetAccount.region &&
+      recipient.uid === account.uid && recipient.region === account.region) {
+      return invitation
     }
   }
 
@@ -432,7 +432,7 @@ AuthRepository.prototype.getInvitationByRoles = async function (accountInfo, tar
 /**
  * invitationRepo
  */
-AuthRepository.prototype.getInvitationList = async function (accountInfo, inviteArrow, limit, skip) {
+AuthRepository.prototype.getInvitationList = async function (account, inviteArrow, limit, skip) {
   const inviteRoles = {
     sent: 'inviter',
     received: 'recipient'
@@ -441,7 +441,7 @@ AuthRepository.prototype.getInvitationList = async function (accountInfo, invite
   
   const list = []
   for (const inv of invitationDB.values()) {
-    if (inv[role].uid === accountInfo.uid && inv[role].region === accountInfo.region) {
+    if (inv[role].uid === account.uid && inv[role].region === account.region) {
       list.push(inv)
     }
   }
@@ -452,10 +452,10 @@ AuthRepository.prototype.getInvitationList = async function (accountInfo, invite
 /**
  * invitationRepo
  */
-AuthRepository.prototype.getSentInvitationList = async function (accountInfo, limit, skip) {
+AuthRepository.prototype.getSentInvitationList = async function (account, limit, skip) {
   const list = []
   for (const inv of invitationDB.values()) {
-    if (inv.inviter.uid === accountInfo.uid && inv.inviter.region === accountInfo.region) {
+    if (inv.inviter.uid === account.uid && inv.inviter.region === account.region) {
       list.push(inv)
     }
   }
@@ -466,10 +466,10 @@ AuthRepository.prototype.getSentInvitationList = async function (accountInfo, li
 /**
  * invitationRepo
  */
-AuthRepository.prototype.getReceivedInvitationList = async function (accountInfo, limit, skip) {
+AuthRepository.prototype.getReceivedInvitationList = async function (account, limit, skip) {
   const list = []
   for (const inv of invitationDB.values()) {
-    if (inv.recipient.uid === accountInfo.uid && inv.recipient.region === accountInfo.region) {
+    if (inv.recipient.uid === account.uid && inv.recipient.region === account.region) {
       list.push(inv)
     }
   }
@@ -481,7 +481,7 @@ AuthRepository.prototype.getReceivedInvitationList = async function (accountInfo
 //  * invitationRepo
 //  * invitationInfo (iid, region)
 //  */
-// AuthRepository.prototype.removeInvitation = async function (accountInfo, invitationInfo) {
+// AuthRepository.prototype.removeInvitation = async function (account, invitationInfo) {
 //   let invitation = invitationDB.get(invitationInfo.iid)
 //   if (invitation === undefined) {
 //     return false
@@ -491,43 +491,43 @@ AuthRepository.prototype.getReceivedInvitationList = async function (accountInfo
 //     throw new Error(`Invitation's region is incorrect`)
 //   }
 
-//   if ((invitation.inviter.uid === accountInfo.uid && invitation.inviter.region === accountInfo.region) ||
-//       (invitation.recipient.uid === accountInfo.uid && invitation.recipient.region === accountInfo.region)
+//   if ((invitation.inviter.uid === account.uid && invitation.inviter.region === account.region) ||
+//       (invitation.recipient.uid === account.uid && invitation.recipient.region === account.region)
 //       ) {
 //         invitationDB.delete(invitationInfo.iid)
 //         return true
 //     }
 
-//   throw new Error(`Invitation doesn't belong to user: ${JSON.stringify(accountInfo)}`)
+//   throw new Error(`Invitation doesn't belong to user: ${JSON.stringify(account)}`)
 // }
 
 /**
  * invitationRepo
  * 不論是否跨區域，有可能雙方幾乎同時發送了邀請，也同時建立了invitation records,
  * 導致雙方都是邀請者/受邀者，所以刪除時 需考慮這種情況 (刪除至多 2 筆資訊)
- * accountInfo (uid, region)
- * targetAccountInfo (uid, region)
+ * account (uid, region)
+ * targetAccount (uid, region)
  *
  * [跨區域操作時使用]
  * softDelete: 跨區域操作時使用，若雙邊操作需要 rollback 有機會補教。等雙邊都 commit 再硬刪除 (hard delete)
  *
- * TODO: 將參數改為四個：(accountInfo, targetAccountInfo, [event], softDelete)
+ * TODO: 將參數改為四個：(account, targetAccount, [event], softDelete)
  */
-AuthRepository.prototype.removeRelatedInvitation = async function (accountInfo, targetAccountInfo, softDelete = false) {
+AuthRepository.prototype.removeRelatedInvitation = async function (account, targetAccount, softDelete = false) {
   let deleteRows = 0
   for (const invitation of invitationDB.values()) {
     const header = invitation.header
     const inviter = invitation.inviter
     const recipient = invitation.recipient
 
-    if (inviter.uid === accountInfo.uid && inviter.region === accountInfo.region &&
-      recipient.uid === targetAccountInfo.uid && recipient.region === targetAccountInfo.region) {
+    if (inviter.uid === account.uid && inviter.region === account.region &&
+      recipient.uid === targetAccount.uid && recipient.region === targetAccount.region) {
       invitationDB.delete(header.iid)
       deleteRows++
     }
 
-    if (inviter.uid === targetAccountInfo.uid && inviter.region === targetAccountInfo.region &&
-      recipient.uid === accountInfo.uid && recipient.region === accountInfo.region) {
+    if (inviter.uid === targetAccount.uid && inviter.region === targetAccount.region &&
+      recipient.uid === account.uid && recipient.region === account.region) {
       invitationDB.delete(header.iid)
       deleteRows++
     }
@@ -559,10 +559,10 @@ const DEFAULT_PUBLIC_USER_FIELDS =
 /**
  * userRepo
  */
-AuthRepository.prototype.getUser = async function (accountInfo, selectedFields = ['*']) {
+AuthRepository.prototype.getUser = async function (account, selectedFields = ['*']) {
   const PW_FIELDS = ['verificaiton', 'password', 'newPassword', 'newPasswordConfirm', 'friendList']
   for (const userInfo of userDB.values()) {
-    if (userInfo.uid === accountInfo.uid && userInfo.region === accountInfo.region) {
+    if (userInfo.uid === account.uid && userInfo.region === account.region) {
       let partialUserInfo = _.omit(userInfo, PW_FIELDS)
       return _.isEqual(selectedFields.sort(), ['*'].sort()) ? partialUserInfo : _.pick(partialUserInfo, selectedFields)
     }
@@ -575,11 +575,11 @@ AuthRepository.prototype.getUser = async function (accountInfo, selectedFields =
  * userRepo
  * TODO: email 不可變更！這網站不像 linkedIn 可以替換信箱
  */
-AuthRepository.prototype.updateUser = async function (accountInfo, newUserInfo) {
+AuthRepository.prototype.updateUser = async function (account, newUserInfo) {
   for (const userInfo of userDB.values()) {
-    if (userInfo.uid === accountInfo.uid && userInfo.region === accountInfo.region) {
+    if (userInfo.uid === account.uid && userInfo.region === account.region) {
       // email 不可變更！
-      let updatedUserInfo = _.assignIn(userInfo, newUserInfo)
+      const updatedUserInfo = _.assignIn(userInfo, newUserInfo)
       userDB.set(userInfo.email, updatedUserInfo)
       return true
     }
@@ -591,14 +591,14 @@ AuthRepository.prototype.updateUser = async function (accountInfo, newUserInfo) 
 /**
  * userRepo
  */
-AuthRepository.prototype.getPairUsers = async function (accountInfo, targetAccountInfo, defaultFields = DEFAULT_PUBLIC_USER_FIELDS) {
+AuthRepository.prototype.getPairUsers = async function (account, targetAccount, defaultFields = DEFAULT_PUBLIC_USER_FIELDS) {
   let user, targetUser
   for (const userInfo of userDB.values()) {
-    if (userInfo.uid === accountInfo.uid && userInfo.region === accountInfo.region) {
+    if (userInfo.uid === account.uid && userInfo.region === account.region) {
       user = _.pick(userInfo, defaultFields)
     }
 
-    if (userInfo.uid === targetAccountInfo.uid && userInfo.region === targetAccountInfo.region) {
+    if (userInfo.uid === targetAccount.uid && userInfo.region === targetAccount.region) {
       targetUser = _.pick(userInfo, defaultFields)
     }
 
@@ -664,17 +664,17 @@ AuthRepository.prototype.findOrCreateVerification = async function (type, accoun
     for (const userInfo of userDB.values()) {
       if (account === userInfo.phone) {
         userInfo.verificaiton.reset = reset
-        userDB.set(account, userInfo)
+        userDB.set(account.phone, userInfo)
         return _.pick(userInfo, selectedFields)
       }
     }
     throw new Error(`user not found`)
   }
 
-  const userInfo = userDB.get(account)
+  const userInfo = userDB.get(account.email)
   if (userInfo != null) {
     userInfo.verificaiton.reset = reset
-    userDB.set(account, userInfo)
+    userDB.set(account.email, userInfo)
     return _.pick(userInfo, selectedFields)
   }
 

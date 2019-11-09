@@ -11,7 +11,7 @@ exports.registerInfoValidator = (req, res, next) => {
       req.body[field] === undefined) {
       var err = new Error(`account identify is lacked with: ${field}`)
       err.status = 422
-      next(err)
+      return next(err)
     }
   }))
   next()
@@ -41,22 +41,22 @@ exports.accountIdentifyValidator = (req, res, next) => {
       req.body[field] === undefined) {
       var err = new Error(`account identify is lacked with: ${field}`)
       err.status = 422
-      next(err)
+      return next(err)
     }
   }))
 
   next()
 }
 
-exports.visitorAccountInfoValidator = (req, res, next) => {
+exports.visitorAccountValidator = (req, res, next) => {
   // 檢查欄位中，「region」很重要！
-  Array.apply(null, ['visitor_uid', 'visitor_region'].forEach(field => {
+  Array.apply(null, ['visitorUid', 'visitorRegion'].forEach(field => {
     if (req.headers[field] === undefined &&
       req.query[field] === undefined &&
       req.body[field] === undefined) {
       var err = new Error(`visitor identify is lacked with: ${field}`)
       err.status = 422
-      next(err)
+      return next(err)
     }
   }))
 
@@ -76,7 +76,7 @@ exports.passwordValidator = (req, res, next) => {
   if (req.body.password === undefined) {
     var err = new Error('password is required')
     err.status = 422
-    next(err)
+    return next(err)
   }
   next()
 }
@@ -90,13 +90,13 @@ exports.newPasswordValidator = (req, res, next) => {
   if (newPassword === undefined || newPasswordConfirm === undefined) {
     const err = new Error('new password is required')
     err.status = 422
-    next(err)
+    return next(err)
   }
 
   if (newPassword !== newPasswordConfirm) {
     const err = new Error('new passwords are not matched')
     err.status = 422
-    next(err)
+    return next(err)
   }
   next()
 }

@@ -24,7 +24,7 @@ function parseReq (req, field) {
  * @param {array} fieldList
  */
 function parseReqInFields (req, fieldList) {
-  if (! Array.isArray(fieldList)) {
+  if (!Array.isArray(fieldList)) {
     return Promise.reject(new Error('fieldList is not an array')) 
   }
 
@@ -87,13 +87,13 @@ function request (service, event, options, retry = 0) {
     (err, response, body) => {
       body = parse(body)
 
-      if (! err && response.statusCode === REQ_SUCESS) {
+      if (!err && response.statusCode === REQ_SUCESS) {
         console.log(`\n${service} '${event}':\n request as ${options.url}\n statis code: ${response.statusCode}`)
         console.log('body:', body, '\n')
         return
       }
 
-      if (! err && response.statusCode === HTTP.VALIDATE_ERROR) {
+      if (!err && response.statusCode === HTTP.VALIDATE_ERROR) {
         console.error(`\n${service} '${event}':\n request FAIL\n statis code: ${response.statusCode}`)
         console.log('body in invalid formats:', body, '\n')
         return
@@ -126,13 +126,13 @@ function syncRequest (service, event, options, callback, data = null, retry = 0)
       (err, response, body) => {
         body = parse(body)
 
-        if (! err && response.statusCode === REQ_SUCESS) {
+        if (!err && response.statusCode === REQ_SUCESS) {
           console.log(`\n${service} '${event}':\n request as ${options.url}\n statis code: ${response.statusCode}`)
           console.log('body:', body, '\n')
           return resolve(callback(data || body))
         }
 
-        if (! err && response.statusCode === HTTP.VALIDATE_ERROR) {
+        if (!err && response.statusCode === HTTP.VALIDATE_ERROR) {
           console.error(`\n${service} '${event}':\n request FAIL\n statis code: ${response.statusCode}`)
           console.log('body in invalid formats:', body, '\n')
           return resolve(callback(body))

@@ -2,12 +2,14 @@ const CONSTANT = require('../../../property/constant')
 const CIRCLE_CONST = require('../_properties/constant')
 
 // TODO: for temporary
-const friendRepo = require('../../folk/user/_repositories/authRepositoryTemp')
+const userRepo = require('../../folk/user/_repositories/authRepositoryTemp')
 const inviteRepo = require('../../folk/user/_repositories/authRepositoryTemp')
+const friendRepo = require('../../folk/user/_repositories/authRepositoryTemp')
 
-function FriendService (friendRepo, inviteRepo) {
-  this.friendRepo = friendRepo
+function FriendService (userRepo, inviteRepo, friendRepo) {
+  this.userRepo = userRepo
   this.inviteRepo = inviteRepo
+  this.friendRepo = friendRepo
   console.log(`init ${arguments.callee.name} (template)`)
 }
 
@@ -15,8 +17,8 @@ function FriendService (friendRepo, inviteRepo) {
  * 傳回用戶的所有朋友資訊，但為了節省效能，
  * 每一筆資料，僅傳回最低限量可供顯示的欄位即可
  */
-FriendService.prototype.list = async function (accountInfo, limit = CONSTANT.LIMIT, skip = CONSTANT.SKIP) {
-  return await this.friendRepo.getFriendList(accountInfo, limit, skip)
+FriendService.prototype.list = async function (account, limit = CONSTANT.LIMIT, skip = CONSTANT.SKIP) {
+  return await this.friendRepo.getFriendList(account, limit, skip)
 
   // return [
   //   // 僅傳回最低限量可供顯示的資料即可
@@ -48,17 +50,18 @@ FriendService.prototype.list = async function (accountInfo, limit = CONSTANT.LIM
 /**
  * TODO: 在跨區域機制下提供 dispatch-api 呼叫
  */
-// FriendService.prototype.getRegionList = async function (accountInfo) {
+// FriendService.prototype.getRegionList = async function (account) {
 
 // }
 
 /**
+ * NOTE: [deprecated]
  * TODO: 僅搜尋特定區域的朋友. 在跨區域機制下提供 dispatch-api 呼叫
  * 傳回用戶的所有朋友資訊，但為了節省效能，
  * 每一筆資料，僅傳回最低限量可供顯示的欄位即可
  */
-// FriendService.prototype.listByRegion = async function (accountInfo, friendsRegion, limit = CONSTANT.LIMIT, skip = CONSTANT.SKIP) {
-//   return await this.friendRepo.getFriendListByRegion(accountInfo, friendsRegion, limit, skip)
+// FriendService.prototype.listByRegion = async function (account, friendsRegion, limit = CONSTANT.LIMIT, skip = CONSTANT.SKIP) {
+//   return await this.friendRepo.getFriendListByRegion(account, friendsRegion, limit, skip)
 
 //   return [
 //     // 僅傳回最低限量可供顯示的資料即可
@@ -88,14 +91,14 @@ FriendService.prototype.list = async function (accountInfo, limit = CONSTANT.LIM
 // }
 
 /**
- * find a friend of someone (accountInfo)
+ * find a friend of someone (account)
  */
-FriendService.prototype.findOne = async function (accountInfo, targetAccountInfo) {
-  return await this.friendRepo.getFriend(accountInfo, targetAccountInfo)
+FriendService.prototype.findOne = async function (account, targetAccount) {
+  return await this.friendRepo.getFriend(account, targetAccount)
 
   // return {
-  //   region: targetAccountInfo.target_region,
-  //   uid: targetAccountInfo.target_uid,
+  //   region: targetAccount.targetRegion,
+  //   uid: targetAccount.targetUid,
   //   profileLink: '/asdfghjnjkoj',
   //   profilePic: '/asdfghjnjkojhgyu78iokjhgtfrgtyh',
   //   // no email. its private
@@ -107,20 +110,20 @@ FriendService.prototype.findOne = async function (accountInfo, targetAccountInfo
 }
 
 /**
- * remove someone's (accountInfo) friend.
- * TODO: this.friendRepo.removeFriend 在同區域時,會刪除兩筆紀錄; 在不同區域時只會刪除一筆
+ * remove someone's (account) friend.
+ * [NOTE]: this.friendRepo 在同區域時,會刪除兩筆紀錄(unfriend); 在不同區域時只會刪除一筆(removeFriend)
  */
-FriendService.prototype.remove = async function (accountInfo, targetAccountInfo) {
-  // return await this.friendRepo.removeFriend(accountInfo, targetAccountInfo)
+FriendService.prototype.unfriend = async function (account, targetAccount) {
+  // return await this.friendRepo.removeFriend(account, targetAccount)
   return Promise.all([
-    this.friendRepo.removeFriend(accountInfo, targetAccountInfo),
-    this.friendRepo.removeFriend(targetAccountInfo, accountInfo)
+    this.friendRepo.removeFriend(account, targetAccount),
+    this.friendRepo.removeFriend(targetAccount, account)
   ])
     .then(result => result[0])
 
   // return {
-  //   uid: targetAccountInfo.target_uid,
-  //   region: targetAccountInfo.target_region
+  //   uid: targetAccount.targetUid,
+  //   region: targetAccount.targetRegion
   // }
 }
 
@@ -131,9 +134,9 @@ FriendService.prototype.remove = async function (accountInfo, targetAccountInfo)
  * 4. user invited someone (type 4)
  * 5. stranger
  */
-FriendService.prototype.getRelationship = async function (ownerAccountInfo, visitorAccountInfo) {
+FriendService.prototype.getRelationship = async function (ownerAccount, visitorAccount) {
   // 1. user self
-  if (ownerAccountInfo.uid === visitorAccountInfo.uid && ownerAccountInfo.region === visitorAccountInfo.region) {
+  if (ownerAccount.uid === visitorAccount.uid && ownerAccount.region === visitorAccount.region) {
     return {
       type: CIRCLE_CONST.RELATION_STATUS_SELF,
       relation: 'myself'
@@ -141,7 +144,7 @@ FriendService.prototype.getRelationship = async function (ownerAccountInfo, visi
   }
 
   // 2. you are friend
-  var friend = await this.friendRepo.getFriend(ownerAccountInfo, visitorAccountInfo)
+  var friend = await this.friendRepo.getFriend(ownerAccount, visitorAccount)
   if (friend != null) {
     return {
       type: CIRCLE_CONST.RELATION_STATUS_FRIEND,
@@ -150,18 +153,20 @@ FriendService.prototype.getRelationship = async function (ownerAccountInfo, visi
   }
 
   // 5. stranger
-  var invitation = await this.inviteRepo.getInvitationByRoles(ownerAccountInfo, visitorAccountInfo)
+  var invitation = await this.inviteRepo.getInvitationByRoles(visitorAccount, ownerAccount)
   if (invitation == null) {
     return {
       type: CIRCLE_CONST.RELATION_STATUS_STRANGER,
-      relation: 'stranger'
+      relation: 'stranger',
+      owner: ownerAccount,
+      visitor: visitorAccount
     }
   }
 
   const inviter = invitation.inviter
   const recipient = invitation.recipient
-  // 3. user (accountInfo) is invited
-  if (recipient.uid === visitorAccountInfo.uid && recipient.region === visitorAccountInfo.region) {
+  // 3. user (account) is invited
+  if (recipient.uid === visitorAccount.uid && recipient.region === visitorAccount.region) {
     return {
       type: CIRCLE_CONST.RELATION_STATUS_BE_INVITED,
       relation: 'you are invited',
@@ -170,15 +175,16 @@ FriendService.prototype.getRelationship = async function (ownerAccountInfo, visi
   }
 
   // 4. user has sent invitation to someone
-  if (inviter.uid === visitorAccountInfo.uid && inviter.region === visitorAccountInfo.region) {
+  if (inviter.uid === visitorAccount.uid && inviter.region === visitorAccount.region) {
     return {
       type: CIRCLE_CONST.RELATION_STATUS_INVITED,
-      relation: 'invitation has sent'
+      relation: 'invitation has sent',
+      invitation
     }
   }
 }
 
 module.exports = {
-  friendService: new FriendService(friendRepo, inviteRepo),
+  friendService: new FriendService(userRepo, inviteRepo, friendRepo),
   FriendService
 }

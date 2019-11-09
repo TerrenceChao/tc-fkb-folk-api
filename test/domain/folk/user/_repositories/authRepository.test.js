@@ -2,7 +2,7 @@ const { expect } = require('chai')
 const faker = require('faker')
 const path = require('path')
 const config = require('config')
-const AuthRepository = require(path.join(config.src.repository.user, 'authRepository'))
+const { AuthRepository } = require(path.join(config.src.repository.user, 'authRepository'))
 const { genSignupInfo } = require(path.join(config.test.common, 'mock'))
 
 const pool = config.database.pool

@@ -9,7 +9,7 @@ function CircleService () {
   console.log(`init ${arguments.callee.name}`)
 }
 
-CircleService.prototype.handleInviteActivity = async function (invitationService, relationship, accountInfo, targetAccountInfo) {
+CircleService.prototype.handleInviteActivity = async function (invitationService, relationship, account /** [deprecated] */) {
   switch (relationship.type) {
     // 1. user self
     case CONSTANT.RELATION_STATUS_SELF:
@@ -21,12 +21,17 @@ CircleService.prototype.handleInviteActivity = async function (invitationService
 
     // 3. add friend & notify
     case CONSTANT.RELATION_STATUS_BE_INVITED:
-      return Promise.resolve(invitationService.confirmFriendInvitation(relationship.invitation, accountInfo))
+      return Promise.resolve(invitationService.confirmFriendInvitation(relationship.invitation, account /** [deprecated] */))
 
-    // 4., 5. send invitation & notify
+    // 4. send invitation & notify (has invited)
     case CONSTANT.RELATION_STATUS_INVITED:
+      return relationship.invitation
+
+    // 5. send invitation & notify
     case CONSTANT.RELATION_STATUS_STRANGER:
-      return Promise.resolve(invitationService.inviteToBeFriend(accountInfo, targetAccountInfo))
+      // 'visitor' send invitation to 'owner'
+      var { visitor, owner } = relationship
+      return Promise.resolve(invitationService.inviteToBeFriend(visitor, owner))
 
     default:
       return Promise.reject(new Error('The type of relationship is not defined'))
@@ -34,21 +39,22 @@ CircleService.prototype.handleInviteActivity = async function (invitationService
 }
 
 /**
- * TODO: DONT async!!!!!
+ * [NOTE] DONT async!!!!!
+ * TODO:check the process if request is cross-region
  */
-CircleService.prototype.handleNotifyUnfriendActivity = function (notificationService, accountInfo, targetAccountInfo) {
-  // const registerRegion = accountInfo.region
+CircleService.prototype.handleNotifyUnfriendActivity = function (notificationService, account, targetAccount) {
+  // const registerRegion = account.region
 
   // 跟自己說
   notificationService.emitEvent({
     // registerRegion,
     category: CATEGORIES.FRIEND_EVENT,
     channels: CHANNELS.PUSH,
-    sender: accountInfo,
-    receivers: [accountInfo],
+    sender: account,
+    receivers: [account],
     packet: {
       event: CONSTANT.FRIEND_EVENT_REMOVE_FRIEND,
-      content: targetAccountInfo
+      content: targetAccount
     }
   })
 
@@ -57,21 +63,22 @@ CircleService.prototype.handleNotifyUnfriendActivity = function (notificationSer
     // registerRegion,
     category: CATEGORIES.FRIEND_EVENT,
     channels: CHANNELS.PUSH,
-    sender: accountInfo,
-    receivers: [targetAccountInfo],
+    sender: account,
+    receivers: [targetAccount],
     packet: {
       event: CONSTANT.FRIEND_EVENT_REMOVE_FRIEND,
-      content: accountInfo
+      content: account
     }
   })
 }
 
 /**
- * TODO: DONT async!!!!!
+ * [NOTE] DONT async!!!!!
+ * TODO: test doesn't pass.
  */
-CircleService.prototype.handleNotifyAllFriendsActivity = function (friendService, notificationService, accountInfo, packet, batchLimit = CONSTANT.FRIEND_BATCH_LIMIT) {
+CircleService.prototype.handleNotifyAllFriendsActivity = function (friendService, notificationService, account, packet, batchLimit = CONSTANT.FRIEND_BATCH_LIMIT) {
   (async function (friendList, skip) {
-    while ((friendList = await friendService.list(accountInfo, batchLimit, skip)).length > 0) {
+    while ((friendList = await friendService.list(account, batchLimit, skip)).length > 0) {
       notificationService.emitEvent(_.assignIn(packet, { receivers: friendList }))
       skip += batchLimit
     }

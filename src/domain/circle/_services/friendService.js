@@ -1,12 +1,15 @@
 const CONSTANT = require('../../../property/constant')
+const { sameAccounts } = require('../../../property/util')
+const CIRCLE_CONST = require('../_properties/constant')
+const { parseInvitation } = require('../_properties/util')
+const userRepo = require('../../folk/user/_repositories/userRepository').userRepository
+const inviteRepo = require('../../circle/_repositories/invitationRepository').invitationRepository
+const friendRepo = require('../../circle/_repositories/friendRepository').friendRepository
 
-// TODO: for temporary
-const friendRepo = require('../../folk/user/_repositories/authRepositoryTemp')
-const inviteRepo = require('../../folk/user/_repositories/authRepositoryTemp')
-
-function FriendService (friendRepo, inviteRepo) {
-  this.friendRepo = friendRepo
+function FriendService (userRepo, inviteRepo, friendRepo) {
+  this.userRepo = userRepo
   this.inviteRepo = inviteRepo
+  this.friendRepo = friendRepo
   console.log(`init ${arguments.callee.name}`)
 }
 
@@ -14,39 +17,37 @@ function FriendService (friendRepo, inviteRepo) {
  * 傳回用戶的所有朋友資訊，但為了節省效能，
  * 每一筆資料，僅傳回最低限量可供顯示的欄位即可
  */
-FriendService.prototype.list = async function (accountInfo, limit = CONSTANT.LIMIT, skip = CONSTANT.SKIP) {
-
+FriendService.prototype.list = async function (account, limit = CONSTANT.LIMIT, skip = CONSTANT.SKIP) {
+  const list = await this.friendRepo.getFriendList(account, limit, skip)
+  return list
 }
 
 /**
- * TODO: 在跨區域機制下提供 dispatch-api 呼叫
+ * find a friend of someone (account)
  */
-// FriendService.prototype.getRegionList = async function (accountInfo) {
-
-// }
-
-/**
- * TODO: 僅搜尋特定區域的朋友. 在跨區域機制下提供 dispatch-api 呼叫
- * 傳回用戶的所有朋友資訊，但為了節省效能，
- * 每一筆資料，僅傳回最低限量可供顯示的欄位即可
- */
-// FriendService.prototype.listByRegion = async function (accountInfo, friendsRegion, limit = CONSTANT.LIMIT, skip = CONSTANT.SKIP) {
-
-// }
-
-/**
- * find a friend of someone (accountInfo)
- */
-FriendService.prototype.findOne = async function (accountInfo, targetAccountInfo) {
-
+FriendService.prototype.findOne = async function (account, targetAccount) {
+  const friend = await this.friendRepo.getFriend(account, targetAccount)
+  return friend
 }
 
 /**
- * remove someone's (accountInfo) friend.
- * TODO: this.friendRepo.removeFriend 在同區域時,會刪除兩筆紀錄; 在不同區域時只會刪除一筆
+ * remove someone's (account) friend.
+ * [NOTE]: this.friendRepo 在同區域時,會刪除兩筆紀錄(unfriend); 在不同區域時只會刪除一筆(removeFriend)
  */
-FriendService.prototype.remove = async function (accountInfo, targetAccountInfo) {
+FriendService.prototype.unfriend = async function (account, targetAccount, softDelete = false) {
+  /**
+   * 若同一個國家有多個區域該如何處理？一樣的。基本上會用到這個 function, 在 dispatch-api
+   * 就知道這裡是哪個區域，刪除時僅需考慮 account OR targetAccount 其中一個的那個區域即可。
+   */
+  if (account.region === targetAccount.region) {
+    const deletedFriendList = await this.friendRepo.unfriend(account, targetAccount, softDelete)
+    // TODO: 是否需要額外的判斷？比如一定回傳 2 筆紀錄
+    return deletedFriendList
+  }
 
+  const deletedFriend = await this.friendRepo.removeFriend(account, targetAccount, softDelete)
+  // TODO: 是否需要額外的判斷？比如一定回傳 1 筆紀錄
+  return deletedFriend
 }
 
 /**
@@ -56,11 +57,65 @@ FriendService.prototype.remove = async function (accountInfo, targetAccountInfo)
  * 4. user invited someone (type 4)
  * 5. stranger
  */
-FriendService.prototype.getRelationship = async function (ownerAccountInfo, visitorAccountInfo) {
+FriendService.prototype.getRelationship = async function (ownerAccount, visitorAccount) {
+  // 1. user self
+  if (sameAccounts(ownerAccount, visitorAccount)) {
+    return {
+      type: CIRCLE_CONST.RELATION_STATUS_SELF,
+      relation: 'myself'
+    }
+  }
 
+  // 2. you are friend
+  var friend = await this.friendRepo.getFriend(ownerAccount, visitorAccount)
+  if (friend != null) {
+    return {
+      type: CIRCLE_CONST.RELATION_STATUS_FRIEND,
+      relation: 'friend'
+    }
+  }
+
+  // 5. stranger
+  var invitation = await this.inviteRepo.getInvitationByRoles(ownerAccount, visitorAccount)
+  if (invitation == null) {
+    /**
+     * TODO:
+     * cross-region 的 public user info 可能找不到.
+     * 所以最好可以由 client 端直接提供 public info (可直接嵌入 ownerAccount, visitorAccount)。
+     */
+    // const selectedFields = ['givenName', 'familyName', 'publicInfo']
+    // const userList = await this.userRepo .getPairUsers(ownerAccount, visitorAccount, selectedFields)
+    return {
+      type: CIRCLE_CONST.RELATION_STATUS_STRANGER,
+      relation: 'stranger',
+      owner: ownerAccount, // userList.find(user => user.uid === ownerAccount.uid),
+      visitor: visitorAccount // userList.find(user => user.uid === visitorAccount.uid)
+    }
+  }
+
+  invitation = parseInvitation(invitation)
+  // 3. user (account) is invited
+  if (sameAccounts(invitation.recipient, visitorAccount)) {
+    return {
+      type: CIRCLE_CONST.RELATION_STATUS_BE_INVITED,
+      relation: 'you are invited',
+      invitation
+    }
+  }
+
+  // 4. user has sent invitation to someone
+  if (sameAccounts(invitation.inviter, visitorAccount)) {
+    return {
+      type: CIRCLE_CONST.RELATION_STATUS_INVITED,
+      relation: 'invitation has sent',
+      invitation
+    }
+  }
+
+  throw new Error('relationship between owner & visitor are not found.')
 }
 
 module.exports = {
-  friendService: new FriendService(friendRepo, inviteRepo),
+  friendService: new FriendService(userRepo, inviteRepo, friendRepo),
   FriendService
 }

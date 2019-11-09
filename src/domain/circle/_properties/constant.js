@@ -1,3 +1,7 @@
+const C = require('../../../property/circleConstant')
+
+exports.USER_COMMON_PUBLIC_INFO = C.USER_COMMON_PUBLIC_INFO
+
 // invitation arrow
 exports.INVITE_ARROW_SENT = 'sent'
 exports.INVITE_ARROW_RECEIVED = 'received'
@@ -18,7 +22,7 @@ exports.FRIEND_EVENT_REMOVE_FRIEND = 'friend_event_remove_friend'
 // friend
 exports.FRIEND_BATCH_LIMIT = parseInt(process.env.FRIEND_BATCH_LIMIT) || 50
 
-// relation status
+// relation status between users
 exports.RELATION_STATUS_SELF = 1
 exports.RELATION_STATUS_FRIEND = 2
 exports.RELATION_STATUS_BE_INVITED = 3 // 已收到邀請未回覆

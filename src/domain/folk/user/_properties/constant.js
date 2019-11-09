@@ -1,47 +1,19 @@
-exports.ACCOUT_IDENTITY = process.env.ACCOUT_IDENTITY ?
-  process.env.ACCOUT_IDENTITY.split(',') : ['region', 'uid']
+const C = require('../../../../property/userConstant')
 
 // account events
 exports.ACCOUNT_EVENT_REGISTRATION = 'account_event_registration'
 exports.ACCOUNT_EVENT_VALIDATE_ACCOUNT = 'account_event_validate_account'
-
-exports.PUBLIC_USER_INFO = process.env.PUBLIC_USER_INFO ?
-  process.env.PUBLIC_USER_INFO.split(',') : [
-    'region',
-    'uid',
-    'givenName',
-    'familyName',
-    'fullName',
-    'profileLink',
-    'profilePic',
-    'gender'
-  ]
-
-exports.PRIVATE_USER_INFO = process.env.PRIVATE_USER_INFO ?
-  process.env.PRIVATE_USER_INFO.split(',') : [
-    'region',
-    'uid',
-    'givenName',
-    'familyName',
-    'fullName',
-    'profileLink',
-    'profilePic',
-    'gender',
-    'lang',
-    'auth'
-  ]
-
-exports.PRIVATE_CONTACT_INFO = process.env.PRIVATE_CONTACT_INFO ?
-  process.env.PRIVATE_CONTACT_INFO.split(',') : [
-    'region',
-    'uid',
-    'email',
-    'phone',
-    'device'
-  ]
 
 /**
  * setting events:
  * Refers to all public information (user, friend, post, ... etc)
  */
 exports.SETTING_EVENT_UPDATE_PUBLIC_INFO = 'setting_event_update_public_info'
+
+exports.ACCOUT_IDENTITY = C.ACCOUT_IDENTITY
+
+exports.USER_PUBLIC_INFO = C.USER_PUBLIC_INFO
+
+exports.USER_PRIVATE_INFO = C.USER_PRIVATE_INFO
+
+exports.PRIVATE_CONTACT_INFO = C.PRIVATE_CONTACT_INFO

@@ -16,14 +16,18 @@ function InvitationService (userRepo, friendRepo, inviteRepo) {
   console.log(`init ${arguments.callee.name} (template)`)
 }
 
+InvitationService.prototype.validateRoles = function (account, invitation) {
+  return true
+}
+
 /**
  * 1. check if invitation has been sent for same person
  * 2. create invitation record.
  */
-InvitationService.prototype.inviteToBeFriend = async function (accountInfo, targetAccountInfo) {
+InvitationService.prototype.inviteToBeFriend = async function (account, targetAccount) {
   let invitation
   // query fields =>'region', 'uid', 'lang', 'givenName', 'familyName', 'profileLink', 'profilePic'
-  return Promise.resolve(this.userRepo.getPairUsers(accountInfo, targetAccountInfo))
+  return Promise.resolve(this.userRepo.getPairUsers(account, targetAccount))
     // transform to => 'region', 'uid', 'lang', 'fullyName', 'profileLink', 'profilePic'
     .then(userDisplayInfoList => userDisplayInfoList.map(displayInfo => {
       displayInfo.fullName = `${displayInfo.givenName} ${displayInfo.familyName}`
@@ -53,15 +57,15 @@ InvitationService.prototype.inviteToBeFriend = async function (accountInfo, targ
   // return {
   //   inviter: {
   //     fullName: 'Andy Chung',
-  //     uid: accountInfo.uid,
-  //     region: accountInfo.region,
+  //     uid: account.uid,
+  //     region: account.region,
   //     profileLink: '',
   //     profilePic: ''
   //   },
   //   recipient: {
   //     fullName: 'Allen Huang',
-  //     uid: targetAccountInfo.target_uid,
-  //     region: targetAccountInfo.target_region,
+  //     uid: targetAccount.targetUid,
+  //     region: targetAccount.targetRegion,
   //     profileLink: '',
   //     profilePic: ''
   //   },
@@ -81,20 +85,20 @@ InvitationService.prototype.inviteToBeFriend = async function (accountInfo, targ
 }
 
 /**
- * inviterAccountInfo (uid, region)
- * 如果邀請方(inviterAccountInfo) 發現之前對方也發過邀請函給自己，表示雙方都想交朋友，直接加好友
+ * inviterAccount (uid, region)
+ * 如果邀請方(inviterAccount) 發現之前對方也發過邀請函給自己，表示雙方都想交朋友，直接加好友
  */
-InvitationService.prototype.confirmFriendInvitation = async function (invitation, inviterAccountInfo) {
+InvitationService.prototype.confirmFriendInvitation = async function (invitation, inviterAccount) {
   if (invitation == null) {
     throw new Error('Invitation not found')
   }
 
-  // 如果邀請方(inviterAccountInfo) 發現之前對方也發過邀請函給自己，表示雙方都想交朋友，直接加好友
+  // 如果邀請方(inviterAccount) 發現之前對方也發過邀請函給自己，表示雙方都想交朋友，直接加好友
   const recipient = invitation.recipient
-  if (recipient.uid === inviterAccountInfo.uid && recipient.region === inviterAccountInfo.region) {
+  if (recipient.uid === inviterAccount.uid && recipient.region === inviterAccount.region) {
     invitation.header.data.reply = true
 
-    return await this.handleFriendInvitation(inviterAccountInfo, invitation)
+    return await this.handleFriendInvitation(invitation, inviterAccount)
   }
 
   return invitation
@@ -103,20 +107,20 @@ InvitationService.prototype.confirmFriendInvitation = async function (invitation
 /**
  * 根據 invitationRes 內容決定是否加入好友，但最後一定刪除 invitation 紀錄
  * confirm:
- *  1. check: is accountInfo === recipient ?
+ *  1. check: is account === recipient ?
  *  2. add friend record
  *  3. delete record
  * cancel:
- *  1. check: is accountInfo === recipient ?
+ *  1. check: is account === recipient ?
  *  2. delete record
  */
-InvitationService.prototype.handleFriendInvitation = async function (accountInfo, invitationRes) {
+InvitationService.prototype.handleFriendInvitation = async function (invitationRes, account) {
   // console.log(`invitationRes.header: ${JSON.stringify(invitationRes.header)}`)
   const NECESSARY_FIELDS_A = ['profileLink', 'profilePic', 'givenName', 'familyName']
   const NECESSARY_FIELDS_B = ['profileLink', 'profilePic', 'fullName']
 
   let inviter = invitationRes.inviter
-  let recipient = accountInfo
+  let recipient = account
 
   /**
    * TODO:
@@ -160,7 +164,7 @@ InvitationService.prototype.handleFriendInvitation = async function (accountInfo
   }
 
   // （改用 invitationRes 回傳）What does 'removedInvitation' look like?
-  // var removedInvitation = await this.inviteRepo.removeInvitation(accountInfo, _.pick(invitationRes.header, ['iid', 'region']))
+  // var removedInvitation = await this.inviteRepo.removeInvitation(account, _.pick(invitationRes.header, ['iid', 'region']))
   // return removedInvitation
 
   const removed = await this.inviteRepo.removeRelatedInvitation(recipient, inviter)
@@ -170,10 +174,7 @@ InvitationService.prototype.handleFriendInvitation = async function (accountInfo
     return invitationRes
   }
 
-  throw new Error(`No invitation as ${JSON.stringify({
-    inviter,
-    recipient
-  }, null, 2)}`)
+  throw new Error(`No invitation bwtween ${inviter} & ${recipient}`)
 
   // //（改用 invitationRes 回傳）Does 'removedInvitation' look like this?
   // return {
@@ -186,8 +187,8 @@ InvitationService.prototype.handleFriendInvitation = async function (accountInfo
   //   },
   //   recipient: {
   //     fullName: 'Terrence Chao',
-  //     uid: accountInfo.uid,
-  //     region: accountInfo.region,
+  //     uid: account.uid,
+  //     region: account.region,
   //     profileLink: '',
   //     profilePic: ''
   //   },
@@ -207,10 +208,10 @@ InvitationService.prototype.handleFriendInvitation = async function (accountInfo
 }
 
 /**
- * get entire invitation by accountInfo & invitationInfo (iid, region)
+ * get entire invitation by account & invitationInfo (iid, region)
  */
-InvitationService.prototype.getInvitation = async function (accountInfo, invitationInfo) {
-  return await this.inviteRepo.getInvitation(accountInfo, invitationInfo)
+InvitationService.prototype.getInvitation = async function (account, invitationInfo) {
+  return await this.inviteRepo.getInvitation(account, invitationInfo)
 
   // return {
   //   inviter: {
@@ -222,8 +223,8 @@ InvitationService.prototype.getInvitation = async function (accountInfo, invitat
   //   },
   //   recipient: {
   //     fullName: 'Allen Huang',
-  //     uid: accountInfo.uid,
-  //     region: accountInfo.region,
+  //     uid: account.uid,
+  //     region: account.region,
   //     profileLink: '',
   //     profilePic: ''
   //   },
@@ -243,12 +244,13 @@ InvitationService.prototype.getInvitation = async function (accountInfo, invitat
 }
 
 /**
- * get list by accountInfo with page (limit, skip)
+ * NOTE: [deprecated]
+ * get list by account with page (limit, skip)
  * inviteArrow: [sent,received]
  * inviteCategory: [friend,society]
  */
-InvitationService.prototype.getInvitationList = async function (accountInfo, inviteArrow, limit = CONSTANT.LIMIT, skip = CONSTANT.SKIP) {
-  return await this.inviteRepo.getInvitationList(accountInfo, inviteArrow, limit, skip)
+InvitationService.prototype.getInvitationList = async function (account, inviteArrow, limit = CONSTANT.LIMIT, skip = CONSTANT.SKIP) {
+  return await this.inviteRepo.getInvitationList(account, inviteArrow, limit, skip)
 
   // return [{
   //     inviter: {
@@ -260,8 +262,8 @@ InvitationService.prototype.getInvitationList = async function (accountInfo, inv
   //     },
   //     recipient: {
   //       fullName: 'Allen Huang',
-  //       uid: accountInfo.uid,
-  //       region: accountInfo.region,
+  //       uid: account.uid,
+  //       region: account.region,
   //       profileLink: '',
   //       profilePic: ''
   //     },
@@ -288,8 +290,8 @@ InvitationService.prototype.getInvitationList = async function (accountInfo, inv
   //     },
   //     recipient: {
   //       fullName: 'Allen Huang',
-  //       uid: accountInfo.uid,
-  //       region: accountInfo.region,
+  //       uid: account.uid,
+  //       region: account.region,
   //       profileLink: '',
   //       profilePic: ''
   //     },
@@ -309,12 +311,12 @@ InvitationService.prototype.getInvitationList = async function (accountInfo, inv
   // ]
 }
 
-InvitationService.prototype.getSentInvitationList = async function (accountInfo, limit = CONSTANT.LIMIT, skip = CONSTANT.SKIP) {
-  return await this.inviteRepo.getSentInvitationList(accountInfo, limit, skip)
+InvitationService.prototype.getSentInvitationList = async function (account, limit = CONSTANT.LIMIT, skip = CONSTANT.SKIP) {
+  return await this.inviteRepo.getSentInvitationList(account, limit, skip)
 }
 
-InvitationService.prototype.getReceivedInvitationList = async function (accountInfo, limit = CONSTANT.LIMIT, skip = CONSTANT.SKIP) {
-  return await this.inviteRepo.getReceivedInvitationList(accountInfo, limit, skip)
+InvitationService.prototype.getReceivedInvitationList = async function (account, limit = CONSTANT.LIMIT, skip = CONSTANT.SKIP) {
+  return await this.inviteRepo.getReceivedInvitationList(account, limit, skip)
 }
 
 module.exports = {

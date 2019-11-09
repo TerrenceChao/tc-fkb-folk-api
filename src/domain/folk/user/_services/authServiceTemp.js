@@ -66,7 +66,7 @@ AuthService.prototype.createVerifiedUser = async function (verifyInfo) {
    * b. write [signupInfo-by-verifyInfo] into DB.
    * c. delete temporary [signupInfo-by-verifyInfo] in redis.
    */
-
+return false
   // TODO: 用 cache.pipeline() 是錯誤的用法。這裡只是實驗效果。若有錯誤將 crash!!!
   return cache.pipeline()
     .getBuffer(verifyInfo.token, (err, buf) => {
@@ -324,16 +324,16 @@ AuthService.prototype.getVerifiedUserWithNewAuthorized = async function (verifyI
 //  * [日後做資料庫sharding時可能需要除了uid以外的資訊]
 //  * 所以這裡不是只輸入 uid
 //  */
-// AuthService.prototype.eraseVerification = async function (accountInfo) {
+// AuthService.prototype.eraseVerification = async function (account) {
 //   return true
 // }
 
 /**
  * [日後做資料庫sharding時可能需要除了uid以外的資訊]
- * accountInfo 至少要有 {region, uid}
+ * account 至少要有 {region, uid}
  * 這裡不是只輸入 uid
  */
-AuthService.prototype.resetPassword = async function (accountInfo, newPassword, oldPassword = null) {
+AuthService.prototype.resetPassword = async function (account, newPassword, oldPassword = null) {
   if (oldPassword) {
     // validate old password...
     // throw error if not matched!
@@ -345,13 +345,13 @@ AuthService.prototype.resetPassword = async function (accountInfo, newPassword, 
 /**
  * TODO: 在同一筆紀錄上同時 resset password / delete verification
  * [日後做資料庫sharding時可能需要除了uid以外的資訊]
- * accountInfo 至少要有 {region, uid}
+ * account 至少要有 {region, uid}
  */
-AuthService.prototype.refreshAuthentication = async function (accountInfo, newPassword, oldPassword = null) {
+AuthService.prototype.refreshAuthentication = async function (account, newPassword, oldPassword = null) {
   // TODO: 在同一筆紀錄上同時 resset password / delete verification
   return Promise.all([
-    this.resetPassword(accountInfo, newPassword, oldPassword),
-    this.authRepo.deleteVerification(accountInfo)
+    this.resetPassword(account, newPassword, oldPassword),
+    this.authRepo.deleteVerification(account)
   ])
     .then(() => true)
 }
@@ -360,10 +360,10 @@ AuthService.prototype.refreshAuthentication = async function (accountInfo, newPa
  * TODO: [若原本存在舊的session，將會被清除，重新建立一個新的]
  *
  * [日後做資料庫sharding時可能需要除了uid以外的資訊]
- * accountInfo 至少要有 {region, uid}
+ * account 至少要有 {region, uid}
  * 這裡不是只輸入 uid
  */
-AuthService.prototype.createSession = async function (accountInfo) {
+AuthService.prototype.createSession = async function (account) {
   return new Promise(resolve => setTimeout(resolve({
     token: 'cdrty6uijkmnbvcdxcvbnmnbvfghyuiuy656789oikjhgfh',
   }), 2000))
@@ -392,7 +392,7 @@ AuthService.prototype.isLoggedInByMock = async function (accountIdentify) {
  * 1. [必定要刪除session資訊]
  * 2. ...
  */
-AuthService.prototype.logout = async function (accountInfo) {
+AuthService.prototype.logout = async function (account) {
   return true
 }
 

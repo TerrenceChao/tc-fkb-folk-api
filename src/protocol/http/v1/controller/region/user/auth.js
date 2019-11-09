@@ -195,10 +195,10 @@ exports.checkVerificationWithCode = async (req, res, next) => {
  *  1. redirect to landing page or profile. ( important! important! important! )
  */
 exports.resetPassword = async (req, res, next) => {
-  var accountInfo = _.pick(req.params, ['uid', 'region'])
+  var account = _.pick(req.params, ['uid', 'region'])
   var newPassword = req.body.newPassword // encrypted
 
-  Promise.resolve(authService.resetPassword(accountInfo, newPassword))
+  Promise.resolve(authService.resetPassword(account, newPassword))
     .then(() => next())
     .catch(err => next(err))
 }
@@ -252,11 +252,11 @@ exports.isLoggedIn = async (req, res, next) => {
 }
 
 exports.checkThenResetPassword = async (req, res, next) => {
-  var accountInfo = _.pick(req.params, ['uid', 'region'])
+  var account = _.pick(req.params, ['uid', 'region'])
   var oldPassword = req.body.password // encrypted
   var newPassword = req.body.newPassword // encrypted
 
-  Promise.resolve(authService.resetPassword(accountInfo, newPassword, oldPassword))
+  Promise.resolve(authService.resetPassword(account, newPassword, oldPassword))
     .then(() => next())
     .catch(err => next(err))
 }
@@ -265,12 +265,12 @@ exports.checkThenResetPassword = async (req, res, next) => {
  * 直接從 session 刪除用戶紀錄
  */
 exports.logout = async (req, res, next) => {
-  var accountInfo = req.params
+  var account = req.params
 
   Promise.all([
-    authService.logout(accountInfo),
-    messageService.quit(accountInfo),
-    notificationService.quit(accountInfo)
+    authService.logout(account),
+    messageService.quit(account),
+    notificationService.quit(account)
   ])
     .then(() => next())
     .catch(err => next(err))

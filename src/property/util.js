@@ -44,6 +44,38 @@ function delay (time, timeoutObj = null) {
 }
 
 /**
+ * @param {{uid: string, region: string}} accountA
+ * @param {{uid: string, region: string}} accountB
+ */
+function sameAccounts (accountA, accountB) {
+  return accountA.uid === accountB.uid &&
+    accountA.region === accountB.region
+}
+
+/**
+ *
+ * @param {Object[]} sourceList
+ * @param {Object[]} targetList
+ * @param {string} key matched key
+ */
+function sameValues (sourceList, targetList, key) {
+  // if (sourceList.length !== targetList.length) {
+  //   return false
+  // }
+
+  const sourceMapping = {}
+  sourceList.forEach(source => { sourceMapping[source[key]] = source })
+  for (let i = targetList.length - 1; i >= 0; i--) {
+    const target = targetList[i]
+    if (sourceMapping[target[key]] === undefined) {
+      return false
+    }
+  }
+
+  return true
+}
+
+/**
  * TODO: 尚未實現。產生出的 token 能找出 uid, region 資訊。
  * @param {Object} userInfo
  * @param {number|null} reset
@@ -70,11 +102,29 @@ function genVerification (userInfo, reset = null, unique = false) {
   }
 }
 
+function validateErr (validation, validator, msgCode) {
+  const error = {
+    data: null,
+    meta: {
+      msgCode: msgCode || '900001',
+      msg: `Validation Error: ${validator}`,
+      error: JSON.stringify(validation.errors.all())
+    }
+  }
+
+  // console.error('\nvalidate error:', validation.errors.all(), '\n')
+
+  return error
+}
+
 module.exports = {
   init,
   hasKeys,
   cloneAndAssign,
   cloneAndAssignIn,
   delay,
-  genVerification
+  sameAccounts,
+  sameValues,
+  genVerification,
+  validateErr
 }

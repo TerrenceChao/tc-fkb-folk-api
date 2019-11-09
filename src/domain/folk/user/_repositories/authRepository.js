@@ -1,6 +1,6 @@
 const util = require('util')
 const _ = require('lodash')
-const types = require('config').database.types
+const pool = require('config').database.pool
 const Repository = require('../../../../library/repository')
 
 const VALID_FIELDS = new Map([
@@ -509,4 +509,7 @@ AuthRepository.prototype.deleteVerification = async function (account, selectedF
     0)
 }
 
-module.exports = AuthRepository
+module.exports = {
+  authRepository: new AuthRepository(pool),
+  AuthRepository
+}

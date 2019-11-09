@@ -1,12 +1,12 @@
 const _ = require('lodash')
-const PRIVATE_USER_INFO = require('../_properties/constant').PRIVATE_USER_INFO
+const USER_PRIVATE_INFO = require('../_properties/constant').USER_PRIVATE_INFO
 
 function UserService () {
   console.log(`init ${arguments.callee.name}`)
 }
 
 UserService.prototype.getPersonalInfo = function (userInfo) {
-  return _.pick(userInfo, PRIVATE_USER_INFO)
+  return _.pick(userInfo, USER_PRIVATE_INFO)
 }
 
 const PROFILE_PARTS = {

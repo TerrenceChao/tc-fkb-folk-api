@@ -2,8 +2,8 @@ const { expect } = require('chai')
 const path = require('path')
 const config = require('config')
 const Repository = require(path.join(config.src.library, 'Repository'))
-const AuthRepository = require(path.join(config.src.repository.user, 'authRepository'))
-const FriendRepository = require(path.join(config.src.repository.circle, 'friendRepository'))
+const { AuthRepository } = require(path.join(config.src.repository.user, 'authRepository'))
+const { FriendRepository } = require(path.join(config.src.repository.circle, 'friendRepository'))
 const { genSignupInfo, parseFriendInfo, genDBFriendPublicInfo } = require(path.join(config.test.common, 'mock'))
 const { assertFriend } = require(path.join(config.test.common, 'assert'))
 
@@ -36,7 +36,7 @@ describe('repository: Friends', () => {
     const friend = await friendRepo.addFriend(account, friendInfo)
 
     // assert
-    expect(friend.user_id).to.equals(account.uid)
+    expect(friend.uid).to.equals(account.uid)
     assertFriend(friendInfo, friend)
   })
 
@@ -50,24 +50,24 @@ describe('repository: Friends', () => {
 
   it('makeFriends', async () => {
     // arrange
-    const accountInfo = parseFriendInfo(userA)
+    const userInfo = parseFriendInfo(userA)
     const friendInfo = parseFriendInfo(userB)
     const uidMapping = {
-      [accountInfo.uid]: accountInfo.uid,
+      [userInfo.uid]: userInfo.uid,
       [friendInfo.uid]: friendInfo.uid
     }
     const recordMapping = {
-      [accountInfo.uid]: friendInfo,
-      [friendInfo.uid]: accountInfo
+      [userInfo.uid]: friendInfo,
+      [friendInfo.uid]: userInfo
     }
 
     // act
-    const friendRecordList = await friendRepo.makeFriends(accountInfo, friendInfo)
+    const friendRecordList = await friendRepo.makeFriends(userInfo, friendInfo)
 
     // assert
     friendRecordList.forEach(friend => {
-      expect(friend.user_id).to.equals(uidMapping[friend.user_id])
-      assertFriend(recordMapping[friend.user_id], friend)
+      expect(friend.uid).to.equals(uidMapping[friend.uid])
+      assertFriend(recordMapping[friend.uid], friend)
     })
   })
 
@@ -89,7 +89,7 @@ describe('repository: Friends', () => {
     const friendRecord = await friendRepo.getFriend(account, friendInfo)
 
     // assert
-    expect(friendRecord.user_id).to.equals(account.uid)
+    expect(friendRecord.uid).to.equals(account.uid)
     assertFriend(friendInfo, friendRecord)
   })
 
@@ -121,7 +121,7 @@ describe('repository: Friends', () => {
     const friendRecord = await friendRepo.getFriend(account, friendInfo)
 
     // assert
-    expect(friendRecord.user_id).to.equals(account.uid)
+    expect(friendRecord.uid).to.equals(account.uid)
     expect(friendRecord.friend_id).to.equals(friendInfo.uid)
     expect(friendRecord.friend_region).to.equals(friendInfo.region)
     expect(friendRecord.public_info.givenName).to.equals(updatedPublicInfo.givenName)
@@ -161,28 +161,28 @@ describe('repository: Friends', () => {
 
   // TODO: 
   it('unfriend (soft delete)', async () => {
-    const accountInfo = parseFriendInfo(userA)
+    const userInfo = parseFriendInfo(userA)
     const friendInfo = parseFriendInfo(userB)
     const uidMapping = {
-      [accountInfo.uid]: accountInfo.uid,
+      [userInfo.uid]: userInfo.uid,
       [friendInfo.uid]: friendInfo.uid
     }
     const recordMapping = {
-      [accountInfo.uid]: friendInfo,
-      [friendInfo.uid]: accountInfo
+      [userInfo.uid]: friendInfo,
+      [friendInfo.uid]: userInfo
     }
     const softDelete = true
 
     // act
-    await friendRepo.makeFriends(accountInfo, friendInfo)
-    const deletedFriendList = await friendRepo.unfriend(accountInfo, friendInfo, softDelete)
-    const friendA = await friendRepo.getFriend(friendInfo, accountInfo)
-    const friendB = await friendRepo.getFriend(accountInfo, friendInfo)
+    await friendRepo.makeFriends(userInfo, friendInfo)
+    const deletedFriendList = await friendRepo.unfriend(userInfo, friendInfo, softDelete)
+    const friendA = await friendRepo.getFriend(friendInfo, userInfo)
+    const friendB = await friendRepo.getFriend(userInfo, friendInfo)
 
     // assert
     deletedFriendList.forEach(friend => {
-      expect(friend.user_id).to.equals(uidMapping[friend.user_id])
-      assertFriend(recordMapping[friend.user_id], friend)
+      expect(friend.uid).to.equals(uidMapping[friend.uid])
+      assertFriend(recordMapping[friend.uid], friend)
     })
     expect(friendA).to.equals(undefined)
     expect(friendB).to.equals(undefined)
@@ -190,27 +190,27 @@ describe('repository: Friends', () => {
 
   // TODO: 
   it('unfriend', async () => {
-    const accountInfo = parseFriendInfo(userA)
+    const userInfo = parseFriendInfo(userA)
     const friendInfo = parseFriendInfo(userB)
     const uidMapping = {
-      [accountInfo.uid]: accountInfo.uid,
+      [userInfo.uid]: userInfo.uid,
       [friendInfo.uid]: friendInfo.uid
     }
     const recordMapping = {
-      [accountInfo.uid]: friendInfo,
-      [friendInfo.uid]: accountInfo
+      [userInfo.uid]: friendInfo,
+      [friendInfo.uid]: userInfo
     }
 
     // act
-    await friendRepo.makeFriends(accountInfo, friendInfo)
-    const deletedFriendList = await friendRepo.unfriend(accountInfo, friendInfo)
-    const friendA = await friendRepo.getFriend(friendInfo, accountInfo)
-    const friendB = await friendRepo.getFriend(accountInfo, friendInfo)
+    await friendRepo.makeFriends(userInfo, friendInfo)
+    const deletedFriendList = await friendRepo.unfriend(userInfo, friendInfo)
+    const friendA = await friendRepo.getFriend(friendInfo, userInfo)
+    const friendB = await friendRepo.getFriend(userInfo, friendInfo)
 
     // assert
     deletedFriendList.forEach(friend => {
-      expect(friend.user_id).to.equals(uidMapping[friend.user_id])
-      assertFriend(recordMapping[friend.user_id], friend)
+      expect(friend.uid).to.equals(uidMapping[friend.uid])
+      assertFriend(recordMapping[friend.uid], friend)
     })
     expect(friendA).to.equals(undefined)
     expect(friendB).to.equals(undefined)

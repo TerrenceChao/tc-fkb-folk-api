@@ -27,13 +27,13 @@ var util = require('../../../../../../property/util')
  * 5. stranger
  */
 exports.getHeader = async (req, res, next) => {
-  var ownerAccountInfo = req.params
-  var visitorAccountInfo = _.mapKeys(req.query, (value, key) => key.replace('visitor_', ''))
+  var ownerAccount = req.params
+  var visitorAccount = _.mapKeys(req.query, (value, key) => _.camelCase(key.replace('visitor', '')))
   res.locals.data = util.init(res.locals.data)
 
   Promise.all([
-    friendService.getRelationship(ownerAccountInfo, visitorAccountInfo),
-    settingService.getPublicUserInfo(ownerAccountInfo)
+    friendService.getRelationship(ownerAccount, visitorAccount),
+    settingService.getPublicUserInfo(ownerAccount)
   ])
     .then(responsData => (res.locals.data = userService.packetProfileHeader(responsData)))
     .then(() => next())

@@ -2,27 +2,34 @@ var hasKeys = require('../../../../property/util').hasKeys
 const ACCOUT_IDENTITY = require('./constant').ACCOUT_IDENTITY
 
 /**
- * @param {Object} accountA
- * @param {Object} accountB
+ * @param {Object} account
  */
-function equalAccounts (accountA, accountB) {
-  ACCOUT_IDENTITY.forEach(field => {
-    if (accountA[field] !== accountB[field]) {
-      return false
-    }
-  })
-
-  return true
+function validAccount (account) {
+  return hasKeys(account, ACCOUT_IDENTITY)
 }
 
 /**
- * @param {Object} accountInfo
+ * @param {Object} user
  */
-function validAccount (accountInfo) {
-  return hasKeys(accountInfo, ACCOUT_IDENTITY)
+function parseAccount (user) {
+  return {
+    uid: user.uid || user.id || user.user_id || user.userId,
+    region: user.region
+  }
+}
+
+/**
+ *
+ * @param {Object} user
+ */
+function parsePublicInfo (user) {
+  const publicInfo = user.public_info || user.publicInfo
+  delete (user.public_info || user.publicInfo)
+  return _.assign(user, publicInfo)
 }
 
 module.exports = {
-  equalAccounts,
-  validAccount
+  validAccount,
+  parseAccount,
+  parsePublicInfo
 }

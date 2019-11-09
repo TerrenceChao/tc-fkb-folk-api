@@ -15,7 +15,7 @@ router.get('/', function (req, res, next) {
 // send invitation
 router.post('/:uid/:region/invite',
   userReq.accountIdentifyValidator,
-  circleReq.targetAccountInfoValidator,
+  circleReq.friendInviterValidator,
   auth.isLoggedIn,
   invite.sendInvitation,
   generalRes.createdSuccess
@@ -24,7 +24,7 @@ router.post('/:uid/:region/invite',
 // get invitation
 router.get('/:uid/:region/invite',
   userReq.accountIdentifyValidator,
-  circleReq.invitationInfoValidator,
+  circleReq.invitationQueryValidator,
   auth.isLoggedIn,
   invite.getInvitation,
   generalRes.success
@@ -33,6 +33,7 @@ router.get('/:uid/:region/invite',
 // get received invitation list
 router.get('/:uid/:region/invite/list/received',
   userReq.accountIdentifyValidator,
+  circleReq.queryListValidator,
   auth.isLoggedIn,
   invite.getReceivedInvitationList,
   generalRes.success
@@ -41,6 +42,7 @@ router.get('/:uid/:region/invite/list/received',
 // get sent invitation list
 router.get('/:uid/:region/invite/list/sent',
   userReq.accountIdentifyValidator,
+  circleReq.queryListValidator,
   auth.isLoggedIn,
   invite.getSentInvitationList,
   generalRes.success
@@ -49,7 +51,7 @@ router.get('/:uid/:region/invite/list/sent',
 // invitation response (confirm/cancel)
 router.put('/:uid/:region/invite',
   userReq.accountIdentifyValidator,
-  // iid validator?
+  circleReq.friendRecipientValidator,
   auth.isLoggedIn,
   invite.replyInvitation,
   generalRes.success
@@ -57,6 +59,7 @@ router.put('/:uid/:region/invite',
 
 router.get('/:uid/:region/friend/list',
   userReq.accountIdentifyValidator,
+  circleReq.queryListValidator,
   auth.isLoggedIn,
   friend.list,
   generalRes.success
@@ -64,7 +67,7 @@ router.get('/:uid/:region/friend/list',
 
 router.get('/:uid/:region/friend',
   userReq.accountIdentifyValidator,
-  circleReq.targetAccountInfoValidator,
+  circleReq.targetAccountValidator,
   auth.isLoggedIn,
   friend.find,
   generalRes.success
@@ -72,9 +75,9 @@ router.get('/:uid/:region/friend',
 
 router.delete('/:uid/:region/friend',
   userReq.accountIdentifyValidator,
-  circleReq.targetAccountInfoValidator,
+  circleReq.targetAccountValidator,
   auth.isLoggedIn,
-  friend.remove,
+  friend.unfriend,
   generalRes.success
 )
 

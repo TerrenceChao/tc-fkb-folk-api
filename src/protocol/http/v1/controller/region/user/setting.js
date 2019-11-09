@@ -24,32 +24,32 @@ exports.getUserInfo = async (req, res, next) => {
  * TODO: 跨區域的通知朋友是跑不掉的
  */
 exports.updateUserInfo = async (req, res, next) => {
-  var accountInfo = req.params
-  var userInfo = _.assignIn(req.body, accountInfo)
+  var account = req.params
+  var userInfo = _.assignIn(req.body, account)
   var message = {
-    sender: accountInfo,
+    sender: account,
     packet: {
       event: CONSTANT.SETTING_EVENT_UPDATE_PUBLIC_INFO,
-      content: _.pick(userInfo, CONSTANT.PUBLIC_USER_INFO)
+      content: _.pick(userInfo, CONSTANT.USER_PUBLIC_INFO)
     }
   }
   var updateSearchQuery = {
-    // registerRegion: accountInfo.region,
+    // registerRegion: account.region,
     category: CATEGORIES.PERSONAL,
     channels: [CHANNELS.INTERNAL_SEARCH],
-    receivers: [accountInfo]
+    receivers: [account]
   }
   var notifyFriend = {
-    // registerRegion: accountInfo.region,
+    // registerRegion: account.region,
     category: CATEGORIES.FRIEND_EVENT,
     channels: CHANNELS.PUSH
   }
   res.locals.data = util.init(res.locals.data)
 
-  Promise.resolve(settingService.updateUserInfo(accountInfo, userInfo))
+  Promise.resolve(settingService.updateUserInfo(account, userInfo))
     .then(updated => updated === true ? (res.locals.data = _.assignIn(res.locals.data, userInfo)) : Promise.reject(new Error('Update user info fail')))
     .then(() => notificationService.emitEvent(_.assignIn(message, updateSearchQuery)))
-    .then(() => circleService.handleNotifyAllFriendsActivity(friendService, notificationService, accountInfo, _.assignIn(message, notifyFriend)))
+    .then(() => circleService.handleNotifyAllFriendsActivity(friendService, notificationService, account, _.assignIn(message, notifyFriend)))
     .then(() => next())
     .catch(err => next(err))
 }

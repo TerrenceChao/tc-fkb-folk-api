@@ -2,25 +2,25 @@ var _ = require('lodash')
 var cicleRes = require('../../../../response/circle/circleRes')
 var notificationService = require('../../../../../../application/notification/_services/_notificationService')
 var circleService = require('../../../../../../domain/circle/_services/_circleService')
-var { friendService } = require('../../../../../../domain/circle/_services/friendServiceTemp')
+var { friendService } = require('../../../../../../domain/circle/_services/friendService')
 
 /**
  * get friend record list
  */
 exports.list = async (req, res, next) => {
-  var accountInfo = req.params
+  var account = req.params
   var { limit, skip } = req.query
 
-  Promise.resolve(friendService.list(accountInfo, limit, skip))
+  Promise.resolve(friendService.list(account, limit, skip))
     .then(friendList => cicleRes.findFriendListSuccess(friendList, req, res, next))
     .catch(err => next(err))
 }
 
 exports.find = async (req, res, next) => {
-  var accountInfo = req.params
-  var targetAccountInfo = _.mapKeys(req.query, (value, key) => key.replace('target_', ''))
+  var account = req.params
+  var targetAccount = _.mapKeys(req.query, (value, key) => _.camelCase(key.replace('target', '')))
 
-  Promise.resolve(friendService.findOne(accountInfo, targetAccountInfo))
+  Promise.resolve(friendService.findOne(account, targetAccount))
     .then(friend => cicleRes.findFriendSuccess(friend, req, res, next))
     .catch(err => next(err))
 }
@@ -32,16 +32,16 @@ exports.find = async (req, res, next) => {
  *    a. DO NOT pop-up!
  *    b. update someone's profile state (invite)
  */
-exports.remove = async (req, res, next) => {
-  var accountInfo = req.params
-  var targetAccountInfo = _.mapKeys(req.query, (value, key) => key.replace('target_', ''))
+exports.unfriend = async (req, res, next) => {
+  var account = req.params
+  var targetAccount = _.mapKeys(req.query, (value, key) => _.camelCase(key.replace('target', '')))
 
-  Promise.resolve(friendService.remove(accountInfo, targetAccountInfo))
+  Promise.resolve(friendService.unfriend(account, targetAccount))
     .then(removedFriend => (res.locals.data = removedFriend))
     .then(() => circleService.handleNotifyUnfriendActivity(
       notificationService,
-      accountInfo,
-      targetAccountInfo
+      account,
+      targetAccount
     ))
     .then(() => next())
     .catch(err => next(err))

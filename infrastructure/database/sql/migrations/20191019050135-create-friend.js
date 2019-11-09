@@ -21,7 +21,7 @@ module.exports = {
         onDelete: 'CASCADE',
         onUpdate: 'CASCADE'
       },
-      group: {
+      category: {
         type: Sequelize.STRING(40)
       },
       friendId: {
