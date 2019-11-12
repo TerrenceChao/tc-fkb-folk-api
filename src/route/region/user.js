@@ -1,6 +1,7 @@
 var express = require('express')
 var router = express.Router()
 var userReq = require('../../protocol/http/request/user/userReq')
+var circleReq = require('../../protocol/http/request/circle/circleReq')
 var auth = require('../../protocol/http/v1/controller/region/user/auth')
 var profile = require('../../protocol/http/v1/controller/region/user/profile')
 var setting = require('../../protocol/http/v1/controller/region/user/setting')
@@ -45,6 +46,7 @@ router.put('/newborn/code/:token',
 
 router.post('/login',
   userReq.accountValidator,
+  circleReq.queryListValidator,
   auth.login,
   generalRes.createdSuccess
 )
@@ -161,17 +163,19 @@ router.put('/:uid/:region/setting/info',
   generalRes.success
 )
 
+// TODO: do feature test
 router.get('/:uid/:region/setting/contact',
   userReq.accountIdentifyValidator,
   auth.isLoggedIn, // validate session info by uid (req.params.uid)
-  // TODO: get user's contact >>> setting.getUserContact
+  setting.getUserContact,
   generalRes.success
 )
 
+// TODO: do feature test
 router.put('/:uid/:region/setting/contact',
   userReq.accountIdentifyValidator,
   auth.isLoggedIn, // validate session info by uid (req.params.uid)
-  // TODO: update user's contact >>> setting.updateUserContact
+  setting.updateUserContact,
   generalRes.success
 )
 
@@ -180,7 +184,7 @@ router.put('/:uid/:region/setting/password',
   userReq.passwordValidator,
   userReq.newPasswordValidator, // 檢查兩次輸入的新密碼是否相同
   auth.isLoggedIn, // 已登入狀態 => validate session info by uid (req.params.uid)
-  auth.checkThenResetPassword, // 先檢查舊密碼是否正確, 再變更新密碼
+  auth.resetPassword, // 先檢查舊密碼是否正確, 再變更新密碼
   generalRes.success
 )
 

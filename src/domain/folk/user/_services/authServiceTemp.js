@@ -1,6 +1,6 @@
 const _ = require('lodash')
 const config = require('config').auth
-const util = require('../../../../property/util')
+const util = require('../_properties/util')
 const cache = require('../../../../library/cacheHandler')
 const authRepo = require('../_repositories/authRepositoryTemp')
 
@@ -46,6 +46,9 @@ AuthService.prototype.signup = async function (signupInfo) {
     })
     .then(() => _.assign(verification, {
       type: 'email',
+      /**
+       * TODO: 將調整為 account: { email: signupInfo.emal }. notify-api 需要調整。
+       */
       account: signupInfo.email,
       content: _.omit(signupInfo, ['region', 'uid', 'verificaiton'])
     }))
@@ -66,7 +69,6 @@ AuthService.prototype.createVerifiedUser = async function (verifyInfo) {
    * b. write [signupInfo-by-verifyInfo] into DB.
    * c. delete temporary [signupInfo-by-verifyInfo] in redis.
    */
-return false
   // TODO: 用 cache.pipeline() 是錯誤的用法。這裡只是實驗效果。若有錯誤將 crash!!!
   return cache.pipeline()
     .getBuffer(verifyInfo.token, (err, buf) => {
@@ -86,10 +88,6 @@ return false
       const signupInfo = JSON.parse(buf[0][1].toString())
       signupInfo.verificaiton.token = signupInfo.verificaiton['verify-token']
       delete signupInfo.verificaiton['verify-token']
-
-      /**
-       * TODO: [createAccountUser] 用 [authRepo.createAccount] & [authRepo.createUser] 兩個 methods 取代.
-       */
       var user = await this.authRepo.createAccountUser(signupInfo)
       /**
        * TODO: 記得建立 ＤＢ 記錄以後才能刪除 cache 紀錄
@@ -112,7 +110,7 @@ AuthService.prototype.login = async function (email, password) {
   // throw err
   var user = await this.authRepo.getAuthorizedUser(email, password)
 
-  var auth = await this.createSession({
+  var auth = await this.genAuthorization({
     region: user.region,
     uid: user.uid,
     email: user.email
@@ -121,9 +119,9 @@ AuthService.prototype.login = async function (email, password) {
   return _.assignIn(user, { auth })
 }
 
-AuthService.prototype.searchAccount = async function (type, account) {
+AuthService.prototype.searchAccountContact = async function (type, account) {
   if (type === 'email' || type === 'phone') {
-    return await this.authRepo.searchAccount(type, account)
+    return await this.authRepo.getAccountUserByContact(type, account)
   } else {
     var err = new Error('invalid account type, [email, phone] are available types')
     err.status = 404
@@ -137,7 +135,7 @@ AuthService.prototype.searchAccount = async function (type, account) {
  * 為了維持 verification 的有效性，
  * [當database中有token,code,reset等資訊時，不再更新。]
  */
-AuthService.prototype.findOrCreateVerification = async function (type, account, expireTimeLimit = false, cache = false) {
+AuthService.prototype.findOrCreateVerification = async function (type, account, expireTimeLimit = false) {
   if (type !== 'email' && type !== 'phone') {
     var err = new Error('invalid verification type, [email, phone] are available types')
     err.status = 404
@@ -228,9 +226,9 @@ AuthService.prototype.getVerifiedUser = async function (verifyInfo) {
   const IDX_AUTH = 0
 
   return Promise.resolve(this.authRepo.getVerifyUserByCode(token, code))
-    .then(userInfo => userInfo == null ? Promise.reject(new Error('verification fail!')) : userInfo)
+    .then(userInfo => userInfo == null ? Promise.reject(new Error('invalid verification!')) : userInfo)
     .then(userInfo => Promise.all([
-      this.createSession({
+      this.genAuthorization({
         region: userInfo.region,
         uid: userInfo.uid,
         email: userInfo.email
@@ -272,7 +270,7 @@ AuthService.prototype.getVerifiedUserWithNewAuthorized = async function (verifyI
   try {
     var userInfo = await this.authRepo.getVerifyUserWithoutExpired(token, reset)
     if (userInfo == null) {
-      throw new Error('verification fail or expired!')
+      throw new Error('invalid verification!')
     }
 
     /**
@@ -283,7 +281,7 @@ AuthService.prototype.getVerifiedUserWithNewAuthorized = async function (verifyI
     var expiredTime = userInfo.verificaiton.reset // Database's record
     if (expiredTime != null && Date.now() > expiredTime) {
       await this.authRepo.deleteVerification(userInfo)
-      throw new Error('verification fail or expired!')
+      throw new Error('verification expired!')
     }
   } catch (err) {
     return Promise.reject(err)
@@ -291,7 +289,7 @@ AuthService.prototype.getVerifiedUserWithNewAuthorized = async function (verifyI
 
   const IDX_AUTH = 0
   return Promise.all([
-    this.createSession({
+    this.genAuthorization({
       region: userInfo.region,
       uid: userInfo.uid,
       email: userInfo.email
@@ -363,10 +361,13 @@ AuthService.prototype.refreshAuthentication = async function (account, newPasswo
  * account 至少要有 {region, uid}
  * 這裡不是只輸入 uid
  */
-AuthService.prototype.createSession = async function (account) {
-  return new Promise(resolve => setTimeout(resolve({
-    token: 'cdrty6uijkmnbvcdxcvbnmnbvfghyuiuy656789oikjhgfh',
-  }), 2000))
+AuthService.prototype.genAuthorization = function (account) {
+  const token = 'cdrty6uijkmnbvcdxcvbnmnbvfghyuiuy656789oikjhgfh'
+  account.auth = { token }
+  // return new Promise(resolve => setTimeout(resolve({
+  //   token
+  // }), 2000))
+  return account
 }
 
 /**
@@ -374,7 +375,7 @@ AuthService.prototype.createSession = async function (account) {
  * [accountIdentify] 至少要有 [region,uid,token]
  * 這裡不是只輸入 uid
  */
-AuthService.prototype.isLoggedIn = async function (accountIdentify) {
+AuthService.prototype.isAuthenticated = async function (accountIdentify) {
   return true
 }
 

@@ -1,51 +1,67 @@
 const util = require('util')
-const _ = require('lodash')
 const pool = require('config').database.pool
 const Repository = require('../../../../library/repository')
 
-const VALID_FIELDS = new Map([
-  // Accounts
+const ACCOUNT_FIELDS = [
   ['uid', 'a.id AS uid'],
   ['region', 'a.region'],
   ['email', 'a.email'],
   ['alternateEmail', 'a.alternate_email'],
   ['countryCode', 'a.country_code'],
   ['phone', 'a.phone'],
-  ['device', 'a.device'],
-  // Auths
+  ['device', 'a.device']
+]
+
+// there's not 'a.alternate_email', just 'alternate_email' (no prefix: 'a.')
+const ACCOUNT_UPDATE_FIELDS = [
+  ['alternateEmail', 'alternate_email'],
+  ['countryCode', 'country_code'],
+  ['phone', 'phone'],
+  ['device', 'device']
+]
+
+const AUTH_FIELDS = [
   ['pwHash', 'au.pw_hash'],
   ['pwSalt', 'au.pw_salt'],
   ['lock', 'au.lock'],
   ['attempt', 'au.attempt'],
   ['verification', 'au.verification']
-])
+]
 
-function parseSelectFields (selectedFields) {
+const USER_FIELDS = [
+  ['beSearched', 'u.be_searched'],
+  ['givenName', 'u.given_name'],
+  ['familyName', 'u.family_name'],
+  ['gender', 'u.gender'],
+  ['birth', 'u.birth'],
+  ['lang', 'u.lang'],
+  ['publicInfo', 'u.public_info']
+]
+
+const VALID_FIELD_MAP = new Map(ACCOUNT_FIELDS.concat(AUTH_FIELDS).concat(USER_FIELDS))
+const VALID_CONTACT_FIELD_MAP = new Map(ACCOUNT_FIELDS)
+
+function parseSelectFields (selectedFields, validFields = VALID_FIELD_MAP) {
   if (selectedFields === null) {
-    return Array.from(VALID_FIELDS.values()).join()
+    return Array.from(validFields.values()).join()
   }
 
   return selectedFields
     .reduce((accumulate, f) => {
-      if (VALID_FIELDS.has(f)) {
-        accumulate.push(VALID_FIELDS.get(f))
+      if (validFields.has(f)) {
+        accumulate.push(validFields.get(f))
       }
       return accumulate
     }, [])
     .join()
 }
 
-const CONTACT_FIELDS = new Map([
-  ['alternateEmail', 'alternate_email'],
-  ['countryCode', 'country_code'],
-  ['phone', 'phone'],
-  ['device', 'device']
-])
+const CONTACT_UPDATE_FIELD_MAP = new Map(ACCOUNT_UPDATE_FIELDS)
 
-function parseContactUpdateFields (obj) {
+function genContactUpdateFields (obj) {
   const fields = []
-  for (const field of CONTACT_FIELDS.keys()) {
-    if (obj.hasOwnProperty(field)) {
+  for (const field of CONTACT_UPDATE_FIELD_MAP.keys()) {
+    if (obj[field]) {
       let targetValue
       switch (typeof obj[field]) {
         case 'string':
@@ -57,11 +73,36 @@ function parseContactUpdateFields (obj) {
         default:
           targetValue = obj[field]
       }
-      fields.push(`${CONTACT_FIELDS.get(field)} = ${targetValue}`)
+      fields.push(`${CONTACT_UPDATE_FIELD_MAP.get(field)} = ${targetValue}`)
     }
   }
 
   return fields.join()
+}
+
+const USER_FIELD_SET = new Set(new Map(USER_FIELDS).keys())
+const AUTH_FIELD_SET = new Set(new Map(AUTH_FIELDS).keys())
+
+/**
+ * @param {string[]} selectedFields
+ */
+function genJoinedTables (selectedFields) {
+  let str = ''
+  for (let i = selectedFields.length - 1; i >= 0; i--) {
+    if (USER_FIELD_SET.has(selectedFields[i])) {
+      str = str.concat('JOIN "Users" AS u ON a.id = u.user_id ')
+      break
+    }
+  }
+
+  for (let i = selectedFields.length - 1; i >= 0; i--) {
+    if (AUTH_FIELD_SET.has(selectedFields[i])) {
+      str = str.concat('JOIN "Auths" AS au ON a.id = au.user_id ')
+      break
+    }
+  }
+
+  return str
 }
 
 util.inherits(AuthRepository, Repository)
@@ -71,17 +112,43 @@ function AuthRepository (pool) {
 }
 
 /**
+ * @param {{ uidL string, region: string }} account
+ * @param {string[]|null} selectedFields
+ */
+AuthRepository.prototype.getAccountUser = async function (account, selectedFields = null) {
+  const joinTable = selectedFields === null ? '' : genJoinedTables(selectedFields)
+  const selected = parseSelectFields(selectedFields)
+
+  return this.query(
+    `
+    SELECT ${selected}
+    FROM "Accounts" AS a
+    ${joinTable}
+    WHERE
+      a.id = $1::uuid AND a.region = $2::varchar
+    `,
+    [
+      account.uid,
+      account.region
+    ],
+    0)
+}
+
+/**
  * account 原本為 string,
  * 因考量可能會由 2 個以上的欄位組成 (phone = country_code + phone)
  * 所以改為 object
  * @param {string} type
  * @param {{ email: string}|{ countryCode: string, phone: string}} account
+ * @param {string[]|null} selectedFields
  */
-AuthRepository.prototype.searchAccount = async function (type, account) {
-  const selected = {
+AuthRepository.prototype.getAccountUserByContact = async function (type, account, selectedFields = null) {
+  const defaultFields = {
     email: 'a.email',
     phone: 'a.country_code, a.phone'
   }
+  const joinTable = selectedFields === null ? '' : genJoinedTables(selectedFields)
+  const selected = selectedFields === null ? defaultFields[type] : parseSelectFields(selectedFields)
 
   const condition = {
     email: 'a.email = $1::varchar',
@@ -94,88 +161,13 @@ AuthRepository.prototype.searchAccount = async function (type, account) {
 
   return this.query(
     `
-    SELECT ${selected[type]}
+    SELECT ${selected}
     FROM "Accounts" AS a
+    ${joinTable}
     WHERE
       ${condition[type]}
     `,
     params[type],
-    0)
-}
-
-/**
- * TODO: [deprecated]
- * [including-table:Accounts-and-Auths]
- * @param {{
-  *    uid: string,
-  *    region: string,
-  *    email: string,
-  *    alternateEmail: string|null,
-  *    countryCode: string|null,
-  *    phone: string|null,
-  *    device: Object|null,
-  *    pwHash: string,
-  *    pwSalt: string
-  *  }} signupInfo
- */
-AuthRepository.prototype.createAccount = async function (signupInfo) {
-  const {
-    uid,
-    region,
-    email,
-    alternateEmail,
-    countryCode,
-    phone,
-    device,
-    pwHash,
-    pwSalt
-  } = signupInfo
-
-  let idx = 1
-  return this.query(
-    `
-    WITH
-    data (id, region, email, alternate_email, country_code, phone, device, pw_hash, pw_salt, lock, attempt) AS (
-      VALUES (
-        $${idx++}::uuid,
-        $${idx++}::varchar, -- region
-        $${idx++}::varchar, -- email
-        $${idx++}::varchar,
-        $${idx++}::varchar, -- country_code
-        $${idx++}::varchar,
-        $${idx++}::jsonb, -- device
-        $${idx++}::varchar,
-        $${idx++}::varchar,
-        'false'::boolean,
-        0::smallint
-      )
-    ),
-    account AS (
-      INSERT INTO "Accounts" (id, region, email, alternate_email, country_code, phone, device)
-      SELECT id, region, email, alternate_email, country_code, phone, device
-      FROM data
-      RETURNING id, region, email
-    ),
-    auth AS (
-      INSERT INTO "Auths" (user_id, pw_hash, pw_salt, lock, attempt)
-      SELECT id, pw_hash, pw_salt, lock, attempt
-      FROM data
-      JOIN account USING (id)
-      RETURNING user_id, pw_hash, pw_salt
-    )
-    SELECT *, a.id AS uid FROM account AS a, auth;
-    `,
-    [
-      uid,
-      region,
-      email,
-      alternateEmail,
-      countryCode,
-      phone,
-      JSON.stringify(device),
-      pwHash,
-      pwSalt
-    ],
     0)
 }
 
@@ -297,20 +289,22 @@ AuthRepository.prototype.createAccountUser = async function (signupInfo) {
  *    phone: string|null,
  *    device: Object|null
  * }} newContactInfo
+ * @param {string[]|null} selectedFields
  */
-AuthRepository.prototype.updateContact = async function (account, newContactInfo) {
-  const updatedFields = parseContactUpdateFields(newContactInfo)
+AuthRepository.prototype.updateContact = async function (account, newContactInfo, selectedFields = null) {
   let idx = 1
+  const updatedFields = genContactUpdateFields(newContactInfo)
+  selectedFields = parseSelectFields(selectedFields, VALID_CONTACT_FIELD_MAP)
 
   return this.query(
     `
-    UPDATE "Accounts"
+    UPDATE "Accounts" AS a
     SET
       ${updatedFields}
     WHERE
       id = $${idx++}::uuid AND
       region = $${idx++}::varchar
-    RETURNING id AS uid, region, email, alternate_email, country_code, phone, device
+    RETURNING ${selectedFields}
     `,
     [
       account.uid,
@@ -322,11 +316,11 @@ AuthRepository.prototype.updateContact = async function (account, newContactInfo
 /**
  * @param {{ uid: string, region: string }} account
  * @param {string} newPassword
- * @param {string|null} oldPassword
+ * @param {string} oldPassword
  */
-AuthRepository.prototype.resetPassword = async function (account, newPassword, oldPassword = null) {
-  const condition = oldPassword === null ? '' : '"Auths".pw_hash = $4::varchar AND'
-  const params = oldPassword === null ? [
+AuthRepository.prototype.resetPassword = async function (account, newPassword, oldPassword) {
+  const condition = oldPassword === undefined ? '' : '"Auths".pw_hash = $4::varchar AND'
+  const params = oldPassword === undefined ? [
     newPassword,
     account.uid,
     account.region
@@ -344,7 +338,7 @@ AuthRepository.prototype.resetPassword = async function (account, newPassword, o
       pw_hash = $1::varchar
     FROM "Accounts" AS a
     WHERE
-    a.id  = $2::uuid AND
+      a.id  = $2::uuid AND
       a.region = $3::varchar AND
       ${condition}
       "Auths".user_id = a.id
@@ -408,7 +402,7 @@ AuthRepository.prototype.findOrCreateVerification = async function (type, accoun
     UPDATE "Auths" AS au
     SET
       verification = CASE
-        WHEN (au.verification->>'reset')::numeric > ${Date.now()}::numeric OR au.verification IS null 
+        WHEN (au.verification->>'reset')::numeric < ${Date.now()}::numeric OR au.verification IS null 
         THEN '${JSON.stringify(verification)}'::jsonb
         ELSE (SELECT verification FROM account_auth)
         END
@@ -436,7 +430,7 @@ AuthRepository.prototype.getVerifyUserByCode = async function (token, code, sele
   return this.query(
     `
     SELECT
-      ${selectedFields}, a.id AS uid
+      ${selectedFields}, a.id AS uid, a.region
     FROM "Accounts" AS a
     JOIN "Users" AS u ON a.id = u.user_id
     JOIN "Auths" AS au ON a.id = au.user_id
@@ -465,7 +459,7 @@ AuthRepository.prototype.getVerifyUserWithoutExpired = async function (token, re
   return this.query(
     `
     SELECT
-      ${selectedFields}, a.id AS uid
+      ${selectedFields}, a.id AS uid, a.region, au.verification
     FROM "Accounts" AS a
     JOIN "Users" AS u ON a.id = u.user_id
     JOIN "Auths" AS au ON a.id = au.user_id
@@ -492,14 +486,14 @@ AuthRepository.prototype.deleteVerification = async function (account, selectedF
 
   return this.query(
     `
-    UPDATE "Auths"
+    UPDATE "Auths" AS au
     SET 
       verification = null
     FROM "Accounts" AS a
     WHERE
       a.id = $${idx++}::uuid AND
       a.region = $${idx++}::varchar AND
-      "Auths".user_id = a.id
+      au.user_id = a.id
     RETURNING ${selectedFields}, user_id AS uid, a.region, verification;
     `,
     [

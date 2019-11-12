@@ -10,38 +10,6 @@ const pool = config.database.pool
 describe('repository: Auths', () => {
   const authRepo = new AuthRepository(pool)
 
-  it('create and search acount/auth', async () => {
-    // arrange
-    const email = faker.internet.email()
-    const signupInfo = {
-      uid: faker.random.uuid(),
-      region: faker.address.countryCode(),
-      email,
-      alternateEmail: faker.internet.email(),
-      countryCode: '+886',
-      phone: faker.phone.phoneNumberFormat(),
-      device: null,
-      pwHash: 'xxxx',
-      pwSalt: 'oooo'
-    }
-
-    // act
-    const newAccount = await authRepo.createAccount(signupInfo)
-    const account = await authRepo.searchAccount('email', { email })
-
-    // assert
-    expect(newAccount).to.have.keys('id', 'uid', 'region', 'email', 'user_id', 'pw_hash', 'pw_salt')
-    expect(newAccount.uid).to.equals(signupInfo.uid)
-    expect(newAccount.region).to.equals(signupInfo.region)
-    expect(newAccount.email).to.equals(signupInfo.email)
-    expect(newAccount.user_id).to.equals(signupInfo.uid)
-    expect(newAccount.pw_hash).to.equals(signupInfo.pwHash)
-    expect(newAccount.pw_salt).to.equals(signupInfo.pwSalt)
-
-    expect(account).to.have.property('email')
-    expect(account.email).to.equals(signupInfo.email)
-  })
-
   it('create acount/auth/user', async () => {
     // arrange
     const signupInfo = genSignupInfo()
@@ -65,6 +33,29 @@ describe('repository: Auths', () => {
     expect(newAccount.lang).to.equals(signupInfo.lang)
     expect(newAccount.public_info.profileLink).to.equals(publicInfo.profileLink)
     expect(newAccount.public_info.profilePic).to.equals(publicInfo.profilePic)
+  })
+
+  it('create and search acount/auth', async () => {
+    // arrange
+    const signupInfo = genSignupInfo()
+    const email = signupInfo.email
+    const selectedFields = ['uid', 'email', 'countryCode', 'phone', 'beSearched', 'givenName', 'familyName', 'lang', 'publicInfo']
+
+    // act
+    await authRepo.createAccountUser(signupInfo)
+    const account = await authRepo.getAccountUserByContact('email', { email }, selectedFields)
+
+    // assert
+    expect(account).to.have.all.keys(['uid', 'email', 'country_code', 'phone', 'be_searched', 'given_name', 'family_name', 'lang', 'public_info'])
+    expect(account.uid).to.equals(signupInfo.uid)
+    expect(account.email).to.equals(signupInfo.email)
+    expect(account.country_code).to.equals(signupInfo.countryCode)
+    expect(account.phone).to.equals(signupInfo.phone)
+    expect(account.be_searched).to.equals(true)
+    expect(account.given_name).to.equals(signupInfo.givenName)
+    expect(account.family_name).to.equals(signupInfo.familyName)
+    expect(account.lang).to.equals(signupInfo.lang)
+    expect(account.public_info).to.deep.equals(signupInfo.publicInfo)
   })
 
   it('create verification by email', async () => {
@@ -98,9 +89,9 @@ describe('repository: Auths', () => {
     expect(verifyInfo.verification.code).to.equals(verification.code)
     expect(verifyInfo.verification.reset).to.equals(verification.reset)
     // 2nd verifyInfo
-    expect(newVerifyInfo.verification.token).to.equals(newVerification.token)
-    expect(newVerifyInfo.verification.code).to.equals(newVerification.code)
-    expect(newVerifyInfo.verification.reset).to.equals(newVerification.reset)
+    expect(newVerifyInfo.verification.token).to.equals(verification.token)
+    expect(newVerifyInfo.verification.code).to.equals(verification.code)
+    expect(newVerifyInfo.verification.reset).to.equals(verification.reset)
   })
 
   it('create verification by phone', async () => {
@@ -136,9 +127,9 @@ describe('repository: Auths', () => {
     expect(verifyInfo.verification.code).to.equals(verification.code)
     expect(verifyInfo.verification.reset).to.equals(verification.reset)
     // 2nd verifyInfo
-    expect(newVerifyInfo.verification.token).to.equals(newVerification.token)
-    expect(newVerifyInfo.verification.code).to.equals(newVerification.code)
-    expect(newVerifyInfo.verification.reset).to.equals(newVerification.reset)
+    expect(newVerifyInfo.verification.token).to.equals(verification.token)
+    expect(newVerifyInfo.verification.code).to.equals(verification.code)
+    expect(newVerifyInfo.verification.reset).to.equals(verification.reset)
   })
 
   it('get verification by token/code', async () => {

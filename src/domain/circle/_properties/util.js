@@ -1,5 +1,5 @@
 const _ = require('lodash')
-const ACCOUT_IDENTITY = require('../../../property/userConstant').ACCOUT_IDENTITY
+const { mapKeysInCamelCase } = require('../../../property/util')
 const USER_COMMON_PUBLIC_INFO = require('./constant').USER_COMMON_PUBLIC_INFO
 
 /**
@@ -58,8 +58,8 @@ function parseInvitation (invitation) {
  */
 function genFriendInvitationDBInfo (inviterUserInfo, recipientUserInfo) {
   return {
-    inviter: _.omit(inviterUserInfo, ACCOUT_IDENTITY),
-    recipient: _.omit(recipientUserInfo, ACCOUT_IDENTITY),
+    inviter: _.pick(inviterUserInfo, USER_COMMON_PUBLIC_INFO),
+    recipient: _.pick(recipientUserInfo, USER_COMMON_PUBLIC_INFO),
     header: {
       data: {
         options: [true, false]
@@ -112,5 +112,6 @@ module.exports = {
   parseInvitationRoles,
   parseInvitation,
   genFriendInvitationDBInfo,
-  confirmFriendRecords
+  confirmFriendRecords,
+  mapKeysInCamelCase
 }

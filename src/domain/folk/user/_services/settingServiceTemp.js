@@ -94,6 +94,10 @@ SettingService.prototype.updateUserInfo = async function (account, userInfo) {
   // }
 }
 
+SettingService.prototype.getUserContact = async function (account) {}
+
+SettingService.prototype.updateUserContact = async function (account, newUserContact) {}
+
 module.exports = {
   settingService: new SettingService(userRepo),
   SettingService

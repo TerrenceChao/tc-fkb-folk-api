@@ -1,18 +1,18 @@
 const util = require('util')
-const _ = require('lodash')
 const pool = require('config').database.pool
 const Repository = require('../../../../library/repository')
 
-const VALID_FIELDS = new Map([
-  // Accounts
+const ACCOUNT_FIELDS = [
   ['uid', 'a.id AS uid'],
   ['region', 'a.region'],
   ['email', 'a.email'],
   ['alternateEmail', 'a.alternate_email'],
   ['countryCode', 'a.country_code'],
   ['phone', 'a.phone'],
-  ['device', 'a.device'],
-  // Users
+  ['device', 'a.device']
+]
+
+const USER_FIELDS = [
   ['beSearched', 'u.be_searched'],
   ['givenName', 'u.given_name'],
   ['familyName', 'u.family_name'],
@@ -20,24 +20,10 @@ const VALID_FIELDS = new Map([
   ['birth', 'u.birth'],
   ['lang', 'u.lang'],
   ['publicInfo', 'u.public_info']
-])
+]
 
-function parseSelectFields (selectedFields) {
-  if (selectedFields === null) {
-    return Array.from(VALID_FIELDS.values()).join()
-  }
-
-  return selectedFields
-    .reduce((accumulate, f) => {
-      if (VALID_FIELDS.has(f)) {
-        accumulate.push(VALID_FIELDS.get(f))
-      }
-      return accumulate
-    }, [])
-    .join()
-}
-
-const UPDATE_USER_FIELDS = new Map([
+// there's not 'u.be_searched', just 'be_searched' (no prefix: 'u.')
+const USER_UPDATE_FIELDS = [
   ['beSearched', 'be_searched'],
   ['givenName', 'given_name'],
   ['familyName', 'family_name'],
@@ -45,12 +31,31 @@ const UPDATE_USER_FIELDS = new Map([
   ['birth', 'birth'],
   ['lang', 'lang'],
   ['publicInfo', 'public_info']
-])
+]
 
-function parseUserUpdateFields (obj) {
+const VALID_FIELD_MAP = new Map(ACCOUNT_FIELDS.concat(USER_FIELDS))
+
+function parseSelectFields (selectedFields) {
+  if (selectedFields === null) {
+    return Array.from(VALID_FIELD_MAP.values()).join()
+  }
+
+  return selectedFields
+    .reduce((accumulate, f) => {
+      if (VALID_FIELD_MAP.has(f)) {
+        accumulate.push(VALID_FIELD_MAP.get(f))
+      }
+      return accumulate
+    }, [])
+    .join()
+}
+
+const USER_UPDATE_FIELD_MAP = new Map(USER_UPDATE_FIELDS)
+
+function genUserUpdateFields (obj) {
   const fields = []
-  for (const field of UPDATE_USER_FIELDS.keys()) {
-    if (obj.hasOwnProperty(field)) {
+  for (const field of USER_UPDATE_FIELD_MAP.keys()) {
+    if (obj[field]) {
       let targetValue
       switch (typeof obj[field]) {
         case 'string':
@@ -62,7 +67,7 @@ function parseUserUpdateFields (obj) {
         default:
           targetValue = obj[field]
       }
-      fields.push(`${UPDATE_USER_FIELDS.get(field)} = ${targetValue}`)
+      fields.push(`${USER_UPDATE_FIELD_MAP.get(field)} = ${targetValue}`)
     }
   }
 
@@ -73,57 +78,6 @@ util.inherits(UserRepository, Repository)
 
 function UserRepository (pool) {
   this.pool = pool
-}
-
-/**
- * TODO: [deprecated]
- * @param {{
- *    uid: string,
- *    givenName: string,
- *    familyName: string,
- *    gender: string,
- *    birth: string|null,
- *    lang: string,
- *    publicInfo: Object|null,
- * }} signupInfo
- */
-UserRepository.prototype.createUser = async function (signupInfo) {
-  const {
-    uid,
-    givenName,
-    familyName,
-    gender,
-    birth,
-    lang,
-    publicInfo
-  } = signupInfo
-
-  let idx = 1
-  return this.query(
-    `
-    INSERT INTO "Users (user_id, be_searched, given_name, family_name, gender, birth, lang, public_info)
-    VALUES (
-      $${idx++}::uuid,
-      $${idx++}::boolean,
-      $${idx++}::varchar,
-      $${idx++}::varchar,
-      $${idx++}::varchar,
-      $${idx++}::timestamp,
-      $${idx++}::varchar,
-      $${idx++}::jsonb
-    );
-    `,
-    [
-      uid,
-      true,
-      givenName,
-      familyName,
-      gender,
-      birth,
-      lang,
-      JSON.stringify(publicInfo)
-    ],
-    0)
 }
 
 /**
@@ -138,7 +92,7 @@ UserRepository.prototype.getAuthorizedUser = async function (email, password, se
   return this.query(
     `
     SELECT 
-      ${selectedFields}, a.id AS uid
+      ${selectedFields}
     FROM "Accounts" AS a
     JOIN "Users" AS u ON a.id = u.user_id
     JOIN "Auths" AS au ON a.id = au.user_id
@@ -164,7 +118,7 @@ UserRepository.prototype.getUser = async function (account, selectedFields = nul
   return this.query(
     `
     SELECT 
-      ${selectedFields}, a.id AS uid
+      ${selectedFields}
     FROM "Accounts" AS a
     JOIN "Users" AS u ON a.id = u.user_id
     WHERE
@@ -186,16 +140,12 @@ UserRepository.prototype.getUser = async function (account, selectedFields = nul
  */
 UserRepository.prototype.getPairUsers = async function (account, targetAccount, selectedFields = null) {
   let idx = 1
-  const order = {
-    [account.uid]: 0,
-    [targetAccount.uid]: 1
-  }
   selectedFields = parseSelectFields(selectedFields)
 
   return this.query(
     `
     SELECT 
-      ${selectedFields}, a.id AS uid
+      ${selectedFields}
     FROM "Accounts" AS a
     JOIN "Users" AS u ON a.id = u.user_id
     WHERE
@@ -211,7 +161,6 @@ UserRepository.prototype.getPairUsers = async function (account, targetAccount, 
 }
 
 /**
- * userRepo
  * @param {{ uid: string, region: string }} account
  * @param {{
  *    beSearched: boolean|null,
@@ -226,7 +175,7 @@ UserRepository.prototype.getPairUsers = async function (account, targetAccount, 
  */
 UserRepository.prototype.updateUser = async function (account, newUserInfo, selectedFields = null) {
   let idx = 1
-  const updatedFields = parseUserUpdateFields(newUserInfo)
+  const updatedFields = genUserUpdateFields(newUserInfo)
   selectedFields = parseSelectFields(selectedFields)
 
   return this.query(
@@ -239,7 +188,7 @@ UserRepository.prototype.updateUser = async function (account, newUserInfo, sele
       a.id = u.user_id AND
       u.user_id = $${idx++}::uuid AND
       a.region = $${idx++}::varchar
-    RETURNING ${selectedFields}, a.region, a.id AS uid;
+    RETURNING ${selectedFields}, a.region;
     `,
     [
       account.uid,

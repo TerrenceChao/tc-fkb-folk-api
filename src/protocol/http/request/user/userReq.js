@@ -74,26 +74,25 @@ exports.verificationValidator = (req, res, next) => {
 
 exports.passwordValidator = (req, res, next) => {
   if (req.body.password === undefined) {
-    var err = new Error('password is required')
+    const err = new Error('password is required')
     err.status = 422
     return next(err)
   }
+
   next()
 }
 
 exports.newPasswordValidator = (req, res, next) => {
   // confirm both new password repeated twice are matched
-  var {
-    newPassword,
-    newPasswordConfirm
-  } = req.body // both password are encrypted
-  if (newPassword === undefined || newPasswordConfirm === undefined) {
+  const newPassword = req.body.newpass
+  const confirmedNewPassword = req.body.confirmnewpass
+  if (newPassword === undefined) {
     const err = new Error('new password is required')
     err.status = 422
     return next(err)
   }
 
-  if (newPassword !== newPasswordConfirm) {
+  if (newPassword !== confirmedNewPassword) {
     const err = new Error('new passwords are not matched')
     err.status = 422
     return next(err)

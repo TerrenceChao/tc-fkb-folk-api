@@ -8,12 +8,12 @@ const validateErr = require('../../../../property/util').validateErr
 const TARGET_ACCOUNT_RULES = {}
 ACCOUT_IDENTITY.forEach(field => {
   const targetField = _.camelCase('target_'.concat(field))
-  TARGET_ACCOUNT_RULES[targetField] = `required|string|different:${field}`
+  TARGET_ACCOUNT_RULES[targetField] = 'required|string'
 })
 
 exports.targetAccountValidator = (req, res, next) => {
   res.locals.data = {}
-  const validation = new Validator(_.assign(req.params, req.query), TARGET_ACCOUNT_RULES)
+  const validation = new Validator(req.query, TARGET_ACCOUNT_RULES)
   validation.passes() ? next() : res.status(422).json(validateErr(validation, 'targetAccountValidator'))
 }
 
@@ -65,8 +65,8 @@ exports.invitationQueryValidator = (req, res, next) => {
 exports.queryListValidator = (req, res, next) => {
   res.locals.data = {}
   const validation = new Validator(req.query, {
-    limit: 'required|numeric',
-    skip: 'required|numeric'
+    friendLimit: 'required|numeric',
+    friendSkip: 'required|numeric'
   })
   validation.passes() ? next() : res.status(422).json(validateErr(validation, 'queryListValidator'))
 }

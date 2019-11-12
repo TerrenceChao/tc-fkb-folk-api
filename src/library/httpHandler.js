@@ -1,10 +1,53 @@
 const _ = require('lodash')
-const req = require('request')
-const HTTP = require('../property/constant').HTTP
+const httpRequest = require('request')
+const { HTTP, NODE_ENV } = require('../property/constant')
+
+function genRequestDomain (req) {
+  return `${req.protocol}://${req.get('host')}${HTTP.PREFIX}/`
+}
 
 /**
  *
- * @param {request} req
+ * @param {Request} req
+ */
+function parseAuthentication (req) {
+  const { uid, region } = req.params
+  const token = req.headers.token // authorized token
+  if (uid === undefined || region === undefined || token === undefined) {
+    var err = new Error('Parse Authorization Error: lack with necessary authorization fields')
+    err.status = 422
+    return Promise.reject(err)
+  }
+
+  return {
+    uid,
+    region,
+    token // authorized token
+  }
+}
+
+/**
+ *
+ * @param {Request} req
+ */
+function parseVerifyCode (req) {
+  const token = req.params.token // verify token
+  const code = req.body.code
+  if (token === undefined || code === undefined) {
+    var err = new Error('Parse Verification Error: lack with necessary verification fields')
+    err.status = 422
+    return Promise.reject(err)
+  }
+
+  return {
+    token, // verify token
+    code
+  }
+}
+
+/**
+ *
+ * @param {Request} req
  * @param {string} field
  */
 function parseReq (req, field) {
@@ -20,7 +63,7 @@ function parseReq (req, field) {
 
 /**
  *
- * @param {request} req
+ * @param {Request} req
  * @param {array} fieldList
  */
 function parseReqInFields (req, fieldList) {
@@ -29,7 +72,7 @@ function parseReqInFields (req, fieldList) {
   }
 
   const collect = {}
-  fieldList.forEach(field => (collect[field] = parseReq(req, field)))
+  // fieldList.forEach(field => (collect[field] = parseReq(req, field)))
 
   return collect
 }
@@ -40,27 +83,41 @@ function parseReqInFields (req, fieldList) {
  * @param {Object} verification
  */
 function genRegistrationInfo (req, verification) {
-  return {
+  const info = {
     'region': verification.region,
     'uid': verification.uid,
     'verify-token': verification['verify-token'],
     'registration-link': `${req.protocol}://${req.get('host')}${HTTP.PREFIX}/user/newborn/code/${verification['verify-token']}`
   }
+
+  const secret = {
+    code: verification.code,
+    reset: verification.reset
+  }
+
+  return NODE_ENV === 'development' ? _.assign(info, secret) : info
 }
 
 /**
  *
- * @param {request} req
+ * @param {Request} req
  * @param {Object} verification
  */
 function genVerifyInfo (req, verification) {
-  return {
+  const info = {
     'region': verification.region,
     'uid': verification.uid,
     'verify-token': verification['verify-token'],
     'verify-link': `${req.protocol}://${req.get('host')}${HTTP.PREFIX}/user/verification/code/${verification['verify-token']}`,
     'reset-link': `${req.protocol}://${req.get('host')}${HTTP.PREFIX}/user/verification/password/${verification['verify-token']}/${verification.reset}`
   }
+
+  const secret = {
+    code: verification.code,
+    reset: verification.reset
+  }
+
+  return NODE_ENV === 'development' ? _.assign(info, secret) : info
 }
 
 /**
@@ -83,7 +140,7 @@ function request (service, event, options, retry = 0) {
   options.method = options.method.toUpperCase()
   const REQ_SUCESS = options.method === 'POST' ? HTTP.POST_SUCCESS : HTTP.SUCCESS
 
-  req(options,
+  httpRequest(options,
     (err, response, body) => {
       body = parse(body)
 
@@ -122,7 +179,7 @@ function syncRequest (service, event, options, callback, data = null, retry = 0)
   const REQ_SUCESS = options.method === 'POST' ? HTTP.POST_SUCCESS : HTTP.SUCCESS
 
   return new Promise(resolve => {
-    req(options,
+    httpRequest(options,
       (err, response, body) => {
         body = parse(body)
 
@@ -154,8 +211,9 @@ function syncRequest (service, event, options, callback, data = null, retry = 0)
 }
 
 module.exports = {
-  parseReq,
-  parseReqInFields,
+  genRequestDomain,
+  parseAuthentication,
+  parseVerifyCode,
   genRegistrationInfo,
   genVerifyInfo,
   request,

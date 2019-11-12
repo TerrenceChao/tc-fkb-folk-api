@@ -5,28 +5,29 @@ exports.USER_PUBLIC_INFO = process.env.USER_PUBLIC_INFO ? process.env.USER_PUBLI
   'uid',
   'givenName',
   'familyName',
-  'profileLink',
-  'profilePic',
   'gender',
+  'lang',
+  'publicInfo' // 'profileLink', /** path: publicInfo.profileLink */ 'profilePic', /** path: publicInfo.profilePic */
 
-  'fullName'
+  // 'fullName'
 ]
 
 exports.USER_PRIVATE_INFO = process.env.USER_PRIVATE_INFO ? process.env.USER_PRIVATE_INFO.split(',') : [
+  // 'auth',
   'region',
   'uid',
+  'beSearched',
   'givenName',
   'familyName',
-  'profileLink',
-  'profilePic',
   'gender',
+  // 'birth',
   'lang',
-  'auth',
+  'publicInfo' // 'profileLink', /** path: publicInfo.profileLink */ 'profilePic', /** path: publicInfo.profilePic */
 
-  'fullName'
+  // 'fullName'
 ]
 
-exports.PRIVATE_CONTACT_INFO = process.env.PRIVATE_CONTACT_INFO ? process.env.PRIVATE_CONTACT_INFO.split(',') : [
+exports.USER_CONTACT = process.env.USER_CONTACT ? process.env.USER_CONTACT.split(',') : [
   'region',
   'uid',
   'email',
@@ -34,4 +35,27 @@ exports.PRIVATE_CONTACT_INFO = process.env.PRIVATE_CONTACT_INFO ? process.env.PR
   'countryCode',
   'phone',
   'device'
+]
+
+exports.USER_UPDATE_CONTACT = process.env.USER_UPDATE_CONTACT ? process.env.USER_UPDATE_CONTACT.split(',') : [
+  'alternateEmail',
+  'countryCode',
+  'phone'
+]
+
+exports.USER_AUTHENTICATION = process.env.USER_AUTHENTICATION ? process.env.USER_AUTHENTICATION.split(',') : [
+  'pwHash',
+  'pwSalt',
+  'lock',
+  'attempt'
+]
+
+exports.USER_VERIFICATION = process.env.USER_VERIFICATION ? process.env.USER_VERIFICATION.split(',') : [
+  'verification'
+]
+
+exports.USER_VERIFICATION_FORMAT = process.env.USER_VERIFICATION_FORMAT ? process.env.USER_VERIFICATION_FORMAT.split(',') : [
+  'token',
+  'code',
+  'reset'
 ]

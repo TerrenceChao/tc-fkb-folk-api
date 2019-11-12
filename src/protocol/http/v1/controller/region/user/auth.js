@@ -2,8 +2,8 @@ var _ = require('lodash')
 var messageService = require('../../../../../../application/message/_services/_messageService')
 var notificationService = require('../../../../../../application/notification/_services/_notificationService')
 var userService = require('../../../../../../domain/folk/user/_services/_userService')
-var { authService } = require('../../../../../../domain/folk/user/_services/authServiceTemp')
-var { friendService } = require('../../../../../../domain/circle/_services/friendServiceTemp')
+var { authService } = require('../../../../../../domain/folk/user/_services/authService')
+var { friendService } = require('../../../../../../domain/circle/_services/friendService')
 var httpHandler = require('../../../../../../library/httpHandler')
 var util = require('../../../../../../property/util')
 
@@ -30,8 +30,8 @@ exports.authorized = async (req, res, next) => {
   var clientuseragent = req.headers.clientuseragent
   res.locals.data = util.init(res.locals.data)
 
-  Promise.resolve(httpHandler.parseReqInFields(req, ['token', 'code']))
-    .then(verifyInfo => authService.createVerifiedUser(verifyInfo))
+  Promise.resolve(httpHandler.parseVerifyCode(req))
+    .then(verifyInfo => authService.createVerifiedUser(verifyInfo, httpHandler.genRequestDomain(req)))
     .then(userInfo => Promise.all([
       userService.getPersonalInfo(userInfo),
       messageService.authenticate(_.assignIn(userInfo, { clientuseragent })),
@@ -80,12 +80,15 @@ exports.login = async (req, res, next) => {
 exports.searchAccount = async (req, res, next) => {
   var {
     type,
-    account // 半殘的片段帳戶資訊, ex: terrence
-  } = res.locals.data = req.query
+    email, // 完整的片段帳戶資訊, ex: terrence@mail.com
+    countryCode,
+    phone
+  } = req.query
+  res.locals.data = util.init(res.locals.data)
 
   try {
     // 完整的帳戶資訊, ex: terrence.chao@gmail.com
-    res.locals.data.account = await authService.searchAccount(type, account)
+    res.locals.data = await authService.searchAccountContact(type, { email, countryCode, phone })
     next()
   } catch (err) {
     next(err)
@@ -176,7 +179,7 @@ exports.sendVerifyInfo = async (req, res, next) => {
 exports.checkVerificationWithCode = async (req, res, next) => {
   res.locals.data = util.init(res.locals.data)
 
-  Promise.resolve(httpHandler.parseReqInFields(req, ['token', 'code']))
+  Promise.resolve(httpHandler.parseVerifyCode(req))
     .then(verifyInfo => authService.getVerifiedUser(verifyInfo))
     .then(userInfo => initProcess(userInfo, req, res, next))
     .catch(err => next(err))
@@ -196,9 +199,11 @@ exports.checkVerificationWithCode = async (req, res, next) => {
  */
 exports.resetPassword = async (req, res, next) => {
   var account = _.pick(req.params, ['uid', 'region'])
-  var newPassword = req.body.newPassword // encrypted
+  var newPassword = req.body.newpass // encrypted
+  var oldPassword = req.body.password // encrypted
+  res.locals.data = util.init(res.locals.data)
 
-  Promise.resolve(authService.resetPassword(account, newPassword))
+  Promise.resolve(res.locals.data = authService.resetPassword(account, newPassword, oldPassword))
     .then(() => next())
     .catch(err => next(err))
 }
@@ -233,7 +238,7 @@ exports.resetPassword = async (req, res, next) => {
  *  2. redirect to landing page or profile. ( important! important! important! )
  */
 exports.checkVerificationWithPassword = async (req, res, next) => {
-  var newPassword = req.body.password // encrypted
+  var newPassword = req.body.newpass // encrypted
   res.locals.data = util.init(res.locals.data)
 
   Promise.resolve(_.pick(req.params, ['token', 'reset']))
@@ -246,17 +251,10 @@ exports.checkVerificationWithPassword = async (req, res, next) => {
  * [NOTE] validate session info by region/uid/token
  */
 exports.isLoggedIn = async (req, res, next) => {
-  Promise.resolve(httpHandler.parseReqInFields(req, ['region', 'uid', 'token']))
-    .then(accountIdentify => authService.isLoggedIn(accountIdentify))
-    .then(loggedIn => loggedIn === true ? next() : next(new Error('user is NOT logged in')))
-}
-
-exports.checkThenResetPassword = async (req, res, next) => {
-  var account = _.pick(req.params, ['uid', 'region'])
-  var oldPassword = req.body.password // encrypted
-  var newPassword = req.body.newPassword // encrypted
-
-  Promise.resolve(authService.resetPassword(account, newPassword, oldPassword))
+  let authdata
+  Promise.resolve(authdata = httpHandler.parseAuthentication(req))
+    .then(() => authService.isAuthenticated(authdata))
+    .then(() => res.cookie('token', authService.genAuthorization(authdata).auth.token))
     .then(() => next())
     .catch(err => next(err))
 }
@@ -268,7 +266,7 @@ exports.logout = async (req, res, next) => {
   var account = req.params
 
   Promise.all([
-    authService.logout(account),
+    authService.logout(account), // res.cookie('token', 'invalid auth-token')
     messageService.quit(account),
     notificationService.quit(account)
   ])

@@ -1,7 +1,7 @@
 var _ = require('lodash')
 var userService = require('../../../../../../domain/folk/user/_services/_userService')
-var { friendService } = require('../../../../../../domain/circle/_services/friendServiceTemp')
-var { settingService } = require('../../../../../../domain/folk/user/_services/settingServiceTemp')
+var { friendService } = require('../../../../../../domain/circle/_services/friendService')
+var { settingService } = require('../../../../../../domain/folk/user/_services/settingService')
 var util = require('../../../../../../property/util')
 
 /**
@@ -13,7 +13,7 @@ var util = require('../../../../../../property/util')
  * 4. show state:'invitation has sent' if you invited he/she.
  * 5. show state:'invite' if he/she is a stranger.
  *
- * TODO: 
+ * TODO:
  * B. Assume user has a long long story/history, such as
  *    photos, music, blogs, travels ... separate these parts as [batch-loading].
  */

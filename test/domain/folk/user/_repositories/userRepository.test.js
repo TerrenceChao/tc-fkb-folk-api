@@ -36,12 +36,12 @@ describe('repository: Users', () => {
     // arrange
     const signupInfo = genSignupInfo()
     await authRepo.createAccountUser(signupInfo)
-    const newPassword = 'abcdefg'
+    const newPwHash = 'abcdefg'
 
     // act
     const { uid, region, email } = _.pick(signupInfo, ['uid', 'region', 'email'])
-    await authRepo.resetPassword({ uid, region }, newPassword)
-    const user = await userRepo.getAuthorizedUser(email, newPassword, CHECK_FIELDS)
+    await authRepo.resetPassword({ uid, region }, newPwHash)
+    const user = await userRepo.getAuthorizedUser(email, newPwHash, CHECK_FIELDS)
 
     // assert
     assertUserProperties(user, signupInfo)
@@ -51,12 +51,12 @@ describe('repository: Users', () => {
     // arrange
     const signupInfo = genSignupInfo()
     await authRepo.createAccountUser(signupInfo)
-    const newPassword = 'abcdefg'
+    const newPwHash = 'abcdefg'
 
     // act
     const { uid, region, email, pwHash } = _.pick(signupInfo, ['uid', 'region', 'email'])
-    await authRepo.resetPassword({ uid, region }, newPassword, pwHash)
-    const user = await userRepo.getAuthorizedUser(email, newPassword, CHECK_FIELDS)
+    await authRepo.resetPassword({ uid, region }, newPwHash, pwHash)
+    const user = await userRepo.getAuthorizedUser(email, newPwHash, CHECK_FIELDS)
 
     // assert
     assertUserProperties(user, signupInfo)
@@ -113,12 +113,12 @@ describe('repository: Users', () => {
     const newPublicInfo = newUserInfo.publicInfo
 
     // act
-    const updatedUser = await userRepo.updateUser({ uid: userA.uid, region: userA.region }, newUserInfo, UPDATE_USER_FIELDS)
+    const updatedUser = await userRepo.updateUser({ uid: userA.uid, region: userA.region }, newUserInfo, UPDATE_USER_FIELDS.concat(['uid']))
 
     // arrange
     expect(updatedUser.uid).to.equals(userA.uid)
     expect(updatedUser.region).to.equals(userA.region)
-    expect(updatedUser.be_searched).to.equals(newUserInfo.beSearched)
+    expect(updatedUser.be_searched).to.equals(true)
     expect(updatedUser.given_name).to.equals(newUserInfo.givenName)
     expect(updatedUser.family_name).to.equals(newUserInfo.familyName)
     expect(updatedUser.gender).to.equals(newUserInfo.gender)

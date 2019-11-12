@@ -1,10 +1,13 @@
 const { ACCOUT_IDENTITY } = require('./userConstant')
 
+/**
+ * [NOTE]: {profileLink, profilePic} should be extened here, not inside the publicInfo
+ */
 const USER_COMMON_PUBLIC_INFO = process.env.USER_COMMON_PUBLIC_INFO ? process.env.USER_COMMON_PUBLIC_INFO.split(',') : [
   'givenName',
   'familyName',
-  'profileLink',
-  'profilePic'
+  'profileLink', // path: publicInfo.profileLink (should be extened here, not inside the publicInfo)
+  'profilePic' // path: publicInfo.profilePic (should be extened here, not inside the publicInfo)
   // 'fullName'
 ]
 

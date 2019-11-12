@@ -1,14 +1,11 @@
-const _ = require('lodash')
 const { LIMIT, SKIP } = require('../../../property/constant')
 const { sameAccounts } = require('../../../property/util')
 const CIRCLE_CONST = require('../_properties/constant')
 const { parseInvitation, genFriendInvitationDBInfo, confirmFriendRecords } = require('../_properties/util')
-const userRepo = require('../../folk/user/_repositories/authRepository').authRepository
 const friendRepo = require('../../circle/_repositories/friendRepository').friendRepository
 const inviteRepo = require('../../circle/_repositories/invitationRepository').invitationRepository
 
-function InvitationService (userRepo, friendRepo, inviteRepo) {
-  this.userRepo = userRepo
+function InvitationService (friendRepo, inviteRepo) {
   this.friendRepo = friendRepo
   this.inviteRepo = inviteRepo
   console.log(`init ${arguments.callee.name}`)
@@ -20,7 +17,7 @@ function InvitationService (userRepo, friendRepo, inviteRepo) {
 InvitationService.prototype.validateRoles = function (account, invitation) {
   // 'account' should be the valid 'recipient' or 'inviter'
   if (!sameAccounts(account, invitation.recipient) && !sameAccounts(account, invitation.inviter)) {
-    throw new Error('recipient or inviter of the invitation is invalid!')
+    throw new Error(`${arguments.callee.name}: recipient or inviter of the invitation is invalid!`)
   }
 
   return true
@@ -50,6 +47,9 @@ InvitationService.prototype.inviteToBeFriend = async function (inviterUserInfo, 
   const event = CIRCLE_CONST.INVITE_EVENT_FRIEND_INVITE
   const info = genFriendInvitationDBInfo(inviterUserInfo, recipientUserInfo)
   const invitation = await this.inviteRepo.createOrUpdateInvitation(inviterUserInfo, recipientUserInfo, event, info)
+  if (invitation === undefined) {
+    throw new Error(`${arguments.callee.name}: create invitation fail!`)
+  }
 
   return parseInvitation(invitation)
 }
@@ -60,7 +60,7 @@ InvitationService.prototype.inviteToBeFriend = async function (inviterUserInfo, 
  */
 InvitationService.prototype.confirmFriendInvitation = async function (invitation, inviterAccount /** [deprecated] */, director = true) {
   if (invitation == null) {
-    throw new Error('Invitation not found')
+    throw new Error(`${arguments.callee.name}: Invitation not found`)
   }
 
   invitation = parseInvitation(invitation)
@@ -114,42 +114,15 @@ InvitationService.prototype.handleFriendInvitation = async function (invitationR
       const friendRecord = await this.friendRepo.addFriend(inviter, recipient)
       confirmed = confirmFriendRecords([recipient], [friendRecord])
     }
-    // const selectedFields = ['givenName', 'familyName', 'publicInfo']
-    // const userList = await this.userRepo.getPairUsers(inviter, recipient, selectedFields)
-    // switch (userList.length.toString()) {
-    //   // same region
-    //   case '2':
-    //     var recipientInfo = userList.find(user => user.uid === recipient.uid)
-    //     var inviterInfo = userList.find(user => user.uid === inviter.uid)
-    //     await this.friendRepo.makeFriends(
-    //       parsePublicInfo(recipientInfo),
-    //       parsePublicInfo(inviterInfo)
-    //     )
-    //     break
-
-    //   // cross region
-    //   case '1':
-    //     // find local region first
-    //     var localRegion = userList[0].region
-    //     await this.friendRepo.addFriend(
-    //       localRegion === recipient.region ? recipient : inviter,
-    //       localRegion !== recipient.region ? recipient : inviter
-    //     )
-    //     break
-
-    //   // length maybe '0' OR >= '3', something goes wrong!
-    //   default:
-    //     throw new Error(`No user info found by ${inviter} OR ${recipient}`)
-    // }
   }
 
-  const removedInvitationList = await this.inviteRepo.removeRelatedInvitation(recipient, inviter)
-  if (removedInvitationList > 0 && confirmed) {
+  const removedInvitationList = await this.inviteRepo.removeRelatedInvitation(inviter, recipient, CIRCLE_CONST.INVITE_EVENT_FRIEND_INVITE)
+  if (removedInvitationList.length > 0 && confirmed) {
     invitationRespose.header.inviteEvent = CIRCLE_CONST.INVITE_EVENT_FRIEND_REPLY
     return invitationRespose
   }
 
-  throw new Error(`No invitation bwtween ${inviter} & ${recipient} OR friend record's creation fail!`)
+  throw new Error(`${arguments.callee.name}: No invitation bwtween ${inviter} & ${recipient} OR friend record's creation fail!`)
 }
 
 /**
@@ -162,20 +135,20 @@ InvitationService.prototype.getInvitation = async function (account, invitationI
    */
   const invitation = await this.inviteRepo.getInvitation(account, invitationInfo)
   // ...
-  return invitation
+  return parseInvitation(invitation)
 }
 
 InvitationService.prototype.getSentInvitationList = async function (account, limit = LIMIT, skip = SKIP) {
   const sentInvitationList = await this.inviteRepo.getSentInvitationList(account, limit, skip)
-  return sentInvitationList
+  return sentInvitationList.map(invitation => parseInvitation(invitation))
 }
 
 InvitationService.prototype.getReceivedInvitationList = async function (account, limit = LIMIT, skip = SKIP) {
   const receivedInvitationList = await this.inviteRepo.getReceivedInvitationList(account, limit, skip)
-  return receivedInvitationList
+  return receivedInvitationList.map(invitation => parseInvitation(invitation))
 }
 
 module.exports = {
-  invitationService: new InvitationService(userRepo, friendRepo, inviteRepo),
+  invitationService: new InvitationService(friendRepo, inviteRepo),
   InvitationService
 }

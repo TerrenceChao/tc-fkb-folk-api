@@ -612,7 +612,7 @@ AuthRepository.prototype.getPairUsers = async function (account, targetAccount, 
 
 
 // search someone, and only one result
-AuthRepository.prototype.searchAccount = async function(type, account) {
+AuthRepository.prototype.getAccountUserByContact = async function(type, account) {
   if (type === 'phone') {
     for (const userInfo of userDB.values()) {
       if (account === userInfo.phone) {
@@ -630,9 +630,6 @@ AuthRepository.prototype.searchAccount = async function(type, account) {
   throw new Error(`user not found`)
 }
 
-/**
- * TODO: [createAccountUser] 用 [authRepo.createAccount] & [authRepo.createUser] 兩個 methods 取代.
- */
 AuthRepository.prototype.createAccountUser = async function (signupInfo) {
   // 測試用的特例
   if (TEST_ACCOUNT_DATA.has(signupInfo.email)) {

@@ -6,8 +6,8 @@ const {
 const CONSTANT = require('../../../../../../domain/folk/user/_properties/constant')
 var notificationService = require('../../../../../../application/notification/_services/_notificationService')
 var circleService = require('../../../../../../domain/circle/_services/_circleService')
-var { settingService } = require('../../../../../../domain/folk/user/_services/settingServiceTemp')
-var { friendService } = require('../../../../../../domain/circle/_services/friendServiceTemp')
+var { settingService } = require('../../../../../../domain/folk/user/_services/settingService')
+var { friendService } = require('../../../../../../domain/circle/_services/friendService')
 var util = require('../../../../../../property/util')
 
 exports.getUserInfo = async (req, res, next) => {
@@ -15,7 +15,7 @@ exports.getUserInfo = async (req, res, next) => {
   res.locals.data = util.init(res.locals.data)
 
   Promise.resolve(settingService.getUserInfo(owner))
-    .then(userInfo => (res.locals.data = _.assignIn(res.locals.data, userInfo)))
+    .then(userInfo => (res.locals.data = userInfo))
     .then(() => next())
     .catch(err => next(err))
 }
@@ -50,6 +50,26 @@ exports.updateUserInfo = async (req, res, next) => {
     .then(updated => updated === true ? (res.locals.data = _.assignIn(res.locals.data, userInfo)) : Promise.reject(new Error('Update user info fail')))
     .then(() => notificationService.emitEvent(_.assignIn(message, updateSearchQuery)))
     .then(() => circleService.handleNotifyAllFriendsActivity(friendService, notificationService, account, _.assignIn(message, notifyFriend)))
+    .then(() => next())
+    .catch(err => next(err))
+}
+
+exports.getUserContact = async (req, res, next) => {
+  var owner = req.params
+  res.locals.data = util.init(res.locals.data)
+
+  Promise.resolve(settingService.getUserContact(owner))
+    .then(userContact => (res.locals.data = userContact))
+    .then(() => next())
+    .catch(err => next(err))
+}
+
+exports.updateUserContact = async (req, res, next) => {
+  var account = req.params
+  var userContact = _.assignIn(req.body, account)
+
+  Promise.resolve(settingService.updateUserContact(account, userContact))
+    .then(updated => updated === true ? (res.locals.data = userContact) : Promise.reject(new Error('Update user contact fail')))
     .then(() => next())
     .catch(err => next(err))
 }

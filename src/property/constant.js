@@ -15,5 +15,7 @@ module.exports = {
     RETRY_LIMIT: parseInt(process.env.REQ_RETRY_LIMIT) || 3,
     DELAY: parseInt(process.env.REQ_DELAY) || 500,
     TIMEOUT: parseInt(process.env.REQ_TIMEOUT) || 100
-  }
+  },
+  NODE_ENV: process.env.NODE_ENV,
+  EXPIRATION_SECS: parseInt(process.env.EXPIRATION_SECS) || 600
 }
