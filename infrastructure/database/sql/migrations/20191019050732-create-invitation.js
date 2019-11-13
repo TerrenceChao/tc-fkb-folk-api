@@ -4,10 +4,9 @@ module.exports = {
     return queryInterface.createTable('Invitations', {
       iid: {
         allowNull: false,
-        autoIncrement: false,
+        autoIncrement: true,
         primaryKey: true,
-        type: Sequelize.UUID,
-        defaultValue: Sequelize.UUIDV4
+        type: Sequelize.BIGINT
       },
       inviterUid: {
         allowNull: false,
