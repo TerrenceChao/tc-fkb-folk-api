@@ -55,7 +55,7 @@ const USER_UPDATE_FIELD_MAP = new Map(USER_UPDATE_FIELDS)
 function genUserUpdateFields (obj) {
   const fields = []
   for (const field of USER_UPDATE_FIELD_MAP.keys()) {
-    if (obj[field]) {
+    if (obj[field] !== undefined) {
       let targetValue
       switch (typeof obj[field]) {
         case 'string':

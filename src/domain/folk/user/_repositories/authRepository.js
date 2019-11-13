@@ -61,7 +61,7 @@ const CONTACT_UPDATE_FIELD_MAP = new Map(ACCOUNT_UPDATE_FIELDS)
 function genContactUpdateFields (obj) {
   const fields = []
   for (const field of CONTACT_UPDATE_FIELD_MAP.keys()) {
-    if (obj[field]) {
+    if (obj[field] !== undefined) {
       let targetValue
       switch (typeof obj[field]) {
         case 'string':
