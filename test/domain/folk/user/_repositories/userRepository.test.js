@@ -118,7 +118,7 @@ describe('repository: Users', () => {
     // arrange
     expect(updatedUser.uid).to.equals(userA.uid)
     expect(updatedUser.region).to.equals(userA.region)
-    expect(updatedUser.be_searched).to.equals(true)
+    expect(updatedUser.be_searched).to.equals(newUserInfo.beSearched)
     expect(updatedUser.given_name).to.equals(newUserInfo.givenName)
     expect(updatedUser.family_name).to.equals(newUserInfo.familyName)
     expect(updatedUser.gender).to.equals(newUserInfo.gender)
