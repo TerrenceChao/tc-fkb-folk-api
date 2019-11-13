@@ -51,11 +51,7 @@ exports.USER_AUTHENTICATION = process.env.USER_AUTHENTICATION ? process.env.USER
 ]
 
 exports.USER_VERIFICATION = process.env.USER_VERIFICATION ? process.env.USER_VERIFICATION.split(',') : [
-  'verification'
-]
-
-exports.USER_VERIFICATION_FORMAT = process.env.USER_VERIFICATION_FORMAT ? process.env.USER_VERIFICATION_FORMAT.split(',') : [
   'token',
   'code',
-  'reset'
+  'expired'
 ]

@@ -11,6 +11,10 @@ function genSignupInfo () {
     lock: false,
     attempt: 0,
     verification: null,
+    verifyToken: null,
+    verifyCode: null,
+    verifyExpired: null,
+
     // Accounts
     uid: faker.random.uuid(),
     region: faker.address.countryCode(),
@@ -85,6 +89,10 @@ function genDBFriendPublicInfo () {
   }
 }
 
+function genToken () {
+  return faker.random.uuid().concat(Date.now().toString())
+}
+
 /**
  *
  * @param {string} str
@@ -98,5 +106,6 @@ module.exports = {
   genDBInvitationInfo,
   parseFriendInfo,
   genDBFriendPublicInfo,
+  genToken,
   genTimestamp
 }

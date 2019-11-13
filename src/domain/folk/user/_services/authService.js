@@ -177,29 +177,15 @@ AuthService.prototype.findOrCreateVerification = async function (type, accountCo
   userInfo = util.parseUserInfo(userInfo)
 
   const expired = expireTimeLimit ? util.getExpiration() : null
-  let verification = util.genVerification(userInfo, expired)
-  const userVerifyRecord = await this.authRepo.findOrCreateVerification(type, accountContact, verification)
-  if (userVerifyRecord === undefined) {
+  const verification = util.genVerification(userInfo, expired)
+  const verificationRecord = await this.authRepo.findOrCreateVerification(type, accountContact, verification)
+  if (verificationRecord.token === undefined) {
     throw new Error(`${arguments.callee.name}: find or creation verification fail`)
   }
 
   const contact = { email: ['email'], phone: ['countryCode', 'phone'] }
-  verification = userVerifyRecord.verification // verification in database
 
-  return util.genVerificationPacket(type, _.pick(accountContact, contact[type]), userInfo, verification)
-  // return {
-  //   region: userInfo.region,
-  //   uid: userInfo.uid,
-  //   type,
-  //   /**
-  //    * TODO: 這裡的 account (string OR Object?) 是否能夠和 notify-api 的資料銜接上？
-  //    */
-  //   account: _.pick(accountContact, contact[type]),
-  //   content: _.pick(userInfo, C.USER_PRIVATE_INFO),
-  //   'verify-token': verification.token,
-  //   code: verification.code,
-  //   reset: verification.reset
-  // }
+  return util.genVerificationPacket(type, _.pick(accountContact, contact[type]), userInfo, verificationRecord)
 }
 
 /**
@@ -227,14 +213,12 @@ AuthService.prototype.getVerifiedUser = async function (verifyInfo) {
  * @private
  */
 AuthService.prototype.checkExpiration = function (userInfo) {
-  const timestamp = userInfo.verification.reset
+  const timestamp = userInfo.reset
   if (timestamp != null && Date.now() > timestamp) {
     return Promise.reject(new Error(`${arguments.callee.name}: verification expired!`))
   }
 
-  delete userInfo.verification
-
-  return userInfo
+  return _.omit(userInfo, [C.USER_VERIFICATION])
 }
 
 /**

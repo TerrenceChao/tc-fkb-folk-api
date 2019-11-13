@@ -41,7 +41,7 @@ module.exports = {
       },
       verifyCode: {
         field: 'verify_code',
-        type: Sequelize.STRING
+        type: Sequelize.STRING(20)
       },
       verifyExpired: {
         field: 'verify_expired',
@@ -70,7 +70,10 @@ module.exports = {
     }, {
       uniqueKeys: {
         unique_user: {
-          fields: ['user_id', 'verify_token']
+          fields: ['user_id']
+        },
+        unique_verify_token: {
+          fields: ['verify_token']
         }
       }
     })

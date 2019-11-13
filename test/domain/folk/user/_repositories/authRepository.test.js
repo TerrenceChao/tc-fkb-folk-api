@@ -3,7 +3,7 @@ const faker = require('faker')
 const path = require('path')
 const config = require('config')
 const { AuthRepository } = require(path.join(config.src.repository.user, 'authRepository'))
-const { genSignupInfo } = require(path.join(config.test.common, 'mock'))
+const { genToken, genSignupInfo } = require(path.join(config.test.common, 'mock'))
 
 const pool = config.database.pool
 
@@ -64,13 +64,13 @@ describe('repository: Auths', () => {
     const email = signupInfo.email
     const now = Date.now()
     const verification = {
-      token: faker.random.word(),
+      token: genToken(),
       code: faker.random.alphaNumeric(6),
       reset: now + 50000
     }
 
     const newVerification = {
-      token: faker.random.word(),
+      token: genToken(),
       code: faker.random.alphaNumeric(6),
       reset: now << 1
     }
@@ -85,13 +85,13 @@ describe('repository: Auths', () => {
     expect(verifyInfo.uid).to.equals(signupInfo.uid)
     expect(verifyInfo.region).to.equals(signupInfo.region)
     expect(verifyInfo.email).to.equals(email)
-    expect(verifyInfo.verification.token).to.equals(verification.token)
-    expect(verifyInfo.verification.code).to.equals(verification.code)
-    expect(verifyInfo.verification.reset).to.equals(verification.reset)
+    expect(verifyInfo.token).to.equals(verification.token)
+    expect(verifyInfo.code).to.equals(verification.code)
+    expect(parseInt(verifyInfo.reset)).to.equals(verification.reset)
     // 2nd verifyInfo
-    expect(newVerifyInfo.verification.token).to.equals(verification.token)
-    expect(newVerifyInfo.verification.code).to.equals(verification.code)
-    expect(newVerifyInfo.verification.reset).to.equals(verification.reset)
+    expect(newVerifyInfo.token).to.equals(verification.token)
+    expect(newVerifyInfo.code).to.equals(verification.code)
+    expect(parseInt(newVerifyInfo.reset)).to.equals(verification.reset)
   })
 
   it('create verification by phone', async () => {
@@ -101,7 +101,7 @@ describe('repository: Auths', () => {
     const phone = signupInfo.phone
     const now = Date.now()
     const verification = {
-      token: faker.random.word(),
+      token: genToken(),
       code: faker.random.alphaNumeric(6),
       reset: now + 50000
     }
@@ -123,13 +123,13 @@ describe('repository: Auths', () => {
     expect(verifyInfo.region).to.equals(signupInfo.region)
     expect(verifyInfo.country_code).to.equals(countryCode)
     expect(verifyInfo.phone).to.equals(phone)
-    expect(verifyInfo.verification.token).to.equals(verification.token)
-    expect(verifyInfo.verification.code).to.equals(verification.code)
-    expect(verifyInfo.verification.reset).to.equals(verification.reset)
+    expect(verifyInfo.token).to.equals(verification.token)
+    expect(verifyInfo.code).to.equals(verification.code)
+    expect(parseInt(verifyInfo.reset)).to.equals(verification.reset)
     // 2nd verifyInfo
-    expect(newVerifyInfo.verification.token).to.equals(verification.token)
-    expect(newVerifyInfo.verification.code).to.equals(verification.code)
-    expect(newVerifyInfo.verification.reset).to.equals(verification.reset)
+    expect(newVerifyInfo.token).to.equals(verification.token)
+    expect(newVerifyInfo.code).to.equals(verification.code)
+    expect(parseInt(newVerifyInfo.reset)).to.equals(verification.reset)
   })
 
   it('get verification by token/code', async () => {
@@ -138,7 +138,7 @@ describe('repository: Auths', () => {
     const email = signupInfo.email
     const now = Date.now()
     const verification = {
-      token: faker.random.word(),
+      token: genToken(),
       code: faker.random.alphaNumeric(6).toString(),
       reset: now
     }
@@ -151,8 +151,8 @@ describe('repository: Auths', () => {
     // arrange
     expect(verifyUser.uid).to.equals(signupInfo.uid)
     expect(verifyUser.region).to.equals(signupInfo.region)
-    expect(verifyUser.verification.token).to.equals(verification.token)
-    expect(verifyUser.verification.code).to.equals(verification.code)
+    expect(verifyUser.token).to.equals(verification.token)
+    expect(verifyUser.code).to.equals(verification.code)
   })
 
   it('get verification by token/reset', async () => {
@@ -161,7 +161,7 @@ describe('repository: Auths', () => {
     const email = signupInfo.email
     const now = Date.now()
     const verification = {
-      token: faker.random.word(),
+      token: genToken(),
       code: faker.random.alphaNumeric(6).toString(),
       reset: now
     }
@@ -174,8 +174,8 @@ describe('repository: Auths', () => {
     // arrange
     expect(verifyUser.uid).to.equals(signupInfo.uid)
     expect(verifyUser.region).to.equals(signupInfo.region)
-    expect(verifyUser.verification.token).to.equals(verification.token)
-    expect(verifyUser.verification.reset).to.equals(verification.reset)
+    expect(verifyUser.token).to.equals(verification.token)
+    expect(parseInt(verifyUser.reset)).to.equals(verification.reset)
   })
 
   it('delete verification', async () => {
@@ -187,7 +187,7 @@ describe('repository: Auths', () => {
 
     const now = Date.now()
     const verification = {
-      token: faker.random.word(),
+      token: genToken(),
       code: faker.random.alphaNumeric(6).toString(),
       reset: now
     }
@@ -203,6 +203,8 @@ describe('repository: Auths', () => {
     expect(verifyUser.email).to.equals(signupInfo.email)
     expect(verifyUser.country_code).to.equals(signupInfo.countryCode)
     expect(verifyUser.phone).to.equals(signupInfo.phone)
-    expect(verifyUser.verification).to.equals(null)
+    expect(verifyUser.token).to.equals(null)
+    expect(verifyUser.code).to.equals(null)
+    expect(verifyUser.reset).to.equals(null)
   })
 })
