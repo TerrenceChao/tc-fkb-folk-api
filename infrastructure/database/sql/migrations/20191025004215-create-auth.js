@@ -2,12 +2,24 @@
 module.exports = {
   up: async (queryInterface, Sequelize) => {
     await queryInterface.createTable('Auths', {
+      id: {
+        allowNull: false,
+        autoIncrement: true,
+        primaryKey: true,
+        type: Sequelize.BIGINT
+      },
       userId: {
         allowNull: false,
-        primaryKey: true,
-        field: 'user_id',
         type: Sequelize.UUID,
-        defaultValue: Sequelize.UUIDV4
+        field: 'user_id',
+        references: {
+          model: {
+            tableName: 'Accounts'
+          },
+          key: 'id'
+        },
+        onDelete: 'CASCADE',
+        onUpdate: 'CASCADE'
       },
       pwHash: {
         allowNull: false,
@@ -20,8 +32,20 @@ module.exports = {
         type: Sequelize.STRING
       },
       verification: {
-        type: Sequelize.JSONB,
-        index: true
+        type: Sequelize.JSONB
+        // index: true
+      },
+      verifyToken: {
+        field: 'verify_token',
+        type: Sequelize.STRING
+      },
+      verifyCode: {
+        field: 'verify_code',
+        type: Sequelize.STRING
+      },
+      verifyExpired: {
+        field: 'verify_expired',
+        type: Sequelize.BIGINT
       },
       attempt: {
         type: Sequelize.INTEGER
@@ -42,6 +66,12 @@ module.exports = {
         type: 'TIMESTAMP',
         field: 'updated_at',
         defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
+      }
+    }, {
+      uniqueKeys: {
+        unique_user: {
+          fields: ['user_id', 'verify_token']
+        }
       }
     })
 

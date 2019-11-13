@@ -1,10 +1,12 @@
 'use strict'
 module.exports = (sequelize, DataTypes) => {
   const Auth = sequelize.define('Auth', {
-    userId: DataTypes.UUID,
     pwSalt: DataTypes.STRING,
     pwHash: DataTypes.STRING,
     verification: DataTypes.JSONB,
+    verifyToken: DataTypes.STRING,
+    verifyCode: DataTypes.STRING,
+    verifyExpired: DataTypes.BIGINT,
     attempt: DataTypes.INTEGER,
     lock: DataTypes.BOOLEAN
   }, {})

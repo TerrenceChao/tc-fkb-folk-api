@@ -25,7 +25,11 @@ const AUTH_FIELDS = [
   ['pwSalt', 'au.pw_salt'],
   ['lock', 'au.lock'],
   ['attempt', 'au.attempt'],
-  ['verification', 'au.verification']
+  ['verification', 'au.verification'],
+
+  ['verifyToken', 'au.verify_token'],
+  ['verifyCode', 'au.verify_code'],
+  ['verifyExpired', 'au.verify_expired']
 ]
 
 const USER_FIELDS = [
@@ -392,7 +396,10 @@ AuthRepository.prototype.findOrCreateVerification = async function (type, accoun
     `
     WITH account_auth AS (
       SELECT
-        au.verification
+        au.verification,
+        au.verify_token,
+        au.verify_code,
+        au.verify_expired
       FROM "Auths" AS au
       JOIN "Accounts" AS a ON au.user_id = a.id
       WHERE
@@ -401,11 +408,42 @@ AuthRepository.prototype.findOrCreateVerification = async function (type, accoun
     )
     UPDATE "Auths" AS au
     SET
-      verification = CASE
+      verification = (CASE
         WHEN (au.verification->>'reset')::numeric < ${Date.now()}::numeric OR au.verification IS null 
         THEN '${JSON.stringify(verification)}'::jsonb
         ELSE (SELECT verification FROM account_auth)
-        END
+        END),
+
+      verify_token = (CASE
+        WHEN verify_expired::bigint < ${Date.now()}::numeric OR au.verification IS null
+        THEN verify_token = '${verification.token}'::varchar
+        ELSE (SELECT verify_token FROM account_auth)
+        END),
+
+      verify_code = (CASE
+        WHEN verify_expired::bigint < ${Date.now()}::numeric OR au.verification IS null
+        THEN verify_code = '${verification.code}'::varchar
+        ELSE (SELECT verify_code FROM account_auth)
+        END),
+
+      verify_expired = (CASE
+        WHEN verify_expired::bigint < ${Date.now()}::numeric OR au.verification IS null
+        THEN verify_expired = ${verification.reset}::bigint
+        ELSE (SELECT verify_expired FROM account_auth)
+        END)
+
+    -- WHEN verify_expired::numeric < ${Date.now()}::numeric OR au.verification IS null
+    -- THEN SET 
+    --   verify_token = ${verification.token},
+    --   verify_code = ${verification.code},
+    --   verify_expired = ${verification.reset}
+    -- ELSE SET
+    --   verify_token = (SELECT verify_token FROM account_auth),
+    --   verify_code = (SELECT verify_code FROM account_auth),
+    --   verify_expired = (SELECT verify_expired FROM account_auth)
+    -- END
+
+
     FROM "Accounts" AS a
     WHERE
       ${condition[type]} AND
