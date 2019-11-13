@@ -1,13 +1,11 @@
 const util = require('util')
-const _ = require('lodash')
-const uuidv4 = require('uuid/v4')
 const pool = require('config').database.pool
 const Repository = require('../../../library/repository')
 
 function parseConditions (obj) {
   let idx = 5
   const datatypes = {
-    iid: 'uuid',
+    iid: 'bigint',
     event: 'varchar'
   }
   const params = []
@@ -43,9 +41,8 @@ InvitationRepository.prototype.createOrUpdateInvitation = async function (invite
   let idx = 1
   return this.query(
     `
-    INSERT INTO "Invitations" (iid, inviter_uid, inviter_region, recipient_uid, recipient_region, event, info, deleted_at)
+    INSERT INTO "Invitations" (inviter_uid, inviter_region, recipient_uid, recipient_region, event, info, deleted_at)
     VALUES (
-      $${idx++}::uuid,
       $${idx++}::uuid, -- inviter_uid
       $${idx++}::varchar,
       $${idx++}::uuid, -- recipient_uid
@@ -62,7 +59,6 @@ InvitationRepository.prototype.createOrUpdateInvitation = async function (invite
     RETURNING *;
     `,
     [
-      uuidv4(),
       inviterAccount.uid,
       inviterAccount.region,
       recipientAccount.uid,
@@ -79,7 +75,7 @@ InvitationRepository.prototype.createOrUpdateInvitation = async function (invite
 
 /**
  * @param {{ uid: string, region: string }} account
- * @param {{ iid: string }|{ event: string }|{ iid: string, event: string }} invitationInfo
+ * @param {{ iid: number }|{ event: string }|{ iid: number, event: string }} invitationInfo
  */
 InvitationRepository.prototype.getInvitation = async function (account, invitationInfo) {
   let { conditions, params } = parseConditions(invitationInfo)
