@@ -1,0 +1,2694 @@
+{
+	"info": {
+		"_postman_id": "ad80a724-3825-9ef9-1525-f38cd347ab1e",
+		"name": "Fakebook - Message Service",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "message-api",
+			"item": [
+				{
+					"name": "authentication_authenticate (userA, CHrome)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "uid",
+								"value": "{{uid}}"
+							},
+							{
+								"key": "clientuseragent",
+								"type": "text",
+								"value": "{{md5_useragent_chrome_linux}}"
+							},
+							{
+								"key": "",
+								"value": "",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "{{msg_localhost2}}/req_authentication_authenticate",
+							"host": [
+								"{{msg_localhost2}}"
+							],
+							"path": [
+								"req_authentication_authenticate"
+							]
+						},
+						"description": "驗證"
+					},
+					"response": []
+				},
+				{
+					"name": "authentication_authenticate (userB, Firefox)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "uid",
+								"value": "{{uid_B}}"
+							},
+							{
+								"key": "clientuseragent",
+								"value": "{{md5_useragent_firefox_linux}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{msg_localhost2}}/req_authentication_authenticate",
+							"host": [
+								"{{msg_localhost2}}"
+							],
+							"path": [
+								"req_authentication_authenticate"
+							]
+						},
+						"description": "驗證"
+					},
+					"response": []
+				},
+				{
+					"name": "message_server_push",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"requestEvent\":\"channel_join_channel\", \"uid\":\"Jump550\", \"name\":\"room18\", \"a\":1,\"b\":2,\"c\":\"333\"}"
+						},
+						"url": {
+							"raw": "{{msg_localhost}}/message_service/message_server_push",
+							"host": [
+								"{{msg_localhost}}"
+							],
+							"path": [
+								"message_service",
+								"message_server_push"
+							]
+						},
+						"description": "驗證"
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "folk-api",
+			"item": [
+				{
+					"name": "folk",
+					"item": [
+						{
+							"name": "check test",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "1766ab04-58c4-47b2-bca1-b251a78f5c44",
+										"exec": [
+											"tests[\"Status code is 200\"] = responseCode.code === 200;"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "clientuseragent",
+										"value": "{{md5_useragent_chrome_linux}}",
+										"type": "text"
+									},
+									{
+										"key": "token",
+										"value": "{{auth_token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{folk_localhost}}/user?",
+									"host": [
+										"{{folk_localhost}}"
+									],
+									"path": [
+										"user"
+									],
+									"query": [
+										{
+											"key": "",
+											"value": "",
+											"disabled": true
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "signup",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "dfd6d7a0-d966-4c09-a8b5-8fc47d4dfefb",
+										"exec": [
+											"tests[\"Status code is 201\"] = responseCode.code === 201;",
+											"",
+											"var result = JSON.parse(responseBody);",
+											"postman.setEnvironmentVariable(\"verify_token\", result.data['verify-token']);",
+											"postman.setEnvironmentVariable(\"verify_code\", result.data.code);",
+											"postman.setEnvironmentVariable(\"verify_reset\", result.data.reset);",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "3c8e1b19-937b-4426-9e54-4e6be2a18106",
+										"exec": [
+											"",
+											"postman.setEnvironmentVariable(\"region\", 'tw');",
+											"postman.setEnvironmentVariable(\"email\", 'rfvbnju@hotmail.com');",
+											"postman.setEnvironmentVariable(\"country_code\", '886');",
+											"postman.setEnvironmentVariable(\"phone\", '987654321');",
+											"postman.setEnvironmentVariable(\"given_name\", 'Terrence');",
+											"postman.setEnvironmentVariable(\"family_name\", 'Chao');",
+											"postman.setEnvironmentVariable(\"gender\", '1');",
+											"postman.setEnvironmentVariable(\"birth\", '1984-06-08');",
+											"postman.setEnvironmentVariable(\"lang\", 'en');",
+											"postman.setEnvironmentVariable(\"newpass\", 'abcdefghijkl12345');",
+											"postman.setEnvironmentVariable(\"confirmnewpass\", 'abcdefghijkl12345');",
+											"postman.setEnvironmentVariable(\"password\", 'abcdefghijkl12345');",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "clientuseragent",
+										"value": "{{md5_useragent_chrome_linux}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"region\": \"{{region}}\",\n\t\"email\": \"{{email}}\",\n\t\"countryCode\": \"{{country_code}}\",\n\t\"phone\": \"{{phone}}\",\n\t\"givenName\": \"{{given_name}}\",\n\t\"familyName\": \"{{family_name}}\",\n\t\"gender\": \"{{gender}}\",\n\t\"birth\": \"{{birth}}\",\n\t\"lang\": \"{{lang}}\",\n\t\"newpass\": \"{{newpass}}\",\n\t\"confirmnewpass\": \"{{confirmnewpass}}\"\n}"
+								},
+								"url": {
+									"raw": "{{folk_localhost}}/user/signup",
+									"host": [
+										"{{folk_localhost}}"
+									],
+									"path": [
+										"user",
+										"signup"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "new user verification (fail)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "dfd6d7a0-d966-4c09-a8b5-8fc47d4dfefb",
+										"exec": [
+											"tests[\"Status code is 500\"] = responseCode.code === 500;"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/json"
+									},
+									{
+										"key": "clientuseragent",
+										"type": "text",
+										"value": "{{md5_useragent_chrome_linux}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"code\": \"XXXXXX\"\n}"
+								},
+								"url": {
+									"raw": "{{folk_localhost}}/user/newborn/code/{{verify_token}}",
+									"host": [
+										"{{folk_localhost}}"
+									],
+									"path": [
+										"user",
+										"newborn",
+										"code",
+										"{{verify_token}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "new user verification (success)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "dfd6d7a0-d966-4c09-a8b5-8fc47d4dfefb",
+										"exec": [
+											"tests[\"Status code is 200\"] = responseCode.code === 200;",
+											"",
+											"var result = JSON.parse(responseBody);",
+											"postman.setEnvironmentVariable(\"uid\", result.data.userInfo.uid);",
+											"postman.setEnvironmentVariable(\"region\", result.data.userInfo.region);",
+											"postman.setEnvironmentVariable(\"profile_link\", \"{{folk_localhost}}/user/{{uid}}/{{region}}/profile\");",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "clientuseragent",
+										"value": "{{md5_useragent_chrome_linux}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"code\": \"{{verify_code}}\"\n}"
+								},
+								"url": {
+									"raw": "{{folk_localhost}}/user/newborn/code/{{verify_token}}",
+									"host": [
+										"{{folk_localhost}}"
+									],
+									"path": [
+										"user",
+										"newborn",
+										"code",
+										"{{verify_token}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "logout (after signup)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "1766ab04-58c4-47b2-bca1-b251a78f5c44",
+										"exec": [
+											"tests[\"Status code is 200\"] = responseCode.code === 200;"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "clientuseragent",
+										"value": "{{md5_useragent_chrome_linux}}",
+										"type": "text"
+									},
+									{
+										"key": "token",
+										"value": "{{auth_token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{folk_localhost}}/user/{{uid}}/{{region}}/logout?",
+									"host": [
+										"{{folk_localhost}}"
+									],
+									"path": [
+										"user",
+										"{{uid}}",
+										"{{region}}",
+										"logout"
+									],
+									"query": [
+										{
+											"key": "",
+											"value": "",
+											"disabled": true
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "login",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "c591d6c7-d972-4fae-97a9-6a5aa3c522bb",
+										"exec": [
+											"tests[\"Status code is 201\"] = responseCode.code === 201;",
+											"",
+											"var result = JSON.parse(responseBody);",
+											"postman.setEnvironmentVariable(\"uid\", result.data.userInfo.uid);"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "clientuseragent",
+										"value": "{{md5_useragent_chrome_linux}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"email\": \"rfvbnju@hotmail.com\",\n\t\"password\": \"{{password}}\"\n}"
+								},
+								"url": {
+									"raw": "{{folk_localhost}}/user/login?friendLimit=8&friendSkip=0",
+									"host": [
+										"{{folk_localhost}}"
+									],
+									"path": [
+										"user",
+										"login"
+									],
+									"query": [
+										{
+											"key": "friendLimit",
+											"value": "8"
+										},
+										{
+											"key": "friendSkip",
+											"value": "0"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "seach account by email",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "230af916-8858-49f0-9adf-f530f870ff55",
+										"exec": [
+											"tests[\"Status code is 200\"] = responseCode.code === 200;"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{folk_localhost}}/user/search?type=email&email={{email}}",
+									"host": [
+										"{{folk_localhost}}"
+									],
+									"path": [
+										"user",
+										"search"
+									],
+									"query": [
+										{
+											"key": "type",
+											"value": "email"
+										},
+										{
+											"key": "email",
+											"value": "{{email}}"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "send verification by email",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "33d0e43b-bd8a-410e-9115-59a7e8770ec5",
+										"exec": [
+											"tests[\"Status code is 200\"] = responseCode.code === 200;",
+											"",
+											"var result = JSON.parse(responseBody);",
+											"postman.setEnvironmentVariable(\"verify_token\", result.data['verify-token']);",
+											"postman.setEnvironmentVariable(\"verify_code\", result.data.code);",
+											"postman.setEnvironmentVariable(\"verify_expire\", result.data.expire);",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "6b8e47bb-d81f-4e4b-8cdf-428fd4496c10",
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "clientuseragent",
+										"value": "{{md5_useragent_chrome_linux}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"type\": \"email\",\n    \"account\": {\n    \t\"email\": \"rfvbnju@hotmail.com\"\n    }\n}"
+								},
+								"url": {
+									"raw": "{{folk_localhost}}/user/verification/send",
+									"host": [
+										"{{folk_localhost}}"
+									],
+									"path": [
+										"user",
+										"verification",
+										"send"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "verify code (fail)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "761fac9e-ce95-4f7f-81f0-e9f5ffccd87d",
+										"exec": [
+											"tests[\"Status code is 500\"] = responseCode.code === 500;"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/json"
+									},
+									{
+										"key": "clientuseragent",
+										"type": "text",
+										"value": "{{md5_useragent_chrome_linux}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"code\": \"XXXX\"\n}"
+								},
+								"url": {
+									"raw": "{{folk_localhost}}/user/verification/code/{{verify_token}}",
+									"host": [
+										"{{folk_localhost}}"
+									],
+									"path": [
+										"user",
+										"verification",
+										"code",
+										"{{verify_token}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "verify code (success)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "761fac9e-ce95-4f7f-81f0-e9f5ffccd87d",
+										"exec": [
+											"tests[\"Status code is 200\"] = responseCode.code === 200;"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "clientuseragent",
+										"value": "{{md5_useragent_chrome_linux}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"code\": \"{{verify_code}}\"\n}"
+								},
+								"url": {
+									"raw": "{{folk_localhost}}/user/verification/code/{{verify_token}}",
+									"host": [
+										"{{folk_localhost}}"
+									],
+									"path": [
+										"user",
+										"verification",
+										"code",
+										"{{verify_token}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "reset password after code verification (success)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "10fe51db-947b-4fd6-9e43-6c99caa9f060",
+										"exec": [
+											"tests[\"Status code is 200\"] = responseCode.code === 200;",
+											"",
+											"var result = JSON.parse(responseBody);",
+											"",
+											"// password is changed! (1st time)",
+											"postman.setEnvironmentVariable(\"password\", 'new-encrypted-pw');"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "clientuseragent",
+										"value": "{{md5_useragent_chrome_linux}}",
+										"type": "text"
+									},
+									{
+										"key": "token",
+										"value": "{{auth_token}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"newpass\": \"new-encrypted-pw\",\n\t\"confirmnewpass\": \"new-encrypted-pw\"\n}"
+								},
+								"url": {
+									"raw": "{{folk_localhost}}/user/{{uid}}/{{region}}/password/reset",
+									"host": [
+										"{{folk_localhost}}"
+									],
+									"path": [
+										"user",
+										"{{uid}}",
+										"{{region}}",
+										"password",
+										"reset"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "seach account by phone",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "230af916-8858-49f0-9adf-f530f870ff55",
+										"exec": [
+											"tests[\"Status code is 200\"] = responseCode.code === 200;"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"type": "text",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{folk_localhost}}/user/search?type=phone&phone={{phone}}&countryCode={{countryCode}}",
+									"host": [
+										"{{folk_localhost}}"
+									],
+									"path": [
+										"user",
+										"search"
+									],
+									"query": [
+										{
+											"key": "type",
+											"value": "phone"
+										},
+										{
+											"key": "phone",
+											"value": "{{phone}}"
+										},
+										{
+											"key": "countryCode",
+											"value": "{{countryCode}}"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "send verification  by phone",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "33d0e43b-bd8a-410e-9115-59a7e8770ec5",
+										"exec": [
+											"tests[\"Status code is 200\"] = responseCode.code === 200;",
+											"",
+											"var result = JSON.parse(responseBody);",
+											"postman.setEnvironmentVariable(\"verify_token\", result.data['verify-token']);",
+											"postman.setEnvironmentVariable(\"verify_code\", result.data.code);",
+											"postman.setEnvironmentVariable(\"verify_expire\", result.data.expire);",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "6b8e47bb-d81f-4e4b-8cdf-428fd4496c10",
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "clientuseragent",
+										"value": "{{md5_useragent_chrome_linux}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"type\": \"phone\",\n    \"account\": {\n    \t\"countryCode\": \"886\",\n    \t\"phone\": \"987654321\"\n    }\n}"
+								},
+								"url": {
+									"raw": "{{folk_localhost}}/user/verification/send",
+									"host": [
+										"{{folk_localhost}}"
+									],
+									"path": [
+										"user",
+										"verification",
+										"send"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "verify & reset password (fail)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "1015a05a-3660-45c4-9489-f7c6514a0efe",
+										"exec": [
+											"tests[\"Status code is 500\"] = responseCode.code === 500;"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/json"
+									},
+									{
+										"key": "clientuseragent",
+										"type": "text",
+										"value": "{{md5_useragent_chrome_linux}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"newpass\": \"encryped-password\",\n\t\"confirmnewpass\": \"encryped-password\"\n}"
+								},
+								"url": {
+									"raw": "{{folk_localhost}}/user/verification/password/xxxxxx--invalid-token--xxxxxx/{{verify_expire}}",
+									"host": [
+										"{{folk_localhost}}"
+									],
+									"path": [
+										"user",
+										"verification",
+										"password",
+										"xxxxxx--invalid-token--xxxxxx",
+										"{{verify_expire}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "verify & reset password (success)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "1015a05a-3660-45c4-9489-f7c6514a0efe",
+										"exec": [
+											"tests[\"Status code is 200\"] = responseCode.code === 200;",
+											"",
+											"var result = JSON.parse(responseBody);",
+											"",
+											"// password is changed! (2nd times)",
+											"postman.setEnvironmentVariable(\"password\", 'encryped-password');"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "clientuseragent",
+										"value": "{{md5_useragent_chrome_linux}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"newpass\": \"encryped-password\",\n\t\"confirmnewpass\": \"encryped-password\"\n}"
+								},
+								"url": {
+									"raw": "{{folk_localhost}}/user/verification/password/{{verify_token}}/{{verify_expire}}",
+									"host": [
+										"{{folk_localhost}}"
+									],
+									"path": [
+										"user",
+										"verification",
+										"password",
+										"{{verify_token}}",
+										"{{verify_expire}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "profile (self)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "a3071675-5f1f-460c-a3c4-fea741257ec7",
+										"exec": [
+											"tests[\"Status code is 200\"] = responseCode.code === 200;"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "clientuseragent",
+										"value": "{{md5_useragent_chrome_linux}}",
+										"type": "text"
+									},
+									{
+										"key": "token",
+										"value": "{{auth_token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{folk_localhost}}/user/{{uid}}/{{region}}/profile?visitorUid={{uid}}&visitorRegion={{region}}",
+									"host": [
+										"{{folk_localhost}}"
+									],
+									"path": [
+										"user",
+										"{{uid}}",
+										"{{region}}",
+										"profile"
+									],
+									"query": [
+										{
+											"key": "visitorUid",
+											"value": "{{uid}}"
+										},
+										{
+											"key": "visitorRegion",
+											"value": "{{region}}"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "user info",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "f9a914f8-abf1-47c3-802c-22e96bd22986",
+										"exec": [
+											"tests[\"Status code is 200\"] = responseCode.code === 200;",
+											"",
+											"var result = JSON.parse(responseBody);",
+											"postman.setEnvironmentVariable(\"profile_link\", result.data.profileLink);",
+											"postman.setEnvironmentVariable(\"profile_pic\", result.data.profilePic);",
+											"postman.setEnvironmentVariable(\"given_name\", result.data.givenName);",
+											"postman.setEnvironmentVariable(\"family_name\", result.data.familyName);",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "clientuseragent",
+										"value": "{{md5_useragent_chrome_linux}}",
+										"type": "text"
+									},
+									{
+										"key": "token",
+										"value": "{{auth_token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{folk_localhost}}/user/{{uid}}/{{region}}/setting/info?",
+									"host": [
+										"{{folk_localhost}}"
+									],
+									"path": [
+										"user",
+										"{{uid}}",
+										"{{region}}",
+										"setting",
+										"info"
+									],
+									"query": [
+										{
+											"key": "",
+											"value": "",
+											"disabled": true
+										},
+										{
+											"key": "",
+											"value": "",
+											"disabled": true
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "user info (notify friends, include cross-region issue)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "4f065565-3656-4cde-bb47-3e3c831e451d",
+										"exec": [
+											"tests[\"Status code is 200\"] = responseCode.code === 200;"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "clientuseragent",
+										"value": "{{md5_useragent_chrome_linux}}",
+										"type": "text"
+									},
+									{
+										"key": "token",
+										"value": "{{auth_token}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"beSearched\": false,\n    \"givenName\": \"Albert\",\n    \"familyName\": \"Chao\",\n    \"gender\": \"1\",\n    \"birth\": \"2013-12-12\",\n    \"lang\": \"en\"\n}"
+								},
+								"url": {
+									"raw": "{{folk_localhost}}/user/{{uid}}/{{region}}/setting/info?",
+									"host": [
+										"{{folk_localhost}}"
+									],
+									"path": [
+										"user",
+										"{{uid}}",
+										"{{region}}",
+										"setting",
+										"info"
+									],
+									"query": [
+										{
+											"key": "",
+											"value": "",
+											"disabled": true
+										},
+										{
+											"key": "",
+											"value": "",
+											"disabled": true
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "user contact",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "f9a914f8-abf1-47c3-802c-22e96bd22986",
+										"exec": [
+											"tests[\"Status code is 200\"] = responseCode.code === 200;",
+											"",
+											"var result = JSON.parse(responseBody);",
+											"postman.setEnvironmentVariable(\"profile_link\", result.data.profileLink);",
+											"postman.setEnvironmentVariable(\"profile_pic\", result.data.profilePic);",
+											"postman.setEnvironmentVariable(\"given_name\", result.data.givenName);",
+											"postman.setEnvironmentVariable(\"family_name\", result.data.familyName);",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"type": "text",
+										"value": "application/json"
+									},
+									{
+										"key": "clientuseragent",
+										"type": "text",
+										"value": "{{md5_useragent_chrome_linux}}"
+									},
+									{
+										"key": "token",
+										"type": "text",
+										"value": "{{auth_token}}"
+									}
+								],
+								"url": {
+									"raw": "{{folk_localhost}}/user/{{uid}}/{{region}}/setting/contact?",
+									"host": [
+										"{{folk_localhost}}"
+									],
+									"path": [
+										"user",
+										"{{uid}}",
+										"{{region}}",
+										"setting",
+										"contact"
+									],
+									"query": [
+										{
+											"key": "",
+											"value": "",
+											"disabled": true
+										},
+										{
+											"key": "",
+											"value": "",
+											"disabled": true
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "user contact",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "4f065565-3656-4cde-bb47-3e3c831e451d",
+										"exec": [
+											"tests[\"Status code is 200\"] = responseCode.code === 200;"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "clientuseragent",
+										"value": "{{md5_useragent_chrome_linux}}",
+										"type": "text"
+									},
+									{
+										"key": "token",
+										"value": "{{auth_token}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"alternateEmail\": \"rtyufjvbn@gmail.com\",\n    \"countryCode\": \"33\",\n    \"phone\": \"123456789\"\n}"
+								},
+								"url": {
+									"raw": "{{folk_localhost}}/user/{{uid}}/{{region}}/setting/contact?",
+									"host": [
+										"{{folk_localhost}}"
+									],
+									"path": [
+										"user",
+										"{{uid}}",
+										"{{region}}",
+										"setting",
+										"contact"
+									],
+									"query": [
+										{
+											"key": "",
+											"value": "",
+											"disabled": true
+										},
+										{
+											"key": "",
+											"value": "",
+											"disabled": true
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "reset password after logged in",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "4f127ff1-894d-4e50-8f35-9b60e971cc99",
+										"exec": [
+											"tests[\"Status code is 200\"] = responseCode.code === 200;",
+											"",
+											"var result = JSON.parse(responseBody);",
+											"",
+											"// password is changed! (3rd times)",
+											"postman.setEnvironmentVariable(\"password\", 'super-new-pass');"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/json"
+									},
+									{
+										"key": "clientuseragent",
+										"value": "{{md5_useragent_chrome_linux}}",
+										"type": "text"
+									},
+									{
+										"key": "token",
+										"value": "{{auth_token}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"password\": \"{{password}}\",\n\t\"newpass\": \"super-new-pass\",\n\t\"confirmnewpass\": \"super-new-pass\"\n}"
+								},
+								"url": {
+									"raw": "{{folk_localhost}}/user/{{uid}}/{{region}}/setting/password?",
+									"host": [
+										"{{folk_localhost}}"
+									],
+									"path": [
+										"user",
+										"{{uid}}",
+										"{{region}}",
+										"setting",
+										"password"
+									],
+									"query": [
+										{
+											"key": "",
+											"value": "",
+											"disabled": true
+										},
+										{
+											"key": "",
+											"value": "",
+											"disabled": true
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "signup - userB",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "dfd6d7a0-d966-4c09-a8b5-8fc47d4dfefb",
+										"exec": [
+											"tests[\"Status code is 201\"] = responseCode.code === 201;",
+											"",
+											"var result = JSON.parse(responseBody);",
+											"postman.setEnvironmentVariable(\"verify_token_B\", result.data['verify-token']);",
+											"postman.setEnvironmentVariable(\"verify_code_B\", result.data.code);",
+											"postman.setEnvironmentVariable(\"verify_reset_B\", result.data.reset);",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "3c8e1b19-937b-4426-9e54-4e6be2a18106",
+										"exec": [
+											"",
+											"postman.setEnvironmentVariable(\"region_B\", 'tw');",
+											"postman.setEnvironmentVariable(\"email_B\", 'alice.wang@general.com');",
+											"postman.setEnvironmentVariable(\"country_code_B\", '886');",
+											"postman.setEnvironmentVariable(\"phone_B\", '988566333');",
+											"postman.setEnvironmentVariable(\"given_name_B\", 'Alice');",
+											"postman.setEnvironmentVariable(\"family_name_B\", 'Wang');",
+											"postman.setEnvironmentVariable(\"gender_B\", '0');",
+											"postman.setEnvironmentVariable(\"birth_B\", '1988-08-08');",
+											"postman.setEnvironmentVariable(\"lang_B\", 'en');",
+											"postman.setEnvironmentVariable(\"newpass_B\", 'qwertyuiop');",
+											"postman.setEnvironmentVariable(\"confirmnewpass_B\", 'qwertyuiop');",
+											"postman.setEnvironmentVariable(\"password_B\", 'qwertyuiop');"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "clientuseragent",
+										"value": "{{md5_useragent_chrome_linux}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"region\": \"{{region_B}}\",\n\t\"email\": \"{{email_B}}\",\n\t\"countryCode\": \"{{country_code_B}}\",\n\t\"phone\": \"{{phone_B}}\",\n\t\"givenName\": \"{{given_name_B}}\",\n\t\"familyName\": \"{{family_name_B}}\",\n\t\"gender\": \"{{gender_B}}\",\n\t\"birth\": \"{{birth_B}}\",\n\t\"lang\": \"{{lang_B}}\",\n\t\"newpass\": \"{{newpass_B}}\",\n\t\"confirmnewpass\": \"{{confirmnewpass_B}}\"\n}"
+								},
+								"url": {
+									"raw": "{{folk_localhost}}/user/signup",
+									"host": [
+										"{{folk_localhost}}"
+									],
+									"path": [
+										"user",
+										"signup"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "new user verification (success) - userB",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "dfd6d7a0-d966-4c09-a8b5-8fc47d4dfefb",
+										"exec": [
+											"tests[\"Status code is 200\"] = responseCode.code === 200;",
+											"",
+											"var result = JSON.parse(responseBody);",
+											"postman.setEnvironmentVariable(\"uid_B\", result.data.userInfo.uid);",
+											"postman.setEnvironmentVariable(\"region_B\", result.data.userInfo.region);",
+											"postman.setEnvironmentVariable(\"profile_link_B\", \"{{folk_localhost}}/user/{{uid_B}}/{{region_B}}/profile\");",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "clientuseragent",
+										"value": "{{md5_useragent_chrome_linux}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"code\": \"{{verify_code_B}}\"\n}"
+								},
+								"url": {
+									"raw": "{{folk_localhost}}/user/newborn/code/{{verify_token_B}}",
+									"host": [
+										"{{folk_localhost}}"
+									],
+									"path": [
+										"user",
+										"newborn",
+										"code",
+										"{{verify_token_B}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "login - userB",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "c591d6c7-d972-4fae-97a9-6a5aa3c522bb",
+										"exec": [
+											"tests[\"Status code is 201\"] = responseCode.code === 201;",
+											"",
+											"var result = JSON.parse(responseBody);",
+											"postman.setEnvironmentVariable(\"uid_B\", result.data.userInfo.uid);",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "clientuseragent",
+										"value": "{{md5_useragent_chrome_linux}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"email\": \"{{email_B}}\",\n\t\"password\": \"{{password_B}}\"\n}"
+								},
+								"url": {
+									"raw": "{{folk_localhost}}/user/login?friendLimit=8&friendSkip=0",
+									"host": [
+										"{{folk_localhost}}"
+									],
+									"path": [
+										"user",
+										"login"
+									],
+									"query": [
+										{
+											"key": "friendLimit",
+											"value": "8"
+										},
+										{
+											"key": "friendSkip",
+											"value": "0"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "83f24e0f-b316-42a1-a1fa-c9f1eb9babea",
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "e7d19173-e098-4b68-bc66-13302f59bd91",
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "circle",
+					"item": [
+						{
+							"name": "cross regions",
+							"item": [],
+							"protocolProfileBehavior": {},
+							"_postman_isSubFolder": true
+						},
+						{
+							"name": "send friend invitation",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "4f127ff1-894d-4e50-8f35-9b60e971cc99",
+										"exec": [
+											"tests[\"Status code is 201\"] = responseCode.code === 201;",
+											"",
+											"var result = JSON.parse(responseBody);",
+											"postman.setEnvironmentVariable(\"iid\", result.data.header.iid);",
+											"",
+											"postman.setEnvironmentVariable(\"inviter_region\", result.data.inviter.region);",
+											"postman.setEnvironmentVariable(\"inviter_uid\", result.data.inviter.uid);",
+											"postman.setEnvironmentVariable(\"inviter_given_name\", result.data.inviter.givenName);",
+											"postman.setEnvironmentVariable(\"inviter_family_name\", result.data.inviter.familyName);",
+											"postman.setEnvironmentVariable(\"inviter_profile_link\", result.data.inviter.profileLink);",
+											"postman.setEnvironmentVariable(\"inviter_profile_pic\", result.data.inviter.profilePic);",
+											"",
+											"postman.setEnvironmentVariable(\"recipient_region\", result.data.recipient.region);",
+											"postman.setEnvironmentVariable(\"recipient_uid\", result.data.recipient.uid);",
+											"postman.setEnvironmentVariable(\"recipient_given_name\", result.data.recipient.givenName);",
+											"postman.setEnvironmentVariable(\"recipient_family_name\", result.data.recipient.familyName);",
+											"postman.setEnvironmentVariable(\"recipient_profile_link\", result.data.recipient.profileLink);",
+											"postman.setEnvironmentVariable(\"recipient_profile_pic\", result.data.recipient.profilePic);",
+											"",
+											"",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/json"
+									},
+									{
+										"key": "clientuseragent",
+										"type": "text",
+										"value": "{{md5_useragent_chrome_linux}}"
+									},
+									{
+										"key": "token",
+										"type": "text",
+										"value": "{{auth_token}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"inviter\":{\n\t\t\"uid\": \"{{uid}}\",\n\t\t\"region\": \"{{region}}\",\n\t\t\"givenName\": \"{{given_name}}\",\n\t\t\"familyName\":\"{{family_name}}\",\n\t\t\"profileLink\": \"{{profile_link}}\",\n\t\t\"profilePic\": \"{{profile_pic}}\"\n\t},\n\t\"recipient\": {\n\t\t\"uid\": \"{{uid_B}}\",\n\t\t\"region\": \"{{region_B}}\",\n\t\t\"givenName\": \"{{given_name_B}}\",\n\t\t\"familyName\":\"{{family_name_B}}\",\n\t\t\"profileLink\": \"{{profile_link_B}}\",\n\t\t\"profilePic\": \"{{profile_pic_B}}\"\n\t}\n}"
+								},
+								"url": {
+									"raw": "{{folk_localhost}}/circle/{{uid}}/{{region}}/invite?",
+									"host": [
+										"{{folk_localhost}}"
+									],
+									"path": [
+										"circle",
+										"{{uid}}",
+										"{{region}}",
+										"invite"
+									],
+									"query": [
+										{
+											"key": "",
+											"value": "",
+											"disabled": true
+										},
+										{
+											"key": "",
+											"value": "",
+											"disabled": true
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "profile (A visits B)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "a3071675-5f1f-460c-a3c4-fea741257ec7",
+										"exec": [
+											"tests[\"Status code is 200\"] = responseCode.code === 200;",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "clientuseragent",
+										"value": "{{md5_useragent_chrome_linux}}",
+										"type": "text"
+									},
+									{
+										"key": "token",
+										"value": "{{auth_token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{folk_localhost}}/user/{{uid_B}}/{{region_B}}/profile?visitorUid={{uid}}&visitorRegion={{region}}",
+									"host": [
+										"{{folk_localhost}}"
+									],
+									"path": [
+										"user",
+										"{{uid_B}}",
+										"{{region_B}}",
+										"profile"
+									],
+									"query": [
+										{
+											"key": "visitorUid",
+											"value": "{{uid}}"
+										},
+										{
+											"key": "visitorRegion",
+											"value": "{{region}}"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "profile (B visits A)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "a3071675-5f1f-460c-a3c4-fea741257ec7",
+										"exec": [
+											"tests[\"Status code is 200\"] = responseCode.code === 200;"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "clientuseragent",
+										"value": "{{md5_useragent_chrome_linux}}",
+										"type": "text"
+									},
+									{
+										"key": "token",
+										"value": "{{auth_token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{folk_localhost}}/user/{{uid}}/{{region}}/profile?visitorUid={{uid_B}}&visitorRegion={{region_B}}",
+									"host": [
+										"{{folk_localhost}}"
+									],
+									"path": [
+										"user",
+										"{{uid}}",
+										"{{region}}",
+										"profile"
+									],
+									"query": [
+										{
+											"key": "visitorUid",
+											"value": "{{uid_B}}"
+										},
+										{
+											"key": "visitorRegion",
+											"value": "{{region_B}}"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "invitation with iid & region",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "4f127ff1-894d-4e50-8f35-9b60e971cc99",
+										"exec": [
+											"tests[\"Status code is 200\"] = responseCode.code === 200;"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/json"
+									},
+									{
+										"key": "clientuseragent",
+										"value": "{{md5_useragent_chrome_linux}}",
+										"type": "text"
+									},
+									{
+										"key": "token",
+										"type": "text",
+										"value": "{{auth_token}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{folk_localhost}}/circle/{{uid}}/{{region}}/invite?iid={{iid}}",
+									"host": [
+										"{{folk_localhost}}"
+									],
+									"path": [
+										"circle",
+										"{{uid}}",
+										"{{region}}",
+										"invite"
+									],
+									"query": [
+										{
+											"key": "iid",
+											"value": "{{iid}}"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "received invitation list",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "4f127ff1-894d-4e50-8f35-9b60e971cc99",
+										"exec": [
+											"tests[\"Status code is 200\"] = responseCode.code === 200;"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/json"
+									},
+									{
+										"key": "clientuseragent",
+										"value": "{{md5_useragent_chrome_linux}}",
+										"type": "text"
+									},
+									{
+										"key": "token",
+										"type": "text",
+										"value": "{{auth_token}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{folk_localhost}}/circle/{{uid_B}}/{{region_B}}/invite/list/received?limit=10&skip=0",
+									"host": [
+										"{{folk_localhost}}"
+									],
+									"path": [
+										"circle",
+										"{{uid_B}}",
+										"{{region_B}}",
+										"invite",
+										"list",
+										"received"
+									],
+									"query": [
+										{
+											"key": "limit",
+											"value": "10"
+										},
+										{
+											"key": "skip",
+											"value": "0"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "sent invitation list",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "4f127ff1-894d-4e50-8f35-9b60e971cc99",
+										"exec": [
+											"tests[\"Status code is 200\"] = responseCode.code === 200;"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/json"
+									},
+									{
+										"key": "clientuseragent",
+										"value": "{{md5_useragent_chrome_linux}}",
+										"type": "text"
+									},
+									{
+										"key": "token",
+										"type": "text",
+										"value": "{{auth_token}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{folk_localhost}}/circle/{{uid}}/{{region}}/invite/list/sent?limit=10&skip=0",
+									"host": [
+										"{{folk_localhost}}"
+									],
+									"path": [
+										"circle",
+										"{{uid}}",
+										"{{region}}",
+										"invite",
+										"list",
+										"sent"
+									],
+									"query": [
+										{
+											"key": "limit",
+											"value": "10"
+										},
+										{
+											"key": "skip",
+											"value": "0"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "reply friend invitation",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "4f127ff1-894d-4e50-8f35-9b60e971cc99",
+										"exec": [
+											"tests[\"Status code is 200\"] = responseCode.code === 200;"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/json"
+									},
+									{
+										"key": "clientuseragent",
+										"value": "{{md5_useragent_chrome_linux}}",
+										"type": "text"
+									},
+									{
+										"key": "token",
+										"type": "text",
+										"value": "{{auth_token}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"header\": {\n\t\t\"inviteEvent\": \"invite_event_friend_reply\",\n\t\t\"data\": {\n\t\t\t\"options\": [true, false],\n\t\t\t\"reply\": true\n\t\t},\n\t\t\"iid\": \"{{iid}}\"\n\t},\n\t\"inviter\": {\n        \"region\": \"{{inviter_region}}\",\n        \"uid\": \"{{inviter_uid}}\",\n        \"profileLink\": \"{{inviter_profile_link}}\",\n        \"profilePic\": \"{{inviter_profile_pic}}\",\n        \"givenName\": \"{{inviter_given_name}}\",\n        \"familyName\": \"{{inviter_family_name}}\"\n    },\n    \"recipient\": {\n    \t\"region\": \"{{recipient_region}}\",\n        \"uid\": \"{{recipient_uid}}\",\n        \"profileLink\": \"{{recipient_profile_link}}\",\n        \"profilePic\": \"{{recipient_profile_pic}}\",\n        \"givenName\": \"{{recipient_given_name}}\",\n        \"familyName\": \"{{recipient_family_name}}\"\n    }\n}"
+								},
+								"url": {
+									"raw": "{{folk_localhost}}/circle/{{uid_B}}/{{region_B}}/invite?",
+									"host": [
+										"{{folk_localhost}}"
+									],
+									"path": [
+										"circle",
+										"{{uid_B}}",
+										"{{region_B}}",
+										"invite"
+									],
+									"query": [
+										{
+											"key": "",
+											"value": "",
+											"disabled": true
+										},
+										{
+											"key": "",
+											"value": "",
+											"disabled": true
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "friend list",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "4f127ff1-894d-4e50-8f35-9b60e971cc99",
+										"exec": [
+											"tests[\"Status code is 200\"] = responseCode.code === 200;",
+											"",
+											"var result = JSON.parse(responseBody)",
+											"tests[\"userA has a friend\"] = result.data.length === 1;",
+											"// tests[\"the friend is userB\"] = result.data[0].uid === postman.getEnvironmentVariable(\"uid_B\");"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/json"
+									},
+									{
+										"key": "clientuseragent",
+										"value": "{{md5_useragent_chrome_linux}}",
+										"type": "text"
+									},
+									{
+										"key": "token",
+										"type": "text",
+										"value": "{{auth_token}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{folk_localhost}}/circle/{{uid}}/{{region}}/friend/list?limit=15&skip=0",
+									"host": [
+										"{{folk_localhost}}"
+									],
+									"path": [
+										"circle",
+										"{{uid}}",
+										"{{region}}",
+										"friend",
+										"list"
+									],
+									"query": [
+										{
+											"key": "limit",
+											"value": "15"
+										},
+										{
+											"key": "skip",
+											"value": "0"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "friend list - userB",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "4f127ff1-894d-4e50-8f35-9b60e971cc99",
+										"exec": [
+											"tests[\"Status code is 200\"] = responseCode.code === 200;",
+											"",
+											"var result = JSON.parse(responseBody)",
+											"tests[\"userB has a friend\"] = result.data.length === 1;",
+											"// tests[\"the friend is userA\"] = result.data[0].uid === postman.getEnvironmentVariable(\"uid\");"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/json"
+									},
+									{
+										"key": "clientuseragent",
+										"type": "text",
+										"value": "{{md5_useragent_chrome_linux}}"
+									},
+									{
+										"key": "token",
+										"type": "text",
+										"value": "{{auth_token}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{folk_localhost}}/circle/{{uid_B}}/{{region_B}}/friend/list?limit=15&skip=0",
+									"host": [
+										"{{folk_localhost}}"
+									],
+									"path": [
+										"circle",
+										"{{uid_B}}",
+										"{{region_B}}",
+										"friend",
+										"list"
+									],
+									"query": [
+										{
+											"key": "limit",
+											"value": "15"
+										},
+										{
+											"key": "skip",
+											"value": "0"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "a friend",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "4f127ff1-894d-4e50-8f35-9b60e971cc99",
+										"exec": [
+											"tests[\"Status code is 200\"] = responseCode.code === 200;"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/json"
+									},
+									{
+										"key": "clientuseragent",
+										"value": "{{md5_useragent_chrome_linux}}",
+										"type": "text"
+									},
+									{
+										"key": "token",
+										"type": "text",
+										"value": "{{auth_token}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{folk_localhost}}/circle/{{uid}}/{{region}}/friend?targetUid={{uid_B}}&targetRegion={{region_B}}",
+									"host": [
+										"{{folk_localhost}}"
+									],
+									"path": [
+										"circle",
+										"{{uid}}",
+										"{{region}}",
+										"friend"
+									],
+									"query": [
+										{
+											"key": "targetUid",
+											"value": "{{uid_B}}"
+										},
+										{
+											"key": "targetRegion",
+											"value": "{{region_B}}"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "a friend - userB",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "4f127ff1-894d-4e50-8f35-9b60e971cc99",
+										"exec": [
+											"tests[\"Status code is 200\"] = responseCode.code === 200;"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/json"
+									},
+									{
+										"key": "clientuseragent",
+										"type": "text",
+										"value": "{{md5_useragent_chrome_linux}}"
+									},
+									{
+										"key": "token",
+										"type": "text",
+										"value": "{{auth_token}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{folk_localhost}}/circle/{{uid_B}}/{{region_B}}/friend?targetUid={{uid}}&targetRegion={{region}}",
+									"host": [
+										"{{folk_localhost}}"
+									],
+									"path": [
+										"circle",
+										"{{uid_B}}",
+										"{{region_B}}",
+										"friend"
+									],
+									"query": [
+										{
+											"key": "targetUid",
+											"value": "{{uid}}"
+										},
+										{
+											"key": "targetRegion",
+											"value": "{{region}}"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "a friend",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "4f127ff1-894d-4e50-8f35-9b60e971cc99",
+										"exec": [
+											"tests[\"Status code is 200\"] = responseCode.code === 200;"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "6df024fd-55fa-4081-bd89-0522092e40ce",
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/json"
+									},
+									{
+										"key": "clientuseragent",
+										"value": "{{md5_useragent_chrome_linux}}",
+										"type": "text"
+									},
+									{
+										"key": "token",
+										"type": "text",
+										"value": "{{auth_token}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{folk_localhost}}/circle/{{uid}}/{{region}}/friend?targetUid={{uid_B}}&targetRegion={{region_B}}",
+									"host": [
+										"{{folk_localhost}}"
+									],
+									"path": [
+										"circle",
+										"{{uid}}",
+										"{{region}}",
+										"friend"
+									],
+									"query": [
+										{
+											"key": "targetUid",
+											"value": "{{uid_B}}"
+										},
+										{
+											"key": "targetRegion",
+											"value": "{{region_B}}"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "friend list (no friend)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "4f127ff1-894d-4e50-8f35-9b60e971cc99",
+										"exec": [
+											"tests[\"Status code is 200\"] = responseCode.code === 200;",
+											"",
+											"var result = JSON.parse(responseBody)",
+											"tests[\"userA has a friend\"] = result.data.length === 0;"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/json"
+									},
+									{
+										"key": "clientuseragent",
+										"value": "{{md5_useragent_chrome_linux}}",
+										"type": "text"
+									},
+									{
+										"key": "token",
+										"type": "text",
+										"value": "{{auth_token}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{folk_localhost}}/circle/{{uid}}/{{region}}/friend/list?limit=15&skip=0",
+									"host": [
+										"{{folk_localhost}}"
+									],
+									"path": [
+										"circle",
+										"{{uid}}",
+										"{{region}}",
+										"friend",
+										"list"
+									],
+									"query": [
+										{
+											"key": "limit",
+											"value": "15"
+										},
+										{
+											"key": "skip",
+											"value": "0"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "friend list (no friend) - userB",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "4f127ff1-894d-4e50-8f35-9b60e971cc99",
+										"exec": [
+											"tests[\"Status code is 200\"] = responseCode.code === 200;",
+											"",
+											"var result = JSON.parse(responseBody)",
+											"tests[\"userB has a friend\"] = result.data.length === 0;"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/json"
+									},
+									{
+										"key": "clientuseragent",
+										"type": "text",
+										"value": "{{md5_useragent_chrome_linux}}"
+									},
+									{
+										"key": "token",
+										"type": "text",
+										"value": "{{auth_token}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{folk_localhost}}/circle/{{uid_B}}/{{region_B}}/friend/list?limit=15&skip=0",
+									"host": [
+										"{{folk_localhost}}"
+									],
+									"path": [
+										"circle",
+										"{{uid_B}}",
+										"{{region_B}}",
+										"friend",
+										"list"
+									],
+									"query": [
+										{
+											"key": "limit",
+											"value": "15"
+										},
+										{
+											"key": "skip",
+											"value": "0"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "mock-services",
+			"item": [
+				{
+					"name": "discover strangers (for temporary, 之後會用 Elasticsearch 取代, folk-service 不會有這API)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "4f127ff1-894d-4e50-8f35-9b60e971cc99",
+								"exec": [
+									"tests[\"Status code is 200\"] = responseCode.code === 200;"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "token",
+								"type": "text",
+								"value": "{{auth_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{folk_localhost}}/simulate/{{uid}}/{{region}}/discover/people?keyword=e",
+							"host": [
+								"{{folk_localhost}}"
+							],
+							"path": [
+								"simulate",
+								"{{uid}}",
+								"{{region}}",
+								"discover",
+								"people"
+							],
+							"query": [
+								{
+									"key": "keyword",
+									"value": "e"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "generate fake accountt (for temporary, will be removed)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "4f127ff1-894d-4e50-8f35-9b60e971cc99",
+								"exec": [
+									"tests[\"Status code is 201\"] = responseCode.code === 201;"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "",
+								"type": "text",
+								"value": "",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\n}"
+						},
+						"url": {
+							"raw": "{{folk_localhost}}/simulate/generate_fake_accounts?amount=20",
+							"host": [
+								"{{folk_localhost}}"
+							],
+							"path": [
+								"simulate",
+								"generate_fake_accounts"
+							],
+							"query": [
+								{
+									"key": "amount",
+									"value": "20"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "notification-api",
+			"item": [
+				{
+					"name": "check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{notify_localhost}}",
+							"host": [
+								"{{notify_localhost}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "check Copy",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{notify_localhost}}",
+							"host": [
+								"{{notify_localhost}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "notify",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"category\": \"personal\",\n  \"channels\": [\"email\", \"sms\", \"web-push\"],\n  \"sender\": {\n      \"uid\": \"{{uid}}\",\n      \"region\": \"{{region}}\"\n  },\n  \"receivers\": [\n    {\n      \"uid\": \"{{uid}}\",\n      \"region\": \"{{region}}\"\n    }\n  ],\n  \"packet\": {\n    \"event\": \"account_event_validate_account\",\n    \"content\": {\n      \"A\": \"apple\"\n    }\n  }\n}"
+						},
+						"url": {
+							"raw": "{{notify_localhost}}/notify",
+							"host": [
+								"{{notify_localhost}}"
+							],
+							"path": [
+								"notify"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		}
+	],
+	"protocolProfileBehavior": {}
+}

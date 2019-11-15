@@ -1,0 +1,339 @@
+{
+	"id": "d59dce4d-efd0-cf33-6234-b65dd3090ba5",
+	"name": "fakebook group",
+	"values": [
+		{
+			"key": "uid_B",
+			"value": "c32f7185-31aa-40c3-b0a2-d0b68b35c783",
+			"enabled": false
+		},
+		{
+			"key": "msg_localhost",
+			"value": "http://localhost:8082/message-service/api/v1",
+			"enabled": true
+		},
+		{
+			"key": "msg_server_url",
+			"value": "http://192.168.99.100:8082/message-service/api/v1",
+			"enabled": true
+		},
+		{
+			"key": "msg_localhost2",
+			"value": "http://localhost:3004/message-service/api/v1",
+			"enabled": true
+		},
+		{
+			"key": "folk_localhost",
+			"value": "http://localhost:3000/folk-service/api/v1",
+			"enabled": true
+		},
+		{
+			"key": "verify_token",
+			"value": "laierhgslierghULIHAsadaeri",
+			"enabled": true
+		},
+		{
+			"key": "verify_code",
+			"value": "123456",
+			"enabled": true
+		},
+		{
+			"key": "verify_expire",
+			"value": "1573795422836",
+			"enabled": true
+		},
+		{
+			"key": "uid",
+			"value": "b3668fd8-1841-4fbb-912a-bfa2f8f47b6a",
+			"enabled": true
+		},
+		{
+			"key": "uid_C",
+			"value": "6d23430a-ccef-47b7-b1eb-2cf70e6bd9ca",
+			"enabled": true
+		},
+		{
+			"key": "region",
+			"value": "tw",
+			"enabled": true
+		},
+		{
+			"key": "region_B",
+			"value": "tw",
+			"enabled": true
+		},
+		{
+			"key": "region_C",
+			"value": "jp",
+			"enabled": true
+		},
+		{
+			"key": "auth_token",
+			"value": "cdrty6uijkmnbvcdxcvbnmnbvfghyuiuy656789oikjhgfh",
+			"enabled": true
+		},
+		{
+			"key": "useragent_firefox_linux",
+			"value": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:68.0) Gecko/20100101 Firefox/68.0",
+			"enabled": true
+		},
+		{
+			"key": "md5_useragent_firefox_linux",
+			"value": "93b67eed25d76ba723198a7f8c9ffd39",
+			"enabled": true
+		},
+		{
+			"key": "useragent_chrome_linux",
+			"value": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36",
+			"enabled": true
+		},
+		{
+			"key": "md5_useragent_chrome_linux",
+			"value": "a2ca6c3e6f29cbd7bb4a3f5a2f1d034f",
+			"enabled": true
+		},
+		{
+			"key": "notify_localhost",
+			"value": "http://localhost:9000/notification-service/api/v1",
+			"enabled": true
+		},
+		{
+			"key": "inviter_uid",
+			"value": "cf4b4285-4d2b-476c-8d1a-51f516b7b694",
+			"enabled": true
+		},
+		{
+			"key": "inviter_region",
+			"value": "tw",
+			"enabled": true
+		},
+		{
+			"key": "inviter_given_name",
+			"value": "Albert",
+			"enabled": true
+		},
+		{
+			"key": "inviter_family_name",
+			"value": "Chao",
+			"enabled": true
+		},
+		{
+			"key": "inviter_profile_link",
+			"value": "http://localhost:3000/folk-service/api/v1//user/2bd764d4-8c66-4af9-891d-8683bcc21788/tw/profile",
+			"enabled": true
+		},
+		{
+			"key": "inviter_profile_pic",
+			"value": "404-notfound/user/2bd764d4-8c66-4af9-891d-8683bcc21788/tw/profile/pic/0",
+			"enabled": true
+		},
+		{
+			"key": "recipient_family_name",
+			"value": "Wang",
+			"enabled": true
+		},
+		{
+			"key": "recipient_given_name",
+			"value": "Alice",
+			"enabled": true
+		},
+		{
+			"key": "recipient_profile_link",
+			"value": "http://localhost:3000/folk-service/api/v1/user/a40962cd-f255-496e-879f-2fde13b4d792/tw/profile",
+			"enabled": true
+		},
+		{
+			"key": "recipient_profile_pic",
+			"value": "{{profile_pic_B}}",
+			"enabled": true
+		},
+		{
+			"key": "family_name",
+			"value": "Chao",
+			"enabled": true
+		},
+		{
+			"key": "given_name",
+			"value": "Terrence",
+			"enabled": true
+		},
+		{
+			"key": "profile_link",
+			"value": "{{folk_localhost}}/user/{{uid}}/{{region}}/profile",
+			"enabled": true
+		},
+		{
+			"key": "profile_pic",
+			"value": "404-notfound/user/2bd764d4-8c66-4af9-891d-8683bcc21788/tw/profile/pic/0",
+			"enabled": true
+		},
+		{
+			"key": "birth",
+			"value": "1984-06-08",
+			"enabled": true
+		},
+		{
+			"key": "confirmnewpass",
+			"value": "abcdefghijkl12345",
+			"enabled": true
+		},
+		{
+			"key": "countryCode",
+			"value": "886",
+			"enabled": true
+		},
+		{
+			"key": "email",
+			"value": "rfvbnju@hotmail.com",
+			"enabled": true
+		},
+		{
+			"key": "familyName",
+			"value": "Chao",
+			"enabled": true
+		},
+		{
+			"key": "gender",
+			"value": "1",
+			"enabled": true
+		},
+		{
+			"key": "givenName",
+			"value": "Terrence",
+			"enabled": true
+		},
+		{
+			"key": "lang",
+			"value": "en",
+			"enabled": true
+		},
+		{
+			"key": "newpass",
+			"value": "abcdefghijkl12345",
+			"enabled": true
+		},
+		{
+			"key": "phone",
+			"value": "987654321",
+			"enabled": true
+		},
+		{
+			"key": "password",
+			"value": "abcdefghijkl12345",
+			"enabled": true
+		},
+		{
+			"key": "country_code",
+			"value": "886",
+			"enabled": true
+		},
+		{
+			"key": "birth_B",
+			"value": "1988-08-08",
+			"enabled": true
+		},
+		{
+			"key": "confirmnewpass_B",
+			"value": "qwertyuiop",
+			"enabled": true
+		},
+		{
+			"key": "country_code_B",
+			"value": "886",
+			"enabled": true
+		},
+		{
+			"key": "email_B",
+			"value": "alice.wang@general.com",
+			"enabled": true
+		},
+		{
+			"key": "family_name_B",
+			"value": "Wang",
+			"enabled": true
+		},
+		{
+			"key": "gender_B",
+			"value": "0",
+			"enabled": true
+		},
+		{
+			"key": "given_name_B",
+			"value": "Alice",
+			"enabled": true
+		},
+		{
+			"key": "lang_B",
+			"value": "en",
+			"enabled": true
+		},
+		{
+			"key": "newpass_B",
+			"value": "qwertyuiop",
+			"enabled": true
+		},
+		{
+			"key": "password_B",
+			"value": "qwertyuiop",
+			"enabled": true
+		},
+		{
+			"key": "phone_B",
+			"value": "988566333",
+			"enabled": true
+		},
+		{
+			"key": "uid_B",
+			"value": "a40962cd-f255-496e-879f-2fde13b4d792",
+			"enabled": true
+		},
+		{
+			"key": "verify_code_B",
+			"value": "123456",
+			"enabled": true
+		},
+		{
+			"key": "verify_reset_B",
+			"value": "1573575683990",
+			"enabled": true
+		},
+		{
+			"key": "verify_token_B",
+			"value": "laierhgslierghULIHAsadaeri",
+			"enabled": true
+		},
+		{
+			"key": "profile_link_B",
+			"value": "{{folk_localhost}}/user/{{uid_B}}/{{region_B}}/profile",
+			"enabled": true
+		},
+		{
+			"key": "iid",
+			"value": "e77b0040-8e4c-4ef4-8400-2ce5b917e4b1",
+			"enabled": true
+		},
+		{
+			"key": "recipient_region",
+			"value": "tw",
+			"enabled": true
+		},
+		{
+			"key": "recipient_uid",
+			"value": "a40962cd-f255-496e-879f-2fde13b4d792",
+			"enabled": true
+		},
+		{
+			"key": "full_name",
+			"value": null,
+			"enabled": true
+		},
+		{
+			"key": "verify_reset",
+			"value": null,
+			"enabled": true
+		}
+	],
+	"_postman_variable_scope": "environment",
+	"_postman_exported_at": "2019-11-15T05:41:38.054Z",
+	"_postman_exported_using": "Postman/7.11.0"
+}
