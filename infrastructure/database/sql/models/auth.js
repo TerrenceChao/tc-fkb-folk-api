@@ -3,7 +3,6 @@ module.exports = (sequelize, DataTypes) => {
   const Auth = sequelize.define('Auth', {
     pwSalt: DataTypes.STRING,
     pwHash: DataTypes.STRING,
-    verification: DataTypes.JSONB,
     verifyToken: DataTypes.STRING,
     verifyCode: DataTypes.STRING,
     verifyExpire: DataTypes.BIGINT,

@@ -31,10 +31,6 @@ module.exports = {
         field: 'pw_salt',
         type: Sequelize.STRING
       },
-      verification: {
-        type: Sequelize.JSONB
-        // index: true
-      },
       verifyToken: {
         field: 'verify_token',
         type: Sequelize.STRING
@@ -78,15 +74,15 @@ module.exports = {
       }
     })
 
-    await queryInterface.addIndex(
-      'Auths',
-      ['verification'],
-      {
-        using: 'gin',
-        operator: 'jsonb_path_ops',
-        name: 'auths_verification_idx'
-      }
-    )
+    // await queryInterface.addIndex(  // deprecated at 2019/11/15
+    //   'Auths',
+    //   ['verification'],
+    //   {
+    //     using: 'gin',
+    //     operator: 'jsonb_path_ops',
+    //     name: 'auths_verification_idx'
+    //   }
+    // )
 
     // await queryInterface.addIndex(
     //   'Auths',
@@ -121,7 +117,8 @@ module.exports = {
     // queryInterface.removeIndex('auths_verification_reset_idx')
     // queryInterface.removeIndex('auths_verification_code_idx')
     // queryInterface.removeIndex('auths_verification_token_idx')
-    queryInterface.removeIndex('auths_verification_idx')
+
+    // queryInterface.removeIndex('auths_verification_idx') // deprecated at 2019/11/15
 
     return queryInterface.dropTable('Auths')
   }
