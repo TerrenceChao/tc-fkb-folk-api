@@ -27,7 +27,7 @@ const AUTH_FIELDS = [
   ['attempt', 'au.attempt'],
   ['token', 'au.verify_token'],
   ['code', 'au.verify_code'],
-  ['expired', 'au.verify_expired']
+  ['expire', 'au.verify_expire']
 ]
 
 const USER_FIELDS = [
@@ -354,7 +354,7 @@ AuthRepository.prototype.resetPassword = async function (account, newPassword, o
  * 尋找或建立驗證資訊。並回傳 "Accounts", "Auths" 的資訊
  * @param {string} type
  * @param {{ email: string}|{ countryCode: string, phone: string}} account
- * @param {{ token: string, code: string, reset: number|null }} verification
+ * @param {{ token: string, code: string, expire: number|null }} verification
  */
 AuthRepository.prototype.findOrCreateVerification = async function (type, account, verification) {
   const withCondition = {
@@ -380,7 +380,7 @@ AuthRepository.prototype.findOrCreateVerification = async function (type, accoun
       SELECT
         au.verify_token,
         au.verify_code,
-        au.verify_expired
+        au.verify_expire
       FROM "Auths" AS au
       JOIN "Accounts" AS a ON au.user_id = a.id
       WHERE
@@ -390,21 +390,21 @@ AuthRepository.prototype.findOrCreateVerification = async function (type, accoun
     UPDATE "Auths" AS au
     SET
       verify_token = (CASE
-        WHEN verify_expired::bigint < ${Date.now()}::bigint OR au.verify_token IS null
+        WHEN verify_expire::bigint < ${Date.now()}::bigint OR au.verify_token IS null
         THEN '${verification.token}'::varchar
         ELSE (SELECT verify_token FROM account_auth)::varchar
         END),
 
       verify_code = (CASE
-        WHEN verify_expired::bigint < ${Date.now()}::bigint OR au.verify_token IS null
+        WHEN verify_expire::bigint < ${Date.now()}::bigint OR au.verify_token IS null
         THEN '${verification.code}'::varchar
         ELSE (SELECT verify_code FROM account_auth)::varchar
         END),
 
-      verify_expired = (CASE
-        WHEN verify_expired::bigint < ${Date.now()}::bigint OR au.verify_token IS null
-        THEN ${verification.reset}::bigint
-        ELSE (SELECT verify_expired FROM account_auth)::bigint
+      verify_expire = (CASE
+        WHEN verify_expire::bigint < ${Date.now()}::bigint OR au.verify_token IS null
+        THEN ${verification.expire}::bigint
+        ELSE (SELECT verify_expire FROM account_auth)::bigint
         END)
 
     FROM "Accounts" AS a
@@ -413,7 +413,7 @@ AuthRepository.prototype.findOrCreateVerification = async function (type, accoun
       au.user_id = a.id
     RETURNING
       user_id AS uid, a.region, ${returnedFields[type]},
-      au.verify_token AS token, au.verify_code AS code, au.verify_expired AS reset;
+      au.verify_token AS token, au.verify_code AS code, au.verify_expire AS expire;
     `,
     params[type],
     0)
@@ -433,7 +433,7 @@ AuthRepository.prototype.getVerifyUserByCode = async function (token, code, sele
   return this.query(
     `
     SELECT
-      ${selectedFields}, a.id AS uid, a.region, au.verify_token AS token, au.verify_code AS code, au.verify_expired AS reset
+      ${selectedFields}, a.id AS uid, a.region, au.verify_token AS token, au.verify_code AS code, au.verify_expire AS expire
     FROM "Accounts" AS a
     JOIN "Users" AS u ON a.id = u.user_id
     JOIN "Auths" AS au ON a.id = au.user_id
@@ -452,10 +452,10 @@ AuthRepository.prototype.getVerifyUserByCode = async function (token, code, sele
  * TODO: 若要在 "Accounts", "Auths", "Users" 找尋同一用戶的多個欄位資料，
  * [selectedFields在AuthRepository僅能選擇"Accounts","Auths"，若加上"Users"在這次查詢的成本太高]，需要用另一次的 query 查詢
  * @param {string} token
- * @param {number} reset
+ * @param {number} expire
  * @param {string[]|null} selectedFields
  */
-AuthRepository.prototype.getVerifyUserWithoutExpired = async function (token, reset, selectedFields = null) {
+AuthRepository.prototype.getVerifyUserWithoutExpired = async function (token, expire, selectedFields = null) {
   let idx = 1
   selectedFields = parseSelectFields(selectedFields)
 
@@ -463,16 +463,16 @@ AuthRepository.prototype.getVerifyUserWithoutExpired = async function (token, re
     `
     SELECT
       ${selectedFields}, a.id AS uid, a.region,
-      au.verify_token AS token, au.verify_code AS code, au.verify_expired AS reset
+      au.verify_token AS token, au.verify_code AS code, au.verify_expire AS expire
     FROM "Accounts" AS a
     JOIN "Users" AS u ON a.id = u.user_id
     JOIN "Auths" AS au ON a.id = au.user_id
     WHERE
-      au.verify_expired = $${idx++}::bigint AND
+      au.verify_expire = $${idx++}::bigint AND
       au.verify_token = $${idx++}::varchar
     `,
     [
-      reset,
+      expire,
       token
     ],
     0)
@@ -494,7 +494,7 @@ AuthRepository.prototype.deleteVerification = async function (account, selectedF
     SET
       verify_token = null,
       verify_code = null,
-      verify_expired = null
+      verify_expire = null
     FROM "Accounts" AS a
     WHERE
       a.id = $${idx++}::uuid AND
@@ -502,7 +502,7 @@ AuthRepository.prototype.deleteVerification = async function (account, selectedF
       au.user_id = a.id
     RETURNING 
       ${selectedFields}, user_id AS uid, a.region,
-      verify_token AS token, verify_code AS code, verify_expired AS reset;
+      verify_token AS token, verify_code AS code, verify_expire AS expire;
     `,
     [
       account.uid,

@@ -1,6 +1,6 @@
 function genVerifyEmailFormat (verifyInfo) {
   const content = verifyInfo.content
-  Array.apply(null, ['reset', 'code', 'verify-token'].forEach(field => {
+  Array.apply(null, ['expire', 'code', 'verify-token'].forEach(field => {
     content[field] = verifyInfo[field]
   }))
 

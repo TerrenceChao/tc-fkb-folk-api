@@ -92,7 +92,7 @@ function genRegistrationInfo (req, verification) {
 
   const secret = {
     code: verification.code,
-    reset: verification.reset
+    expire: verification.expire
   }
 
   return NODE_ENV === 'development' ? _.assign(info, secret) : info
@@ -109,12 +109,12 @@ function genVerifyInfo (req, verification) {
     'uid': verification.uid,
     'verify-token': verification['verify-token'],
     'verify-link': `${req.protocol}://${req.get('host')}${HTTP.PREFIX}/user/verification/code/${verification['verify-token']}`,
-    'reset-link': `${req.protocol}://${req.get('host')}${HTTP.PREFIX}/user/verification/password/${verification['verify-token']}/${verification.reset}`
+    'expire-link': `${req.protocol}://${req.get('host')}${HTTP.PREFIX}/user/verification/password/${verification['verify-token']}/${verification.expire}`
   }
 
   const secret = {
     code: verification.code,
-    reset: verification.reset
+    expire: verification.expire
   }
 
   return NODE_ENV === 'development' ? _.assign(info, secret) : info

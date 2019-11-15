@@ -30,8 +30,8 @@ AuthService.prototype.signup = async function (signupInfo) {
    * b. wirte [signupInfo-with-verification] into redis ...
    */
   var date = new Date()
-  var reset = date.setMinutes(date.getMinutes() + registerExpiration)
-  var verification = util.genVerification(signupInfo, reset, true)
+  var expire = date.setMinutes(date.getMinutes() + registerExpiration)
+  var verification = util.genVerification(signupInfo, expire, true)
   signupInfo.verificaiton = verification
 
   // TODO: cache 尚未設定 expire
@@ -143,7 +143,7 @@ AuthService.prototype.findOrCreateVerification = async function (type, account, 
   }
 
   var date = new Date()
-  var reset = expireTimeLimit ? date.setMinutes(date.getMinutes() + verifyExpiration) : null
+  var expire = expireTimeLimit ? date.setMinutes(date.getMinutes() + verifyExpiration) : null
 
   /**
    * TODO: [authRepo.findOrCreateVerification...]
@@ -155,7 +155,7 @@ AuthService.prototype.findOrCreateVerification = async function (type, account, 
    *
    * TODO: 請善用 findOrCreateVerification 第三個欄位: selectedFields
    */
-  const partialUserData = await this.authRepo.findOrCreateVerification(type, account, reset)
+  const partialUserData = await this.authRepo.findOrCreateVerification(type, account, expire)
 
   return {
     region: partialUserData.region,
@@ -181,7 +181,7 @@ AuthService.prototype.findOrCreateVerification = async function (type, account, 
     /**
      * for reset password directly (with expiration expiration time: 10 mins)
      */
-    reset
+    expire
   }
 
   // return {
@@ -209,14 +209,14 @@ AuthService.prototype.findOrCreateVerification = async function (type, account, 
   //   /**
   //    * for reset password directly (with expiration expiration time: 10 mins)
   //    */
-  //   reset
+  //   expire
   // }
 }
 
 /**
  * 輸入參數 verifyInfo 有兩種：
  * 1. [verifyInfo={token:xxxx,code:123456}] token & code
- * 2. [verifyInfo={token:xxxx,reset:1565022954420}] token & reset (reset 具時效性)
+ * 2. [verifyInfo={token:xxxx,expire:1565022954420}] token & expire (expire 具時效性)
  * [這裡屬於第一種]
  * token 隱含的資訊，已經能讓後端服務知道 token 要去哪一個區域(region)
  *  (Tokyo, Taipei, Sydney ...) 找尋用戶資料了
@@ -260,25 +260,25 @@ AuthService.prototype.getVerifiedUser = async function (verifyInfo) {
 /**
  * 輸入參數 verifyInfo 有兩種：
  * 1. [verifyInfo={token:xxxx,code:123456}] token & code
- * 2. [verifyInfo={token:xxxx,reset:1565022954420}] token & reset (reset 具時效性)
+ * 2. [verifyInfo={token:xxxx,expire:1565022954420}] token & expire (expire 具時效性)
  * [這裡屬於第二種]
  * token 隱含的資訊，已經能讓後端服務知道 token 要去哪一個區域(region)
  *  (Tokyo, Taipei, Sydney ...) 找尋用戶資料了
  */
 AuthService.prototype.getVerifiedUserWithNewAuthorized = async function (verifyInfo, newPassword) {
-  const { token, reset } = verifyInfo
+  const { token, expire } = verifyInfo
   try {
-    var userInfo = await this.authRepo.getVerifyUserWithoutExpired(token, reset)
+    var userInfo = await this.authRepo.getVerifyUserWithoutExpired(token, expire)
     if (userInfo == null) {
       throw new Error('invalid verification!')
     }
 
     /**
-     * TODO: [Database.userInfo.verificaiton.reset] 這邊需要檢查是否超過現在的時間:
-     * 如果認證逾時的話 (前提是 reset != null), 需要清除驗證資訊 (包括 verify-token, code, reset),
+     * TODO: [Database.userInfo.verificaiton.expire] 這邊需要檢查是否超過現在的時間:
+     * 如果認證逾時的話 (前提是 expire != null), 需要清除驗證資訊 (包括 verify-token, code, expire),
      * 讓使用者能夠再次發[新的驗證資訊]
      */
-    var expiredTime = userInfo.verificaiton.reset // Database's record
+    var expiredTime = userInfo.verificaiton.expire // Database's record
     if (expiredTime != null && Date.now() > expiredTime) {
       await this.authRepo.deleteVerification(userInfo)
       throw new Error('verification expired!')

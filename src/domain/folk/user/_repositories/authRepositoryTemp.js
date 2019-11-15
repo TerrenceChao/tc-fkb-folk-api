@@ -655,12 +655,12 @@ AuthRepository.prototype.getAuthorizedUser = async function (email, password) {
 /**
  * TODO: [findOrCreateVerification] 這裡將指為單純回傳 table: Accounts & Auths 中的資訊。實際應用時，需要上層結合 table: Users 中的欄位
  */
-AuthRepository.prototype.findOrCreateVerification = async function (type, account, reset = null, selectedFields = null) {
+AuthRepository.prototype.findOrCreateVerification = async function (type, account, expire = null, selectedFields = null) {
   selectedFields = selectedFields == null ? VERIFICATION_FIELDS : selectedFields
   if (type === 'phone') {
     for (const userInfo of userDB.values()) {
       if (account === userInfo.phone) {
-        userInfo.verificaiton.reset = reset
+        userInfo.verificaiton.expire = expire
         userDB.set(account.phone, userInfo)
         return _.pick(userInfo, selectedFields)
       }
@@ -670,7 +670,7 @@ AuthRepository.prototype.findOrCreateVerification = async function (type, accoun
 
   const userInfo = userDB.get(account.email)
   if (userInfo != null) {
-    userInfo.verificaiton.reset = reset
+    userInfo.verificaiton.expire = expire
     userDB.set(account.email, userInfo)
     return _.pick(userInfo, selectedFields)
   }
@@ -690,12 +690,12 @@ AuthRepository.prototype.getVerifyUserByCode = async function (token, code, sele
   return undefined // throw new Error(`user not found`)
 }
 
-AuthRepository.prototype.getVerifyUserWithoutExpired = async function (token, reset, selectedFields = null) {
+AuthRepository.prototype.getVerifyUserWithoutExpired = async function (token, expire, selectedFields = null) {
   console.log(`token: ${JSON.stringify(token, null, 2)}`)
   for (const userInfo of userDB.values()) {
     const userVerify = userInfo.verificaiton
     console.log(`userVerify in database: ${JSON.stringify(userVerify, null, 2)}`)
-    // 在真實需求中 reset 也需要符合
+    // 在真實需求中 expire 也需要符合
     if (token === userVerify.token) {
       return _.pick(userInfo, VERIFICATION_FIELDS)
     }

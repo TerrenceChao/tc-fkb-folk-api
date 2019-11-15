@@ -66,13 +66,13 @@ describe('repository: Auths', () => {
     const verification = {
       token: genToken(),
       code: faker.random.alphaNumeric(6),
-      reset: now + 50000
+      expire: now + 50000
     }
 
     const newVerification = {
       token: genToken(),
       code: faker.random.alphaNumeric(6),
-      reset: now << 1
+      expire: now << 1
     }
 
     // act
@@ -87,11 +87,11 @@ describe('repository: Auths', () => {
     expect(verifyInfo.email).to.equals(email)
     expect(verifyInfo.token).to.equals(verification.token)
     expect(verifyInfo.code).to.equals(verification.code)
-    expect(parseInt(verifyInfo.reset)).to.equals(verification.reset)
+    expect(parseInt(verifyInfo.expire)).to.equals(verification.expire)
     // 2nd verifyInfo
     expect(newVerifyInfo.token).to.equals(verification.token)
     expect(newVerifyInfo.code).to.equals(verification.code)
-    expect(parseInt(newVerifyInfo.reset)).to.equals(verification.reset)
+    expect(parseInt(newVerifyInfo.expire)).to.equals(verification.expire)
   })
 
   it('create verification by phone', async () => {
@@ -103,13 +103,13 @@ describe('repository: Auths', () => {
     const verification = {
       token: genToken(),
       code: faker.random.alphaNumeric(6),
-      reset: now + 50000
+      expire: now + 50000
     }
 
     const newVerification = {
       token: faker.random.word(),
       code: faker.random.alphaNumeric(6),
-      reset: now << 1
+      expire: now << 1
     }
 
     // act
@@ -125,11 +125,11 @@ describe('repository: Auths', () => {
     expect(verifyInfo.phone).to.equals(phone)
     expect(verifyInfo.token).to.equals(verification.token)
     expect(verifyInfo.code).to.equals(verification.code)
-    expect(parseInt(verifyInfo.reset)).to.equals(verification.reset)
+    expect(parseInt(verifyInfo.expire)).to.equals(verification.expire)
     // 2nd verifyInfo
     expect(newVerifyInfo.token).to.equals(verification.token)
     expect(newVerifyInfo.code).to.equals(verification.code)
-    expect(parseInt(newVerifyInfo.reset)).to.equals(verification.reset)
+    expect(parseInt(newVerifyInfo.expire)).to.equals(verification.expire)
   })
 
   it('get verification by token/code', async () => {
@@ -140,7 +140,7 @@ describe('repository: Auths', () => {
     const verification = {
       token: genToken(),
       code: faker.random.alphaNumeric(6).toString(),
-      reset: now
+      expire: now
     }
 
     // act
@@ -155,7 +155,7 @@ describe('repository: Auths', () => {
     expect(verifyUser.code).to.equals(verification.code)
   })
 
-  it('get verification by token/reset', async () => {
+  it('get verification by token/expire', async () => {
     // arrange
     const signupInfo = genSignupInfo()
     const email = signupInfo.email
@@ -163,19 +163,19 @@ describe('repository: Auths', () => {
     const verification = {
       token: genToken(),
       code: faker.random.alphaNumeric(6).toString(),
-      reset: now
+      expire: now
     }
 
     // act
     await authRepo.createAccountUser(signupInfo)
     await authRepo.findOrCreateVerification('email', { email }, verification, now)
-    const verifyUser = await authRepo.getVerifyUserWithoutExpired(verification.token, verification.reset)
+    const verifyUser = await authRepo.getVerifyUserWithoutExpired(verification.token, verification.expire)
 
     // arrange
     expect(verifyUser.uid).to.equals(signupInfo.uid)
     expect(verifyUser.region).to.equals(signupInfo.region)
     expect(verifyUser.token).to.equals(verification.token)
-    expect(parseInt(verifyUser.reset)).to.equals(verification.reset)
+    expect(parseInt(verifyUser.expire)).to.equals(verification.expire)
   })
 
   it('delete verification', async () => {
@@ -189,7 +189,7 @@ describe('repository: Auths', () => {
     const verification = {
       token: genToken(),
       code: faker.random.alphaNumeric(6).toString(),
-      reset: now
+      expire: now
     }
 
     // act
@@ -205,6 +205,6 @@ describe('repository: Auths', () => {
     expect(verifyUser.phone).to.equals(signupInfo.phone)
     expect(verifyUser.token).to.equals(null)
     expect(verifyUser.code).to.equals(null)
-    expect(verifyUser.reset).to.equals(null)
+    expect(verifyUser.expire).to.equals(null)
   })
 })

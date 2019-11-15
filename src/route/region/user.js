@@ -86,7 +86,7 @@ router.put('/verification/send',
 )
 
 /**
- * 當透過[驗證碼]登入時，以下兩步驟是一組的：
+ * 當透過[驗證碼]登入時，['/verification/code/:token', '/:uid/:region/password/reset']是一組的：
  * 1. ['/verification/code/:token']
  * 2. ['/password/reset'] (已透過 step 1 登入)
  * 雖然只能作用一次，但同樣的 url 不會使後端資源造成不同的結果 (都是清除驗證資訊，建立session) [idempotent]
@@ -99,7 +99,7 @@ router.put('/verification/code/:token',
 )
 
 /**
- * 當透過[驗證碼]登入時，以下兩步驟是一組的：
+ * 當透過[驗證碼]登入時，['/verification/code/:token', '/:uid/:region/password/reset']是一組的：
  * 1. ['/verification/code/:token']
  * 2. ['/password/reset'] (已透過 step 1 登入)
  *
@@ -121,7 +121,7 @@ router.put('/:uid/:region/password/reset',
  * check by reset password
  * 雖然只能作用一次，但同樣的 url 不會使後端資源造成不同的結果 (都是清除驗證資訊，建立session) [idempotent]
  */
-router.put('/verification/password/:token/:reset',
+router.put('/verification/password/:token/:expire',
   userReq.verificationValidator,
   userReq.newPasswordValidator, // 檢查兩次輸入的新密碼是否相同
   auth.checkVerificationWithPassword, /** 檢查 verify token 後，直接變更新密碼，然後刪除 verification info (token/code) */

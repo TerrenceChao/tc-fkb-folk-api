@@ -44,6 +44,10 @@ function parseUserInfo (user) {
   const publicInfo = user.publicInfo
   delete user.publicInfo
 
+  if (user.expire) {
+    user.expire = parseInt(user.expire)
+  }
+
   return _.assign(user, publicInfo)
 }
 
@@ -73,10 +77,10 @@ function getExpiration () {
 /**
  * TODO: 尚未實現。產生出的 token 能找出 uid, region 資訊。
  * @param {Object} userInfo
- * @param {number|null} reset
+ * @param {number|null} expire
  * @param {boolean} unique 是否建立唯一性的 token [註冊時適用，因存放在{cache}須具唯一性]
  */
-function genVerification (userInfo, reset = null, unique = false) {
+function genVerification (userInfo, expire = null, unique = false) {
   const token = 'laierhgslierghULIHAsadaeri'
   var code = '123456'
 
@@ -96,7 +100,7 @@ function genVerification (userInfo, reset = null, unique = false) {
     /**
      * for reset password directly (with expiration expiration time: 10 mins)
      */
-    reset // TODO: type: number
+    expire // TODO: type: number
   }
 }
 
@@ -104,10 +108,14 @@ function genVerification (userInfo, reset = null, unique = false) {
  * @param {string} type
  * @param {{ email: string}|{countryCode: string, phone: string}} accountContact
  * @param {Object} userInfo
- * @param {{ token: string, code: string, reset: number }} newVerification
+ * @param {{ token: string, code: string, expire: number }} newVerification
  */
 function genVerificationPacket (type, accountContact, userInfo, newVerification) {
   const verification = (newVerification === undefined) ? userInfo.verification : newVerification
+
+  if (verification.expire) {
+    verification.expire = parseInt(verification.expire)
+  }
 
   return {
     region: userInfo.region,
@@ -120,7 +128,7 @@ function genVerificationPacket (type, accountContact, userInfo, newVerification)
     content: _.pick(userInfo, USER_PRIVATE_INFO),
     'verify-token': verification.token,
     code: verification.code,
-    reset: verification.reset
+    expire: verification.expire
   }
 }
 

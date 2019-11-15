@@ -43,8 +43,8 @@ module.exports = {
         field: 'verify_code',
         type: Sequelize.STRING(20)
       },
-      verifyExpired: {
-        field: 'verify_expired',
+      verifyExpire: {
+        field: 'verify_expire',
         type: Sequelize.BIGINT
       },
       attempt: {
@@ -108,7 +108,7 @@ module.exports = {
 
     // await queryInterface.addIndex(
     //   'Auths',
-    //   ['((verification->>\'reset\')::varchar)'],
+    //   ['((verification->>\'expire\')::varchar)'],
     //   {
     //     using: 'gin',
     //     name: 'auths_verification_reset_idx'

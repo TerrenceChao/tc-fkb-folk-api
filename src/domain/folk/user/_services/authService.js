@@ -37,8 +37,8 @@ AuthService.prototype.signup = async function (signupInfo) {
   }
 
   // check catche (Does it exist?)
-  const expired = util.getExpiration()
-  const newVerification = util.genVerification(signupInfo, expired, true)
+  const expire = util.getExpiration()
+  const newVerification = util.genVerification(signupInfo, expire, true)
   const cachedSingupData = await cache.pipeline()
     .get(newVerification.token)
     .exec()
@@ -53,7 +53,7 @@ AuthService.prototype.signup = async function (signupInfo) {
   signupInfo.uid = signupInfo.uid || uuidv4()
 
   return cache.pipeline()
-    .set(newVerification.token, Buffer.from(JSON.stringify(signupInfo)), 'ex', expired)
+    .set(newVerification.token, Buffer.from(JSON.stringify(signupInfo)), 'ex', expire)
     .exec()
     .then(() => util.genVerificationPacket('email', { email }, signupInfo))
     .catch(err => {
@@ -176,8 +176,8 @@ AuthService.prototype.findOrCreateVerification = async function (type, accountCo
 
   userInfo = util.parseUserInfo(userInfo)
 
-  const expired = expireTimeLimit ? util.getExpiration() : null
-  const verification = util.genVerification(userInfo, expired)
+  const expire = expireTimeLimit ? util.getExpiration() : null
+  const verification = util.genVerification(userInfo, expire)
   const verificationRecord = await this.authRepo.findOrCreateVerification(type, accountContact, verification)
   if (verificationRecord.token === undefined) {
     throw new Error(`${arguments.callee.name}: find or creation verification fail`)
@@ -191,7 +191,7 @@ AuthService.prototype.findOrCreateVerification = async function (type, accountCo
 /**
  * 輸入參數 verifyInfo 有兩種：
  * 1. [verifyInfo={token:xxxx,code:123456}] token & code
- * 2. [verifyInfo={token:xxxx,reset:1565022954420}] token & reset (reset 具時效性)
+ * 2. [verifyInfo={token:xxxx,expire:1565022954420}] token & expire (expire 具時效性)
  * [這裡屬於第一種]
  * token 隱含的資訊，已經能讓後端服務知道 token 要去哪一個區域(region)
  *  (Tokyo, Taipei, Sydney ...) 找尋用戶資料了
@@ -213,7 +213,7 @@ AuthService.prototype.getVerifiedUser = async function (verifyInfo) {
  * @private
  */
 AuthService.prototype.checkExpiration = function (userInfo) {
-  const timestamp = userInfo.reset
+  const timestamp = userInfo.expire
   if (timestamp != null && Date.now() > timestamp) {
     return Promise.reject(new Error(`${arguments.callee.name}: verification expired!`))
   }
@@ -224,16 +224,16 @@ AuthService.prototype.checkExpiration = function (userInfo) {
 /**
  * 輸入參數 verifyInfo 有兩種：
  * 1. [verifyInfo={token:xxxx,code:123456}] token & code
- * 2. [verifyInfo={token:xxxx,reset:1565022954420}] token & reset (reset 具時效性)
+ * 2. [verifyInfo={token:xxxx,expire:1565022954420}] token & expire (expire 具時效性)
  * [這裡屬於第二種]
  * token 隱含的資訊，已經能讓後端服務知道 token 要去哪一個區域(region)
  *  (Tokyo, Taipei, Sydney ...) 找尋用戶資料了
  */
 AuthService.prototype.getVerifiedUserWithNewAuthorized = async function (verifyInfo, newPassword) {
-  const { token, reset } = verifyInfo
+  const { token, expire } = verifyInfo
   const selectedFields = C.USER_PUBLIC_INFO.concat(C.USER_AUTHENTICATION)
 
-  return Promise.resolve(this.authRepo.getVerifyUserWithoutExpired(token, parseInt(reset), selectedFields))
+  return Promise.resolve(this.authRepo.getVerifyUserWithoutExpired(token, parseInt(expire), selectedFields))
     .then(userInfo => userInfo === undefined ? Promise.reject(new Error(`${arguments.callee.name}: invalid verification!`)) : userInfo)
     .then(userInfo => this.checkExpiration(userInfo))
     .then(userInfo => this.genAuthorization(util.parseUserInfo(userInfo)))

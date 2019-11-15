@@ -53,5 +53,5 @@ exports.USER_AUTHENTICATION = process.env.USER_AUTHENTICATION ? process.env.USER
 exports.USER_VERIFICATION = process.env.USER_VERIFICATION ? process.env.USER_VERIFICATION.split(',') : [
   'token',
   'code',
-  'expired'
+  'expire'
 ]

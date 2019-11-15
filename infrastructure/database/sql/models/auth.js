@@ -6,7 +6,7 @@ module.exports = (sequelize, DataTypes) => {
     verification: DataTypes.JSONB,
     verifyToken: DataTypes.STRING,
     verifyCode: DataTypes.STRING,
-    verifyExpired: DataTypes.BIGINT,
+    verifyExpire: DataTypes.BIGINT,
     attempt: DataTypes.INTEGER,
     lock: DataTypes.BOOLEAN
   }, {})

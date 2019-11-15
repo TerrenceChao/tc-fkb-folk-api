@@ -13,7 +13,7 @@ function genSignupInfo () {
     verification: null,
     verifyToken: null,
     verifyCode: null,
-    verifyExpired: null,
+    verifyExpire: null,
 
     // Accounts
     uid: faker.random.uuid(),
