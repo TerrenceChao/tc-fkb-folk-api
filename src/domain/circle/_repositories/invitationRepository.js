@@ -41,17 +41,17 @@ InvitationRepository.prototype.createOrUpdateInvitation = async function (invite
   let idx = 1
   return this.query(
     `
-    INSERT INTO "Invitations" (inviter_uid, inviter_region, recipient_uid, recipient_region, event, info, deleted_at)
+    INSERT INTO "Invitations" (inviter_id, inviter_region, recipient_id, recipient_region, event, info, deleted_at)
     VALUES (
-      $${idx++}::uuid, -- inviter_uid
+      $${idx++}::uuid, -- inviter_id
       $${idx++}::varchar,
-      $${idx++}::uuid, -- recipient_uid
+      $${idx++}::uuid, -- recipient_id
       $${idx++}::varchar,
       $${idx++}::varchar, -- event
       $${idx++}::jsonb,
       $${idx++}::timestamp
     )
-    ON CONFLICT ON CONSTRAINT "Invitations_inviter_uid_inviter_region_recipient_uid_recipi_key"
+    ON CONFLICT ON CONSTRAINT "Invitations_inviter_id_inviter_region_recipient_id_recipien_key"
     DO UPDATE SET
       info = $${idx++}::jsonb,
       deleted_at = $${idx++}::timestamp,
@@ -93,8 +93,8 @@ InvitationRepository.prototype.getInvitation = async function (account, invitati
     WHERE
       deleted_at IS NULL AND
       (
-        inviter_uid = $1::uuid AND inviter_region = $2::varchar OR  
-        recipient_uid = $3::uuid AND recipient_region = $4::varchar 
+        inviter_id = $1::uuid AND inviter_region = $2::varchar OR  
+        recipient_id = $3::uuid AND recipient_region = $4::varchar 
       ) AND
       ${conditions}
     LIMIT 1;
@@ -116,14 +116,14 @@ InvitationRepository.prototype.getInvitationByRoles = async function (account, t
     WHERE
       (
         deleted_at IS NULL AND
-        inviter_uid = $${idx++}::uuid AND inviter_region = $${idx++}::varchar AND  
-        recipient_uid = $${idx++}::uuid AND recipient_region = $${idx++}::varchar 
+        inviter_id = $${idx++}::uuid AND inviter_region = $${idx++}::varchar AND  
+        recipient_id = $${idx++}::uuid AND recipient_region = $${idx++}::varchar 
       ) 
       OR
       (
         deleted_at IS NULL AND
-        recipient_uid = $${idx++}::uuid AND recipient_region = $${idx++}::varchar AND
-        inviter_uid = $${idx++}::uuid AND inviter_region = $${idx++}::varchar 
+        recipient_id = $${idx++}::uuid AND recipient_region = $${idx++}::varchar AND
+        inviter_id = $${idx++}::uuid AND inviter_region = $${idx++}::varchar 
       )
     LIMIT 1;
     `,
@@ -153,7 +153,7 @@ InvitationRepository.prototype.getSentInvitationList = async function (account, 
     FROM "Invitations"
     WHERE
       deleted_at IS NULL AND
-      inviter_uid = $${idx++}::uuid AND
+      inviter_id = $${idx++}::uuid AND
       inviter_region = $${idx++}::varchar 
     OFFSET $${idx++}::int LIMIT $${idx++}::int;
     `,
@@ -178,7 +178,7 @@ InvitationRepository.prototype.getReceivedInvitationList = async function (accou
     FROM "Invitations"
     WHERE
       deleted_at IS NULL AND
-      recipient_uid = $${idx++}::uuid AND
+      recipient_id = $${idx++}::uuid AND
       recipient_region = $${idx++}::varchar
     OFFSET $${idx++}::int LIMIT $${idx++}::int;
     `,
@@ -212,17 +212,17 @@ InvitationRepository.prototype.removeRelatedInvitation = async function (inviter
     ${operation}
     WHERE 
       (
-        inviter_uid = $${idx++}::uuid AND
+        inviter_id = $${idx++}::uuid AND
         inviter_region = $${idx++}::varchar AND
-        recipient_uid = $${idx++}::uuid AND
+        recipient_id = $${idx++}::uuid AND
         recipient_region = $${idx++}::varchar AND
         event = $${idx++}
       )
       OR
       (
-        recipient_uid = $${idx++}::uuid AND
+        recipient_id = $${idx++}::uuid AND
         recipient_region = $${idx++}::varchar AND
-        inviter_uid = $${idx++}::uuid AND
+        inviter_id = $${idx++}::uuid AND
         inviter_region = $${idx++}::varchar AND
         event = $${idx++}
       )

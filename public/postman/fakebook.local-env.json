@@ -39,12 +39,12 @@
 		},
 		{
 			"key": "verify_expire",
-			"value": "1573795422836",
+			"value": "1573838619735",
 			"enabled": true
 		},
 		{
 			"key": "uid",
-			"value": "b3668fd8-1841-4fbb-912a-bfa2f8f47b6a",
+			"value": "7e1d575c-2843-48ba-9b36-cc677728b7c8",
 			"enabled": true
 		},
 		{
@@ -98,8 +98,8 @@
 			"enabled": true
 		},
 		{
-			"key": "inviter_uid",
-			"value": "cf4b4285-4d2b-476c-8d1a-51f516b7b694",
+			"key": "inviter_id",
+			"value": "7e1d575c-2843-48ba-9b36-cc677728b7c8",
 			"enabled": true
 		},
 		{
@@ -109,7 +109,7 @@
 		},
 		{
 			"key": "inviter_given_name",
-			"value": "Albert",
+			"value": "Terrence",
 			"enabled": true
 		},
 		{
@@ -119,7 +119,7 @@
 		},
 		{
 			"key": "inviter_profile_link",
-			"value": "http://localhost:3000/folk-service/api/v1//user/2bd764d4-8c66-4af9-891d-8683bcc21788/tw/profile",
+			"value": "http://localhost:3000/folk-service/api/v1/user/7e1d575c-2843-48ba-9b36-cc677728b7c8/tw/profile",
 			"enabled": true
 		},
 		{
@@ -139,7 +139,7 @@
 		},
 		{
 			"key": "recipient_profile_link",
-			"value": "http://localhost:3000/folk-service/api/v1/user/a40962cd-f255-496e-879f-2fde13b4d792/tw/profile",
+			"value": "http://localhost:3000/folk-service/api/v1/user/01f1155b-b70f-45da-a422-a138f7ebea9b/tw/profile",
 			"enabled": true
 		},
 		{
@@ -284,7 +284,7 @@
 		},
 		{
 			"key": "uid_B",
-			"value": "a40962cd-f255-496e-879f-2fde13b4d792",
+			"value": "01f1155b-b70f-45da-a422-a138f7ebea9b",
 			"enabled": true
 		},
 		{
@@ -294,7 +294,7 @@
 		},
 		{
 			"key": "verify_reset_B",
-			"value": "1573575683990",
+			"value": null,
 			"enabled": true
 		},
 		{
@@ -309,7 +309,7 @@
 		},
 		{
 			"key": "iid",
-			"value": "e77b0040-8e4c-4ef4-8400-2ce5b917e4b1",
+			"value": "21",
 			"enabled": true
 		},
 		{
@@ -318,8 +318,8 @@
 			"enabled": true
 		},
 		{
-			"key": "recipient_uid",
-			"value": "a40962cd-f255-496e-879f-2fde13b4d792",
+			"key": "recipient_id",
+			"value": "01f1155b-b70f-45da-a422-a138f7ebea9b",
 			"enabled": true
 		},
 		{
@@ -334,6 +334,6 @@
 		}
 	],
 	"_postman_variable_scope": "environment",
-	"_postman_exported_at": "2019-11-15T05:41:38.054Z",
+	"_postman_exported_at": "2019-11-16T03:35:52.581Z",
 	"_postman_exported_using": "Postman/7.11.0"
 }

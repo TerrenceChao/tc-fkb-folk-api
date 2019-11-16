@@ -35,9 +35,9 @@ describe('repository: Invitations', () => {
     const invitation = await invitationRepo.createOrUpdateInvitation(inviter, recipient, event, info)
 
     // assert
-    expect(invitation.inviter_uid).to.equals(userA.uid)
+    expect(invitation.inviter_id).to.equals(userA.uid)
     expect(invitation.inviter_region).to.equals(userA.region)
-    expect(invitation.recipient_uid).to.equals(userB.uid)
+    expect(invitation.recipient_id).to.equals(userB.uid)
     expect(invitation.recipient_region).to.equals(userB.region)
     expect(invitation.event).to.equals(event)
     expect(invitation.info).to.deep.equal(sortJSONByKeys(info))
@@ -55,9 +55,9 @@ describe('repository: Invitations', () => {
     const newInvitation = await invitationRepo.createOrUpdateInvitation(inviter, recipient, event, info)
 
     // assert
-    expect(newInvitation.inviter_uid).to.equals(inviter.uid)
+    expect(newInvitation.inviter_id).to.equals(inviter.uid)
     expect(newInvitation.inviter_region).to.equals(inviter.region)
-    expect(newInvitation.recipient_uid).to.equals(recipient.uid)
+    expect(newInvitation.recipient_id).to.equals(recipient.uid)
     expect(newInvitation.recipient_region).to.equals(recipient.region)
     expect(newInvitation.event).to.equals(event)
     expect(sortJSONByKeys(newInvitation.info)).to.deep.equal(sortJSONByKeys(info))
@@ -68,14 +68,14 @@ describe('repository: Invitations', () => {
   it('getSentInvitationList', async () => {
     // arrange
     const sourceInvitation = await repo.query('SELECT * FROM "Invitations" LIMIT 1', [], 0)
-    const inviter = { uid: sourceInvitation.inviter_uid, region: sourceInvitation.inviter_region }
+    const inviter = { uid: sourceInvitation.inviter_id, region: sourceInvitation.inviter_region }
 
     // act
     const invitationList = await invitationRepo.getSentInvitationList(inviter, 100)
 
     // assert
     invitationList.forEach(target => {
-      expect(target.inviter_uid).to.equals(inviter.uid)
+      expect(target.inviter_id).to.equals(inviter.uid)
       expect(target.inviter_region).to.equals(inviter.region)
     })
   })
@@ -83,14 +83,14 @@ describe('repository: Invitations', () => {
   it('getReceivedInvitationList', async () => {
     // arrange
     const sourceInvitation = await repo.query('SELECT * FROM "Invitations" LIMIT 1', [], 0)
-    const recipient = { uid: sourceInvitation.recipient_uid, region: sourceInvitation.recipient_region }
+    const recipient = { uid: sourceInvitation.recipient_id, region: sourceInvitation.recipient_region }
 
     // act
     const invitationList = await invitationRepo.getReceivedInvitationList(recipient, 100)
 
     // assert
     invitationList.forEach(target => {
-      expect(target.recipient_uid).to.equals(recipient.uid)
+      expect(target.recipient_id).to.equals(recipient.uid)
       expect(target.recipient_region).to.equals(recipient.region)
     })
   })
@@ -198,8 +198,8 @@ describe('repository: Invitations', () => {
     // arrange
     const sourceInvitation = await repo.query('SELECT * FROM "Invitations" LIMIT 1', [], 0)
     const event = sourceInvitation.event
-    const inviter = { uid: sourceInvitation.inviter_uid, region: sourceInvitation.inviter_region }
-    const recipient = { uid: sourceInvitation.recipient_uid, region: sourceInvitation.recipient_region }
+    const inviter = { uid: sourceInvitation.inviter_id, region: sourceInvitation.inviter_region }
+    const recipient = { uid: sourceInvitation.recipient_id, region: sourceInvitation.recipient_region }
     const softDelete = true
 
     // act
@@ -215,8 +215,8 @@ describe('repository: Invitations', () => {
     // arrange
     const sourceInvitation = await repo.query('SELECT * FROM "Invitations" LIMIT 1', [], 0)
     const event = sourceInvitation.event
-    const inviter = { uid: sourceInvitation.inviter_uid, region: sourceInvitation.inviter_region }
-    const recipient = { uid: sourceInvitation.recipient_uid, region: sourceInvitation.recipient_region }
+    const inviter = { uid: sourceInvitation.inviter_id, region: sourceInvitation.inviter_region }
+    const recipient = { uid: sourceInvitation.recipient_id, region: sourceInvitation.recipient_region }
 
     // act
     const deletedInvitationList = await invitationRepo.removeRelatedInvitation(inviter, recipient, event)

@@ -1564,14 +1564,14 @@
 											"postman.setEnvironmentVariable(\"iid\", result.data.header.iid);",
 											"",
 											"postman.setEnvironmentVariable(\"inviter_region\", result.data.inviter.region);",
-											"postman.setEnvironmentVariable(\"inviter_uid\", result.data.inviter.uid);",
+											"postman.setEnvironmentVariable(\"inviter_id\", result.data.inviter.uid);",
 											"postman.setEnvironmentVariable(\"inviter_given_name\", result.data.inviter.givenName);",
 											"postman.setEnvironmentVariable(\"inviter_family_name\", result.data.inviter.familyName);",
 											"postman.setEnvironmentVariable(\"inviter_profile_link\", result.data.inviter.profileLink);",
 											"postman.setEnvironmentVariable(\"inviter_profile_pic\", result.data.inviter.profilePic);",
 											"",
 											"postman.setEnvironmentVariable(\"recipient_region\", result.data.recipient.region);",
-											"postman.setEnvironmentVariable(\"recipient_uid\", result.data.recipient.uid);",
+											"postman.setEnvironmentVariable(\"recipient_id\", result.data.recipient.uid);",
 											"postman.setEnvironmentVariable(\"recipient_given_name\", result.data.recipient.givenName);",
 											"postman.setEnvironmentVariable(\"recipient_family_name\", result.data.recipient.familyName);",
 											"postman.setEnvironmentVariable(\"recipient_profile_link\", result.data.recipient.profileLink);",
@@ -1987,7 +1987,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n\t\"header\": {\n\t\t\"inviteEvent\": \"invite_event_friend_reply\",\n\t\t\"data\": {\n\t\t\t\"options\": [true, false],\n\t\t\t\"reply\": true\n\t\t},\n\t\t\"iid\": \"{{iid}}\"\n\t},\n\t\"inviter\": {\n        \"region\": \"{{inviter_region}}\",\n        \"uid\": \"{{inviter_uid}}\",\n        \"profileLink\": \"{{inviter_profile_link}}\",\n        \"profilePic\": \"{{inviter_profile_pic}}\",\n        \"givenName\": \"{{inviter_given_name}}\",\n        \"familyName\": \"{{inviter_family_name}}\"\n    },\n    \"recipient\": {\n    \t\"region\": \"{{recipient_region}}\",\n        \"uid\": \"{{recipient_uid}}\",\n        \"profileLink\": \"{{recipient_profile_link}}\",\n        \"profilePic\": \"{{recipient_profile_pic}}\",\n        \"givenName\": \"{{recipient_given_name}}\",\n        \"familyName\": \"{{recipient_family_name}}\"\n    }\n}"
+									"raw": "{\n\t\"header\": {\n\t\t\"inviteEvent\": \"invite_event_friend_reply\",\n\t\t\"data\": {\n\t\t\t\"options\": [true, false],\n\t\t\t\"reply\": true\n\t\t},\n\t\t\"iid\": \"{{iid}}\"\n\t},\n\t\"inviter\": {\n        \"region\": \"{{inviter_region}}\",\n        \"uid\": \"{{inviter_id}}\",\n        \"profileLink\": \"{{inviter_profile_link}}\",\n        \"profilePic\": \"{{inviter_profile_pic}}\",\n        \"givenName\": \"{{inviter_given_name}}\",\n        \"familyName\": \"{{inviter_family_name}}\"\n    },\n    \"recipient\": {\n    \t\"region\": \"{{recipient_region}}\",\n        \"uid\": \"{{recipient_id}}\",\n        \"profileLink\": \"{{recipient_profile_link}}\",\n        \"profilePic\": \"{{recipient_profile_pic}}\",\n        \"givenName\": \"{{recipient_given_name}}\",\n        \"familyName\": \"{{recipient_family_name}}\"\n    }\n}"
 								},
 								"url": {
 									"raw": "{{folk_localhost}}/circle/{{uid_B}}/{{region_B}}/invite?",

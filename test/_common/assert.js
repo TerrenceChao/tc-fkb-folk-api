@@ -25,9 +25,9 @@ function assertUserProperties (user, signupInfo) {
  */
 function assertInvitation (source, target) {
   expect(target.iid).to.equals(source.iid)
-  expect(target.inviter_uid).to.equals(source.inviter_uid)
+  expect(target.inviter_id).to.equals(source.inviter_id)
   expect(target.inviter_region).to.equals(source.inviter_region)
-  expect(target.recipient_uid).to.equals(source.recipient_uid)
+  expect(target.recipient_id).to.equals(source.recipient_id)
   expect(target.recipient_region).to.equals(source.recipient_region)
   expect(target.event).to.equals(source.event)
   expect(sortJSONByKeys(target.info)).to.deep.equal(sortJSONByKeys(source.info))

@@ -7,11 +7,11 @@ const USER_COMMON_PUBLIC_INFO = require('./constant').USER_COMMON_PUBLIC_INFO
 function parseInvitationRoles (invitation) {
   return {
     inviter: {
-      uid: invitation.inviter_uid || invitation.inviterUid,
+      uid: invitation.inviter_id || invitation.inviterId,
       region: invitation.inviter_region || invitation.inviterRegion
     },
     recipient: {
-      uid: invitation.recipient_uid || invitation.recipientUid,
+      uid: invitation.recipient_id || invitation.recipientId,
       region: invitation.recipient_region || invitation.recipientRegion
     }
   }
@@ -23,11 +23,11 @@ function parseInvitationRoles (invitation) {
 function parseInvitation (invitation) {
   return {
     inviter: _.assign({
-      uid: invitation.inviter_uid || invitation.inviterUid,
+      uid: invitation.inviter_id || invitation.inviterId,
       region: invitation.inviter_region || invitation.inviterRegion
     }, invitation.info.inviter),
     recipient: _.assign({
-      uid: invitation.recipient_uid || invitation.recipientUid,
+      uid: invitation.recipient_id || invitation.recipientId,
       region: invitation.recipient_region || invitation.recipientRegion
     }, invitation.info.recipient),
     header: _.assign({

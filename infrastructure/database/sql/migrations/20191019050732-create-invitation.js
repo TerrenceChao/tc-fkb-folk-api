@@ -8,20 +8,20 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.BIGINT
       },
-      inviterUid: {
+      inviterId: {
         allowNull: false,
         type: Sequelize.UUID,
-        field: 'inviter_uid'
+        field: 'inviter_id'
       },
       inviterRegion: {
         allowNull: false,
         type: Sequelize.STRING(10),
         field: 'inviter_region'
       },
-      recipientUid: {
+      recipientId: {
         allowNull: false,
         type: Sequelize.UUID,
-        field: 'recipient_uid'
+        field: 'recipient_id'
       },
       recipientRegion: {
         allowNull: false,
@@ -57,9 +57,9 @@ module.exports = {
       uniqueKeys: {
         unique_invitation: {
           fields: [
-            'inviter_uid',
+            'inviter_id',
             'inviter_region',
-            'recipient_uid',
+            'recipient_id',
             'recipient_region',
             'event'
           ]

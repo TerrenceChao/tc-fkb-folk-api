@@ -1,9 +1,9 @@
 'use strict'
 module.exports = (sequelize, DataTypes) => {
   const Invitation = sequelize.define('Invitation', {
-    inviterUid: DataTypes.UUID,
+    inviterId: DataTypes.UUID,
     inviterRegion: DataTypes.STRING,
-    recipientUid: DataTypes.UUID,
+    recipientId: DataTypes.UUID,
     recipientRegion: DataTypes.STRING,
     event: DataTypes.STRING,
     info: DataTypes.JSONB,
