@@ -132,7 +132,7 @@ router.put('/verification/password/:token/:expire',
 
 router.get('/:uid/:region/logout',
   userReq.accountIdentifyValidator,
-  // auth.isLoggedIn, // validate session info by uid (req.params.uid)
+  auth.isLoggedIn, // validate session info by uid (req.params.uid)
   auth.logout,
   generalRes.success
 )
@@ -164,7 +164,6 @@ router.put('/:uid/:region/setting/info',
   generalRes.success
 )
 
-// TODO: do feature test
 router.get('/:uid/:region/setting/contact',
   userReq.accountIdentifyValidator,
   auth.isLoggedIn, // validate session info by uid (req.params.uid)
@@ -172,7 +171,6 @@ router.get('/:uid/:region/setting/contact',
   generalRes.success
 )
 
-// TODO: do feature test
 router.put('/:uid/:region/setting/contact',
   userReq.accountIdentifyValidator,
   auth.isLoggedIn, // validate session info by uid (req.params.uid)

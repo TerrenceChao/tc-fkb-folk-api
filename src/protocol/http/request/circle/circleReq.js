@@ -56,8 +56,8 @@ exports.friendRecipientValidator = (req, res, next) => {
 exports.invitationQueryValidator = (req, res, next) => {
   res.locals.data = {}
   const validation = new Validator(req.query, {
-    iid: 'numeric',
-    event: 'string'
+    iid: 'numeric|required_without:event',
+    event: 'string|required_without:iid'
   })
   validation.passes() ? next() : res.status(422).json(validateErr(validation, 'invitationQueryValidator'))
 }
