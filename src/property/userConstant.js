@@ -43,6 +43,12 @@ exports.USER_UPDATE_CONTACT = process.env.USER_UPDATE_CONTACT ? process.env.USER
   'phone'
 ]
 
+exports.USER_VALIDATE_CONTACT = process.env.USER_VALIDATE_CONTACT ? process.env.USER_VALIDATE_CONTACT.split(',') : [
+  'email',
+  'countryCode',
+  'phone'
+]
+
 exports.USER_AUTHENTICATION = process.env.USER_AUTHENTICATION ? process.env.USER_AUTHENTICATION.split(',') : [
   'pwHash',
   'pwSalt',

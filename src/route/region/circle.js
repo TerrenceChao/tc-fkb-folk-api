@@ -15,7 +15,7 @@ router.get('/', function (req, res, next) {
 
 // send invitation
 router.post('/:uid/:region/invite',
-  userReq.accountIdentifyValidator,
+  userReq.accountValidator,
   circleReq.friendInviterValidator,
   auth.isLoggedIn,
   invite.sendInvitation,
@@ -24,7 +24,7 @@ router.post('/:uid/:region/invite',
 
 // get invitation
 router.get('/:uid/:region/invite',
-  userReq.accountIdentifyValidator,
+  userReq.accountValidator,
   circleReq.invitationQueryValidator,
   auth.isLoggedIn,
   invite.getInvitation,
@@ -33,7 +33,7 @@ router.get('/:uid/:region/invite',
 
 // get received invitation list
 router.get('/:uid/:region/invite/list/received',
-  userReq.accountIdentifyValidator,
+  userReq.accountValidator,
   generalReq.queryListValidator,
   auth.isLoggedIn,
   invite.getReceivedInvitationList,
@@ -42,7 +42,7 @@ router.get('/:uid/:region/invite/list/received',
 
 // get sent invitation list
 router.get('/:uid/:region/invite/list/sent',
-  userReq.accountIdentifyValidator,
+  userReq.accountValidator,
   generalReq.queryListValidator,
   auth.isLoggedIn,
   invite.getSentInvitationList,
@@ -51,7 +51,7 @@ router.get('/:uid/:region/invite/list/sent',
 
 // invitation response (confirm/cancel)
 router.put('/:uid/:region/invite',
-  userReq.accountIdentifyValidator,
+  userReq.accountValidator,
   circleReq.friendRecipientValidator,
   auth.isLoggedIn,
   invite.replyInvitation,
@@ -59,7 +59,7 @@ router.put('/:uid/:region/invite',
 )
 
 router.get('/:uid/:region/friend/list',
-  userReq.accountIdentifyValidator,
+  userReq.accountValidator,
   generalReq.queryListValidator,
   auth.isLoggedIn,
   friend.list,
@@ -67,7 +67,7 @@ router.get('/:uid/:region/friend/list',
 )
 
 router.get('/:uid/:region/friend',
-  userReq.accountIdentifyValidator,
+  userReq.accountValidator,
   circleReq.targetAccountValidator,
   auth.isLoggedIn,
   friend.find,
@@ -75,7 +75,7 @@ router.get('/:uid/:region/friend',
 )
 
 router.delete('/:uid/:region/friend',
-  userReq.accountIdentifyValidator,
+  userReq.accountValidator,
   circleReq.targetAccountValidator,
   auth.isLoggedIn,
   friend.unfriend,

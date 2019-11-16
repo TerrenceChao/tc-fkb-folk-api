@@ -20,7 +20,6 @@ router.get('/', function (req, res, next) {
  */
 router.post('/signup',
   userReq.registerInfoValidator,
-  userReq.userInfoValidator,
   userReq.newPasswordValidator,
   auth.signup, // create user & send registration email
   userRes.signupSuccess
@@ -46,7 +45,7 @@ router.put('/newborn/code/:token',
 )
 
 router.post('/login',
-  userReq.accountValidator,
+  userReq.loginValidator,
   circleReq.queryListValidator,
   auth.login,
   generalRes.createdSuccess
@@ -59,7 +58,7 @@ router.post('/login',
  * [將來帳戶的資料庫sharding時得做額外處理]
  */
 router.get('/search',
-  userReq.accountValidator,
+  userReq.searchContactValidator,
   auth.searchAccount,
   generalRes.success
 )
@@ -71,7 +70,7 @@ router.get('/search',
  * [將來帳戶的資料庫sharding時得做額外處理]
  */
 router.get('/search/social',
-  userReq.accountValidator,
+  userReq.searchContactValidator,
   auth.searchSocialAccount,
   generalRes.success
 )
@@ -81,7 +80,7 @@ router.get('/search/social',
  * 在驗證資訊尚未被清除前 (驗證時清除)，不論作用幾次結果都相同。[idempotent]
  */
 router.put('/verification/send',
-  userReq.accountValidator,
+  userReq.verifyAccountValidator,
   auth.sendVerifyInfo,
   userRes.sendVerifySuccess
 )
@@ -109,7 +108,7 @@ router.put('/verification/code/:token',
  * session info (sessionID/cookie) has registered after [POST]:'/verification/code/:token'
  */
 router.put('/:uid/:region/password/reset',
-  userReq.accountIdentifyValidator,
+  userReq.accountValidator,
   userReq.newPasswordValidator, // 檢查兩次輸入的新密碼是否相同
   auth.isLoggedIn, // 已登入狀態 => validate session info by uid (req.params.uid)
   auth.resetPassword, // 直接變更新密碼
@@ -131,7 +130,7 @@ router.put('/verification/password/:token/:expire',
 )
 
 router.get('/:uid/:region/logout',
-  userReq.accountIdentifyValidator,
+  userReq.accountValidator,
   auth.isLoggedIn, // validate session info by uid (req.params.uid)
   auth.logout,
   generalRes.success
@@ -141,7 +140,7 @@ router.get('/:uid/:region/logout',
 
 // profile (get someone's profile, not only userself)
 router.get('/:uid/:region/profile',
-  userReq.accountIdentifyValidator,
+  userReq.accountValidator,
   userReq.visitorAccountValidator,
   auth.isLoggedIn, // validate session info by uid (req.params.uid)
   profile.getHeader,
@@ -150,36 +149,37 @@ router.get('/:uid/:region/profile',
 
 // setting
 router.get('/:uid/:region/setting/info',
-  userReq.accountIdentifyValidator,
+  userReq.accountValidator,
   auth.isLoggedIn, // validate session info by uid (req.params.uid)
   setting.getUserInfo,
   generalRes.success
 )
 
 router.put('/:uid/:region/setting/info',
-  userReq.accountIdentifyValidator,
-  userReq.userInfoValidator,
+  userReq.accountValidator,
+  userReq.updateUserInfoValidator,
   auth.isLoggedIn, // validate session info by uid (req.params.uid)
   setting.updateUserInfo,
   generalRes.success
 )
 
 router.get('/:uid/:region/setting/contact',
-  userReq.accountIdentifyValidator,
+  userReq.accountValidator,
   auth.isLoggedIn, // validate session info by uid (req.params.uid)
   setting.getUserContact,
   generalRes.success
 )
 
 router.put('/:uid/:region/setting/contact',
-  userReq.accountIdentifyValidator,
+  userReq.accountValidator,
+  userReq.updateContactValidator,
   auth.isLoggedIn, // validate session info by uid (req.params.uid)
   setting.updateUserContact,
   generalRes.success
 )
 
 router.put('/:uid/:region/setting/password',
-  userReq.accountIdentifyValidator,
+  userReq.accountValidator,
   userReq.passwordValidator,
   userReq.newPasswordValidator, // 檢查兩次輸入的新密碼是否相同
   auth.isLoggedIn, // 已登入狀態 => validate session info by uid (req.params.uid)
