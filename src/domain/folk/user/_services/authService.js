@@ -27,6 +27,16 @@ function AuthService (authRepo, userRepo) {
  * b. wirte [signupInfo-with-verification] into redis ...
  *
  * @param {Object} signupInfo
+ * @returns {{
+ *    region: string,
+ *    uid: string,
+ *    type: string,
+ *    acount: {{ email: string }|{ countryCode: string, phone: string }},
+ *    content: Object,
+ *    verify-token: string,
+ *    code: string,
+ *    expire: number
+ * }}
  */
 AuthService.prototype.signup = async function (signupInfo) {
   // check database (Does it exist?)
@@ -64,6 +74,9 @@ AuthService.prototype.signup = async function (signupInfo) {
 
 /**
  * @private
+ * @param {Object} signupInfo
+ * @param {{ token: string, code: string }} verifyInfo
+ * @returns {Object} signupInfo
  */
 AuthService.prototype.checkVerificaiton = function (signupInfo, verifyInfo) {
   const verification = signupInfo.verification
@@ -76,6 +89,10 @@ AuthService.prototype.checkVerificaiton = function (signupInfo, verifyInfo) {
 
 /**
  * @private
+ * @param {Object} userInfo
+ * @param {string} localDomain
+ * @param {string} mediaDomain
+ * @returns {Object} userInfo
  */
 AuthService.prototype.mergePublicInfo = function (userInfo, localDomain, mediaDomain) {
   userInfo.publicInfo = {
@@ -100,6 +117,7 @@ AuthService.prototype.mergePublicInfo = function (userInfo, localDomain, mediaDo
  *
  * @param {{ token: string, code: string|number }} verifyInfo
  * @param {string} domain
+ * @returns {Object...} userInfo with authentication (pwHash, pwSalt, lock, attempt)
  */
 AuthService.prototype.createVerifiedUser = async function (verifyInfo, domain) {
   return cache.pipeline()
@@ -124,6 +142,9 @@ AuthService.prototype.createVerifiedUser = async function (verifyInfo, domain) {
  * if user valid,
  * 1. create session info !!!!!!
  * 2. return user info
+ * @param {string} email
+ * @param {string} password
+ * @returns {Object...} userInfo with authentication (pwHash, pwSalt, lock, attempt)
  */
 AuthService.prototype.login = async function (email, password) {
   const selectedFields = C.USER_PUBLIC_INFO_AND_CONTACT.concat(C.USER_AUTHENTICATION)
@@ -149,6 +170,7 @@ AuthService.prototype.login = async function (email, password) {
  * 所以改為 object
  * @param {string} type email/phone
  * @param {{ email: string}|{ countryCode: string, phone: string}} accountContact
+ * @returns {{ email: string}|{ countryCode: string, phone: string}}
  */
 AuthService.prototype.searchAccountContact = async function (type, accountContact) {
   accountContact = await this.authRepo.getAccountUserByContact(type, accountContact)
@@ -156,7 +178,7 @@ AuthService.prototype.searchAccountContact = async function (type, accountContac
     throw new Error(`${arguments.callee.name}: account's ${type} not found!`)
   }
 
-  return util.mapKeysInCamelCase(accountContact)
+  return accountContact
 }
 
 /**
@@ -167,6 +189,16 @@ AuthService.prototype.searchAccountContact = async function (type, accountContac
  * @param {string} type email/phone
  * @param {{ email: string}|{ countryCode: string, phone: string}} accountContact
  * @param {boolean} expireTimeLimit
+ * @returns {{
+ *    region: string,
+ *    uid: string,
+ *    type: string,
+ *    acount: {{ email: string }|{ countryCode: string, phone: string }},
+ *    content: Object,
+ *    verify-token: string,
+ *    code: string,
+ *    expire: number
+ * }}
  */
 AuthService.prototype.findOrCreateVerification = async function (type, accountContact, expireTimeLimit = false) {
   let userInfo = await this.authRepo.getAccountUserByContact(type, accountContact, C.USER_PUBLIC_INFO_AND_CONTACT)
@@ -195,6 +227,8 @@ AuthService.prototype.findOrCreateVerification = async function (type, accountCo
  * [這裡屬於第一種]
  * token 隱含的資訊，已經能讓後端服務知道 token 要去哪一個區域(region)
  *  (Tokyo, Taipei, Sydney ...) 找尋用戶資料了
+ * @param {{ token: string, code: string }} verifyInfo
+ * @returns {Object} userInfo
  */
 AuthService.prototype.getVerifiedUser = async function (verifyInfo) {
   const { token, code } = verifyInfo
@@ -211,6 +245,8 @@ AuthService.prototype.getVerifiedUser = async function (verifyInfo) {
 
 /**
  * @private
+ * @param {Object} userInfo
+ * @returns {Object}
  */
 AuthService.prototype.checkExpiration = function (userInfo) {
   const timestamp = userInfo.expire
@@ -228,6 +264,9 @@ AuthService.prototype.checkExpiration = function (userInfo) {
  * [這裡屬於第二種]
  * token 隱含的資訊，已經能讓後端服務知道 token 要去哪一個區域(region)
  *  (Tokyo, Taipei, Sydney ...) 找尋用戶資料了
+ * @param {{ token: string, expire: string }} verifyInfo
+ * @param {string} newPassword
+ * @returns {Object} userInfo
  */
 AuthService.prototype.getVerifiedUserWithNewAuthorized = async function (verifyInfo, newPassword) {
   const { token, expire } = verifyInfo
@@ -247,6 +286,12 @@ AuthService.prototype.getVerifiedUserWithNewAuthorized = async function (verifyI
     })
 }
 
+/**
+ * @param {{ uid: string, region: string }} account
+ * @param {string} newPassword
+ * @param {string} oldPassword
+ * @returns {boolean}
+ */
 AuthService.prototype.resetPassword = async function (account, newPassword, oldPassword) {
   const auth = await this.authRepo.getAccountUser(account, C.USER_AUTHENTICATION)
   const pwSalt = auth.pw_salt

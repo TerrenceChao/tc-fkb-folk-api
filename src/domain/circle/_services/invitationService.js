@@ -13,6 +13,34 @@ function InvitationService (friendRepo, inviteRepo) {
 
 /**
  * TODO: 在 cross region 的情境下，一方檢查 recipient, 另一方檢查 inviter.
+ * @param {{ uid: string, region: string }} account
+ * @param {{
+ *  header: {
+ *    inviteEvent: string,
+ *    iid: number|null,
+ *    data: {
+ *      options: Array,
+ *      reply: boolean|null (在回覆邀請時才會有)
+ *    },
+ * },
+ *  inviter: {
+ *    uid: string,
+ *    region: string,
+ *    givenName: string,
+ *    familyname: string,
+ *    profileLink: string,
+ *    profilePic: string
+ * },
+ *  recipient: {
+ *    uid: string,
+ *    region: string,
+ *    givenName: string,
+ *    familyname: string,
+ *    profileLink: string,
+ *    profilePic: string
+ * }
+ * }} invitation 邀請函
+ * @returns {boolean} alway true
  */
 InvitationService.prototype.validateRoles = function (account, invitation) {
   // 'account' should be the valid 'recipient' or 'inviter'
@@ -24,6 +52,7 @@ InvitationService.prototype.validateRoles = function (account, invitation) {
 }
 
 /**
+ * 發送邀請函
  * 1. check if invitation has been sent for same person
  * 2. create invitation record.
  * @param {{
@@ -42,6 +71,7 @@ InvitationService.prototype.validateRoles = function (account, invitation) {
  *    profileLink: string,
  *    profilePic: string
  * }} recipientUserInfo
+ * @returns {Invitation}
  */
 InvitationService.prototype.inviteToBeFriend = async function (inviterUserInfo, recipientUserInfo) {
   const event = CIRCLE_CONST.INVITE_EVENT_FRIEND_INVITE
@@ -57,15 +87,18 @@ InvitationService.prototype.inviteToBeFriend = async function (inviterUserInfo, 
 /**
  * invitation.inviter (uid, region)
  * 如果邀請方(invitation.inviter) 發現之前對方也發過邀請函給自己，表示雙方都想交朋友，直接加好友
+ * @param {Invitation} invitation
+ * @param {boolean} director 在更新本地區域的資料庫時為 true, 當需要更新跨區域的資料庫時，此值為 false
+ * @returns {Invitation}
  */
-InvitationService.prototype.confirmFriendInvitation = async function (invitation, inviterAccount /** [deprecated] */, director = true) {
+InvitationService.prototype.confirmFriendInvitation = async function (invitation, director = true) {
   if (invitation == null) {
     throw new Error(`${arguments.callee.name}: Invitation not found`)
   }
 
   invitation = parseInvitation(invitation)
   invitation.header.data.reply = true
-  invitation = await this.handleFriendInvitation(invitation, null /** [deprecated] */, director)
+  invitation = await this.handleFriendInvitation(invitation, director)
 
   return invitation
 }
@@ -80,11 +113,12 @@ InvitationService.prototype.confirmFriendInvitation = async function (invitation
  *  1. check: is account === recipient ?
  *  2. delete record
  *
- * [NOTE]:
- * invitationRespose 中的 recipient & inviter, 一定有:
- * { uid, region, givenName, familyName, profileLink, profilePic}
+ * [NOTE]: invitationRespose 中的 recipient & inviter, 一定有: { uid, region, givenName, familyName, profileLink, profilePic}
+ * @param {Invitation} invitationRespose 具回覆資訊的邀請函
+ * @param {boolean} director 在更新本地區域的資料庫時為 true, 當需要更新跨區域的資料庫時，此值為 false
+ * @returns {Invitation}
  */
-InvitationService.prototype.handleFriendInvitation = async function (invitationRespose, account /** [deprecated] */, director = true) {
+InvitationService.prototype.handleFriendInvitation = async function (invitationRespose, director = true) {
   const recipient = invitationRespose.recipient
   const inviter = invitationRespose.inviter
 
@@ -126,23 +160,37 @@ InvitationService.prototype.handleFriendInvitation = async function (invitationR
 }
 
 /**
+ * TODO: 不會只有一個，在 invitationInfo 多加一個屬性：type (inviter or recipient). invitation repo test will be modified
  * get entire invitation by account & invitationInfo (iid, region)
+ * @param {{ uid: string, region: string }} account
+ * @param {{ iid: number }|{ event: string }|{ iid: number, event: string }} invitationInfo
+ * @returns {Invitation}
  */
 InvitationService.prototype.getInvitation = async function (account, invitationInfo) {
-  /**
-   * TODO: 不會只有一個，在 invitationInfo 多加一個屬性：type (inviter or recipient)
-   * invitation repo test will be modified
-   */
   const invitation = await this.inviteRepo.getInvitation(account, invitationInfo)
   // ...
   return parseInvitation(invitation)
 }
 
+/**
+ * account is inviter, get invitation(s) he/she sent & not being confirmed
+ * @param {{ uid: string, region: string }} account
+ * @param {number} limit
+ * @param {number} skip
+ * @returns {Invitation[]}
+ */
 InvitationService.prototype.getSentInvitationList = async function (account, limit = LIMIT, skip = SKIP) {
   const sentInvitationList = await this.inviteRepo.getSentInvitationList(account, limit, skip)
   return sentInvitationList.map(invitation => parseInvitation(invitation))
 }
 
+/**
+ * account is recipient, get invitation(s) he/she doesn't replied
+ * @param {{ uid: string, region: string }} account
+ * @param {number} limit
+ * @param {number} skip
+ * @returns {Invitation[]}
+ */
 InvitationService.prototype.getReceivedInvitationList = async function (account, limit = LIMIT, skip = SKIP) {
   const receivedInvitationList = await this.inviteRepo.getReceivedInvitationList(account, limit, skip)
   return receivedInvitationList.map(invitation => parseInvitation(invitation))

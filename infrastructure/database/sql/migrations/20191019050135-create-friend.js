@@ -11,18 +11,7 @@ module.exports = {
       userId: {
         allowNull: false,
         type: Sequelize.UUID,
-        field: 'user_id',
-        references: {
-          model: {
-            tableName: 'Accounts'
-          },
-          key: 'id'
-        },
-        onDelete: 'CASCADE',
-        onUpdate: 'CASCADE'
-      },
-      category: {
-        type: Sequelize.STRING(40)
+        field: 'user_id'
       },
       friendId: {
         allowNull: false,

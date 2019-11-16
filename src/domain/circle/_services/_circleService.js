@@ -9,7 +9,12 @@ function CircleService () {
   console.log(`init ${arguments.callee.name}`)
 }
 
-CircleService.prototype.handleInviteActivity = async function (invitationService, relationship, account /** [deprecated] */) {
+/**
+ * @param {InvitationService} invitationService
+ * @param {{ type: number, relation: string, invitation: Invitation|null, owner: Object|null, visitor: Object|null }} relationship
+ * @returns {Promise}
+ */
+CircleService.prototype.handleInviteActivity = async function (invitationService, relationship) {
   switch (relationship.type) {
     // 1. user self
     case CONSTANT.RELATION_STATUS_SELF:
@@ -21,7 +26,7 @@ CircleService.prototype.handleInviteActivity = async function (invitationService
 
     // 3. add friend & notify
     case CONSTANT.RELATION_STATUS_BE_INVITED:
-      return Promise.resolve(invitationService.confirmFriendInvitation(relationship.invitation, account /** [deprecated] */))
+      return Promise.resolve(invitationService.confirmFriendInvitation(relationship.invitation))
 
     // 4. send invitation & notify (has invited)
     case CONSTANT.RELATION_STATUS_INVITED:
@@ -41,6 +46,9 @@ CircleService.prototype.handleInviteActivity = async function (invitationService
 /**
  * [NOTE] DONT async!!!!!
  * TODO:check the process if request is cross-region
+ * @param {NotificationService} notificationService
+ * @param {{ uid: string, region: string }} account
+ * @param {{ uid: string, region: string }} targetAccount
  */
 CircleService.prototype.handleNotifyUnfriendActivity = function (notificationService, account, targetAccount) {
   // const registerRegion = account.region
@@ -75,6 +83,11 @@ CircleService.prototype.handleNotifyUnfriendActivity = function (notificationSer
 /**
  * [NOTE] DONT async!!!!!
  * TODO: test doesn't pass.
+ * @param {FriendService} friendService
+ * @param {NotificationService} notificationService
+ * @param {{ uid: string, region: string }} account
+ * @param {any} packet
+ * @param {number} batchLimit
  */
 CircleService.prototype.handleNotifyAllFriendsActivity = function (friendService, notificationService, account, packet, batchLimit = CONSTANT.FRIEND_BATCH_LIMIT) {
   (async function (friendList, skip) {

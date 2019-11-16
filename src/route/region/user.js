@@ -5,6 +5,7 @@ var circleReq = require('../../protocol/http/request/circle/circleReq')
 var auth = require('../../protocol/http/v1/controller/region/user/auth')
 var profile = require('../../protocol/http/v1/controller/region/user/profile')
 var setting = require('../../protocol/http/v1/controller/region/user/setting')
+var userRes = require('../../protocol/http/response/user/userRes')
 var generalRes = require('../../protocol/http/response/generalRes')
 
 /* GET user listing. */
@@ -22,7 +23,7 @@ router.post('/signup',
   userReq.userInfoValidator,
   userReq.newPasswordValidator,
   auth.signup, // create user & send registration email
-  generalRes.createdSuccess
+  userRes.signupSuccess
   /**
    * options to the landing page:
    * 1. front-end pop-up dialog to enter [verify-code] in the registration email,
@@ -82,7 +83,7 @@ router.get('/search/social',
 router.put('/verification/send',
   userReq.accountValidator,
   auth.sendVerifyInfo,
-  generalRes.success
+  userRes.sendVerifySuccess
 )
 
 /**

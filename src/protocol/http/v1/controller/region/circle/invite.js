@@ -19,7 +19,7 @@ exports.sendInvitation = async (req, res, next) => {
 
   Promise.resolve(invitationService.validateRoles(account, req.body))
     .then(() => friendService.getRelationship(recipientUserInfo, inviterUserInfo))
-    .then(relationship => circleService.handleInviteActivity(invitationService, relationship, inviterUserInfo /** [deprecated] */))
+    .then(relationship => circleService.handleInviteActivity(invitationService, relationship))
     .then(invitation => notificationService.emitFriendInvitation(res.locals.data = invitation))
     .then(() => next())
     .catch(err => next(err))
@@ -47,7 +47,7 @@ exports.replyInvitation = async (req, res, next) => {
   res.locals.data = util.init(res.locals.data)
 
   Promise.resolve(invitationService.validateRoles(account, invitationRespose))
-    .then(() => invitationService.handleFriendInvitation(invitationRespose, account /** [deprecated] */))
+    .then(() => invitationService.handleFriendInvitation(invitationRespose))
     .then(invitationRespose => notificationService.emitFriendInvitation(res.locals.data = invitationRespose))
     .then(() => next())
     .catch(err => next(err))

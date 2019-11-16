@@ -1,5 +1,7 @@
+const { mapKeysInCamelCase } = require('../../../../property/util')
+
 function findFriendListSuccess (friendList, req, res, next) {
-  res.locals.data = friendList
+  res.locals.data = friendList.map(friend => mapKeysInCamelCase(friend))
   res.locals.meta = {
     msgCode: '100000'
   }
@@ -9,7 +11,7 @@ function findFriendListSuccess (friendList, req, res, next) {
 }
 
 function findFriendSuccess (friend, req, res, next) {
-  res.locals.data = friend
+  res.locals.data = mapKeysInCamelCase(friend)
   res.locals.meta = {
     msgCode: '100000'
   }

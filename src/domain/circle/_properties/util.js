@@ -1,5 +1,4 @@
 const _ = require('lodash')
-const { mapKeysInCamelCase } = require('../../../property/util')
 const USER_COMMON_PUBLIC_INFO = require('./constant').USER_COMMON_PUBLIC_INFO
 
 /**
@@ -112,6 +111,5 @@ module.exports = {
   parseInvitationRoles,
   parseInvitation,
   genFriendInvitationDBInfo,
-  confirmFriendRecords,
-  mapKeysInCamelCase
+  confirmFriendRecords
 }

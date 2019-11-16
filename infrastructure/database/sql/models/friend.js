@@ -2,7 +2,6 @@
 module.exports = (sequelize, DataTypes) => {
   const Friend = sequelize.define('Friend', {
     userId: DataTypes.UUID,
-    category: DataTypes.STRING,
     friendId: DataTypes.UUID,
     friendRegion: DataTypes.STRING,
     publicInfo: DataTypes.JSONB,

@@ -1,7 +1,7 @@
 const _ = require('lodash')
 const crypto = require('crypto')
 const cryptoRandomString = require('crypto-random-string')
-const { hasKeys, mapKeysInCamelCase } = require('../../../../property/util')
+const { hasKeys } = require('../../../../property/util')
 const { EXPIRATION_SECS, ACCOUT_IDENTITY, USER_PRIVATE_INFO } = require('./constant')
 
 /**
@@ -44,9 +44,7 @@ function parseUserInfo (user) {
   const publicInfo = user.publicInfo
   delete user.publicInfo
 
-  if (user.expire) {
-    user.expire = parseInt(user.expire)
-  }
+  user.expire && (user.expire = parseInt(user.expire))
 
   return _.assign(user, publicInfo)
 }
@@ -112,10 +110,7 @@ function genVerification (userInfo, expire = null, unique = false) {
  */
 function genVerificationPacket (type, accountContact, userInfo, newVerification) {
   const verification = (newVerification === undefined) ? userInfo.verification : newVerification
-
-  if (verification.expire) {
-    verification.expire = parseInt(verification.expire)
-  }
+  verification.expire && (verification.expire = parseInt(verification.expire))
 
   return {
     region: userInfo.region,
@@ -141,6 +136,5 @@ module.exports = {
   genProfilePic,
   getExpiration,
   genVerification,
-  genVerificationPacket,
-  mapKeysInCamelCase
+  genVerificationPacket
 }

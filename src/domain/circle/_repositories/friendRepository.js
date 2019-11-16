@@ -15,7 +15,7 @@ function FriendRepository (pool) {
  * but may alse inclues { givenName, familyName, fullName(option), profilePic, profileLink } [同區域/跨區域操作皆需要如此]
  * @param {{ uid: string, region: string }} account
  * @param {Object} targetUserInfo
- * @return {Object|null} friend
+ * @returns {Object|null} friend
  */
 FriendRepository.prototype.addFriend = async function (account, targetUserInfo) {
   let idx = 1
@@ -44,7 +44,7 @@ FriendRepository.prototype.addFriend = async function (account, targetUserInfo) 
  * but may alse inclues { givenName, familyName, fullName(option), profilePic, profileLink } [同區域/跨區域操作皆需要如此]
  * @param {Object} userInfo
  * @param {Object} targetUserInfo
- * @return {Object[]} friends (return array with 2 records)
+ * @returns {Object[]} friends (return array with 2 records)
  */
 FriendRepository.prototype.makeFriends = async function (userInfo, targetUserInfo) {
   let idx = 1
@@ -77,13 +77,13 @@ FriendRepository.prototype.makeFriends = async function (userInfo, targetUserInf
 /**
  * @param {{ uid: string, region: string }} account
  * @param {{ uid: string, region: string }} targetAccount
- * @return {Object|null} friend
+ * @returns {Object|null} friend
  */
 FriendRepository.prototype.getFriend = async function (account, targetAccount) {
   let idx = 1
   return this.query(
     `
-    SELECT user_id AS uid, category, friend_id, friend_region, public_info
+    SELECT user_id AS uid, friend_id, friend_region, public_info
     FROM "Friends"
     WHERE
       deleted_at IS NULL AND
@@ -103,13 +103,13 @@ FriendRepository.prototype.getFriend = async function (account, targetAccount) {
  * @param {{ uid: string, region: string }} account
  * @param {number} limit
  * @param {number} skip
- * @return {Object[]} friend list
+ * @returns {Object[]} friend list
  */
 FriendRepository.prototype.getFriendList = async function (account, limit, skip) {
   let idx = 1
   return this.query(
     `
-    SELECT user_id AS uid, category, friend_id, friend_region, public_info
+    SELECT user_id AS uid, friend_id, friend_region, public_info
     FROM "Friends"
     WHERE
       deleted_at IS NULL AND
@@ -133,7 +133,7 @@ FriendRepository.prototype.getFriendList = async function (account, limit, skip)
  * @param {{ uid: string, region: string }} account
  * @param {{ uid: string, region: string }} targetAccount
  * @param {Object} publicInfo
- * @return {Object|null} updatedFriend
+ * @returns {Object|null} updatedFriend
  */
 FriendRepository.prototype.updateFriend = async function (account, targetAccount, publicInfo) {
   let idx = 1
@@ -164,7 +164,7 @@ FriendRepository.prototype.updateFriend = async function (account, targetAccount
  * @param {{ uid: string, region: string }} account
  * @param {{ uid: string, region: string }} targetAccount
  * @param {boolean} softDelete
- * @return {Object|null} deletedFriend
+ * @returns {Object|null} deletedFriend
  */
 FriendRepository.prototype.removeFriend = async function (account, targetAccount, softDelete = false) {
   let idx = 1
@@ -193,7 +193,7 @@ FriendRepository.prototype.removeFriend = async function (account, targetAccount
  * @param {{ uid: string, region: string }} account
  * @param {{ uid: string, region: string }} targetAccount
  * @param {boolean} softDelete
- * @return {Object[]} friends (return array with 2 records)
+ * @returns {Object[]} friends (return array with 2 records)
  */
 FriendRepository.prototype.unfriend = async function (account, targetAccount, softDelete = false) {
   let idx = 1
