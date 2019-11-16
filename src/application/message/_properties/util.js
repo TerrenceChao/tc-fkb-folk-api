@@ -9,7 +9,7 @@ const httpHandler = require('../../../library/httpHandler')
  */
 function authRequest (event, userInfo) {
   const options = HTTP.AUTHENTICATE.OPTIONS
-  options.headers = _.assignIn(options.headers, {
+  options.headers = _.assign(options.headers, {
     uid: userInfo.uid,
     clientuseragent: userInfo.clientuseragent
   })
@@ -25,7 +25,7 @@ function authRequest (event, userInfo) {
  */
 function syncAuthRequest (event, userInfo) {
   const options = HTTP.AUTHENTICATE.OPTIONS
-  options.headers = _.assignIn(options.headers, {
+  options.headers = _.assign(options.headers, {
     uid: userInfo.uid,
     clientuseragent: userInfo.clientuseragent
   })
@@ -40,7 +40,7 @@ function syncAuthRequest (event, userInfo) {
  */
 function authRequestTest (event) {
   const options = HTTP.AUTHENTICATE.OPTIONS
-  options.headers = _.assignIn(options.headers, {
+  options.headers = _.assign(options.headers, {
     'robot-uid': 'robot-uid',
     'client-robot-agent': 'client-robot-agent'
   })

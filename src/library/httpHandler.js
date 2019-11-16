@@ -157,7 +157,7 @@ function request (service, event, options, retry = 0) {
       }
 
       if (retry < HTTP.RETRY_LIMIT) {
-        console.error(err || _.assignIn({ statusCode: response.statusCode }, body))
+        console.error(err || _.assign({ statusCode: response.statusCode }, body))
         setTimeout(() => request(service, event, options, ++retry), HTTP.DELAY)
       } else {
         console.error(`request ${service} ${event} fail!\nreach the retry limit: ${HTTP.RETRY_LIMIT}`)
@@ -196,7 +196,7 @@ function syncRequest (service, event, options, callback, data = null, retry = 0)
         }
 
         if (retry < HTTP.RETRY_LIMIT) {
-          console.error(err || _.assignIn({ statusCode: response.statusCode }, body))
+          console.error(err || _.assign({ statusCode: response.statusCode }, body))
           setTimeout(() => resolve(syncRequest(service, event, options, callback, data, ++retry)), HTTP.DELAY)
         } else {
           const errMsg = `request ${service} ${event} fail!\nreach the retry limit: ${HTTP.RETRY_LIMIT}`

@@ -92,7 +92,7 @@ CircleService.prototype.handleNotifyUnfriendActivity = function (notificationSer
 CircleService.prototype.handleNotifyAllFriendsActivity = function (friendService, notificationService, account, packet, batchLimit = CONSTANT.FRIEND_BATCH_LIMIT) {
   (async function (friendList, skip) {
     while ((friendList = await friendService.list(account, batchLimit, skip)).length > 0) {
-      notificationService.emitEvent(_.assignIn(packet, { receivers: friendList }))
+      notificationService.emitEvent(_.assign(packet, { receivers: friendList }))
       skip += batchLimit
     }
   })([], 0)

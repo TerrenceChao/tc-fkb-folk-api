@@ -25,7 +25,7 @@ exports.getUserInfo = async (req, res, next) => {
  */
 exports.updateUserInfo = async (req, res, next) => {
   var account = req.params
-  var userInfo = _.assignIn(req.body, account)
+  var userInfo = _.assign(req.body, account)
   var message = {
     sender: account,
     packet: {
@@ -47,9 +47,9 @@ exports.updateUserInfo = async (req, res, next) => {
   res.locals.data = util.init(res.locals.data)
 
   Promise.resolve(settingService.updateUserInfo(account, userInfo))
-    .then(updated => updated === true ? (res.locals.data = _.assignIn(res.locals.data, userInfo)) : Promise.reject(new Error('Update user info fail')))
-    .then(() => notificationService.emitEvent(_.assignIn(message, updateSearchQuery)))
-    .then(() => circleService.handleNotifyAllFriendsActivity(friendService, notificationService, account, _.assignIn(message, notifyFriend)))
+    .then(updated => updated === true ? (res.locals.data = _.assign(res.locals.data, userInfo)) : Promise.reject(new Error('Update user info fail')))
+    .then(() => notificationService.emitEvent(_.assign(message, updateSearchQuery)))
+    .then(() => circleService.handleNotifyAllFriendsActivity(friendService, notificationService, account, _.assign(message, notifyFriend)))
     .then(() => next())
     .catch(err => next(err))
 }
@@ -66,7 +66,7 @@ exports.getUserContact = async (req, res, next) => {
 
 exports.updateUserContact = async (req, res, next) => {
   var account = req.params
-  var userContact = _.assignIn(req.body, account)
+  var userContact = _.assign(req.body, account)
 
   Promise.resolve(settingService.updateUserContact(account, userContact))
     .then(updated => updated === true ? (res.locals.data = userContact) : Promise.reject(new Error('Update user contact fail')))

@@ -147,7 +147,7 @@ AuthRepository.prototype.generateFakeAccounts = async function (amount) {
       birth: faker.date,
     }
 
-    userDB.set(fakeAccount.email, _.assignIn(fakeAccount, genAccountData()))
+    userDB.set(fakeAccount.email, _.assign(fakeAccount, genAccountData()))
     list.push(_.omit(Object.create(userDB.get(fakeAccount.email)), ['verificaiton', 'friendList']))
   }
 
@@ -579,7 +579,7 @@ AuthRepository.prototype.updateUser = async function (account, newUserInfo) {
   for (const userInfo of userDB.values()) {
     if (userInfo.uid === account.uid && userInfo.region === account.region) {
       // email 不可變更！
-      const updatedUserInfo = _.assignIn(userInfo, newUserInfo)
+      const updatedUserInfo = _.assign(userInfo, newUserInfo)
       userDB.set(userInfo.email, updatedUserInfo)
       return true
     }
@@ -633,7 +633,7 @@ AuthRepository.prototype.getAccountUserByContact = async function(type, account)
 AuthRepository.prototype.createAccountUser = async function (signupInfo) {
   // 測試用的特例
   if (TEST_ACCOUNT_DATA.has(signupInfo.email)) {
-    let newUSer = _.assignIn(signupInfo, TEST_ACCOUNT_DATA.get(signupInfo.email))
+    let newUSer = _.assign(signupInfo, TEST_ACCOUNT_DATA.get(signupInfo.email))
     newUSer.friendList = []
     userDB.set(signupInfo.email, newUSer)
     return _.omit(userDB.get(signupInfo.email), ['verificaiton', 'friendList'])
@@ -643,7 +643,7 @@ AuthRepository.prototype.createAccountUser = async function (signupInfo) {
     throw new Error(`This user has registered`)
   }
 
-  userDB.set(signupInfo.email, _.assignIn(signupInfo, genAccountData()))
+  userDB.set(signupInfo.email, _.assign(signupInfo, genAccountData()))
 
   return _.omit(Object.create(userDB.get(signupInfo.email)), ['verificaiton', 'friendList'])
 }

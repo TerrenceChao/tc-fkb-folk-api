@@ -116,7 +116,7 @@ AuthService.prototype.login = async function (email, password) {
     email: user.email
   })
 
-  return _.assignIn(user, { auth })
+  return _.assign(user, { auth })
 }
 
 AuthService.prototype.searchAccountContact = async function (type, account) {
