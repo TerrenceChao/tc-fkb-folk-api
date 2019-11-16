@@ -56,9 +56,6 @@ app.use(`${PREFIX}/user`, userRouter)
 app.use(`${PREFIX}/circle`, circleRouter)
 app.use(`${PREFIX}/feeds`, feedsRouter)
 
-// TODO: for temporary (實驗，模擬情境用, 之後會移除)
-app.use(`${PREFIX}/simulate`, require('./src/route/__simulation'))
-
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
   next(createError(404))
