@@ -8,22 +8,19 @@ exports.USER_PUBLIC_INFO = process.env.USER_PUBLIC_INFO ? process.env.USER_PUBLI
   'gender',
   'lang',
   'publicInfo' // 'profileLink', /** path: publicInfo.profileLink */ 'profilePic', /** path: publicInfo.profilePic */
-
   // 'fullName'
 ]
 
 exports.USER_PRIVATE_INFO = process.env.USER_PRIVATE_INFO ? process.env.USER_PRIVATE_INFO.split(',') : [
-  // 'auth',
   'region',
   'uid',
   'beSearched',
   'givenName',
   'familyName',
   'gender',
-  // 'birth',
+  'birth',
   'lang',
   'publicInfo' // 'profileLink', /** path: publicInfo.profileLink */ 'profilePic', /** path: publicInfo.profilePic */
-
   // 'fullName'
 ]
 

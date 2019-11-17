@@ -9,17 +9,22 @@ const validateErr = require('../../../../property/util').validateErr
  * 未來如果真的實現異地部署，這裡的檢查欄位可能更多
  */
 exports.registerInfoValidator = (req, res, next) => {
-  Array.apply(null, ['region'].forEach(field => {
-    if (req.headers[field] === undefined &&
-      req.params[field] === undefined &&
-      req.query[field] === undefined &&
-      req.body[field] === undefined) {
-      var err = new Error(`account identify is lacked with: ${field}`)
-      err.status = 422
-      return next(err)
-    }
-  }))
-  next()
+  res.locals.data = {}
+  const validation = new Validator(req.body, {
+    region: 'required|string',
+    email: 'required|email',
+    givenName: 'required|string',
+    familyName: 'required|string',
+    gender: 'required|string',
+    lang: 'required|string',
+    // unnecessary
+    alternateEmail: 'email',
+    countryCode: 'string',
+    phone: 'string',
+    device: '',
+    birth: 'date'
+  })
+  validation.passes() ? next() : res.status(422).json(validateErr(validation, 'registerInfoValidator'))
 }
 
 exports.loginValidator = (req, res, next) => {
@@ -134,10 +139,20 @@ exports.verificationValidator = (req, res, next) => {
 
 const UPDATE_USER_INFO_RULES = {}
 C.USER_PRIVATE_INFO.forEach(field => {
-  if (field === 'beSearched') {
-    UPDATE_USER_INFO_RULES[field] = 'boolean'
-  } else if (!C.ACCOUT_IDENTITY.includes(field) && field !== 'publicInfo') {
-    UPDATE_USER_INFO_RULES[field] = 'string'
+  if (!C.ACCOUT_IDENTITY.includes(field)) {
+    switch (field) {
+      case 'beSearched':
+        UPDATE_USER_INFO_RULES[field] = 'boolean'
+        break
+      case 'birth':
+        UPDATE_USER_INFO_RULES[field] = 'date'
+        break
+      case 'publicInfo':
+        // do nothing
+        break
+      default:
+        UPDATE_USER_INFO_RULES[field] = 'string'
+    }
   }
 })
 
