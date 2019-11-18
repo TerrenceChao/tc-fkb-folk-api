@@ -6,8 +6,8 @@ const {
 const CONSTANT = require('../../../../../../domain/folk/user/_properties/constant')
 var notificationService = require('../../../../../../application/notification/_services/_notificationService')
 var circleService = require('../../../../../../domain/circle/_services/_circleService')
-var { settingService } = require('../../../../../../domain/folk/user/_services/settingService')
-var { friendService } = require('../../../../../../domain/circle/_services/friendService')
+var { settingService } = require('../../../../../../domain/folk/user/_services/settingServiceTemp')
+var { friendService } = require('../../../../../../domain/circle/_services/friendServiceTemp')
 var util = require('../../../../../../property/util')
 
 exports.getUserInfo = async (req, res, next) => {

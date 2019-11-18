@@ -1,7 +1,7 @@
 var notificationService = require('../../../../../../application/notification/_services/_notificationService')
 var circleService = require('../../../../../../domain/circle/_services/_circleService')
-var { friendService } = require('../../../../../../domain/circle/_services/friendService')
-var { invitationService } = require('../../../../../../domain/circle/_services/invitationService')
+var { friendService } = require('../../../../../../domain/circle/_services/friendServiceTemp')
+var { invitationService } = require('../../../../../../domain/circle/_services/invitationServiceTemp')
 var util = require('../../../../../../property/util')
 
 /**
