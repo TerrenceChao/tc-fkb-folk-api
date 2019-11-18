@@ -63,7 +63,7 @@ AuthService.prototype.signup = async function (signupInfo) {
   signupInfo.uid = signupInfo.uid || uuidv4()
 
   return cache.pipeline()
-    .set(newVerification.token, Buffer.from(JSON.stringify(signupInfo)), 'ex', expire)
+    .set(newVerification.token, Buffer.from(JSON.stringify(signupInfo)), 'ex', util.getTTL())
     .exec()
     .then(() => util.genVerificationPacket('email', { email }, signupInfo))
     .catch(err => {

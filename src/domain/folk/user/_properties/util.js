@@ -72,6 +72,10 @@ function getExpiration () {
   return Date.now() + EXPIRATION_SECS * 1000
 }
 
+function getTTL () {
+  return EXPIRATION_SECS
+}
+
 /**
  * TODO: 尚未實現。產生出的 token 能找出 uid, region 資訊。
  * @param {Object} userInfo
@@ -135,6 +139,7 @@ module.exports = {
   genProfileLink,
   genProfilePic,
   getExpiration,
+  getTTL,
   genVerification,
   genVerificationPacket
 }
