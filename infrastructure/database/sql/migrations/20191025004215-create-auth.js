@@ -65,9 +65,6 @@ module.exports = {
       }
     }, {
       uniqueKeys: {
-        unique_user: {
-          fields: ['user_id']
-        },
         unique_verify_token: {
           fields: ['verify_token']
         }

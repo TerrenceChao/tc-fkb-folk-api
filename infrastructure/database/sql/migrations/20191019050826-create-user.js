@@ -66,12 +66,6 @@ module.exports = {
         field: 'updated_at',
         defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
       }
-    }, {
-      uniqueKeys: {
-        unique_user: {
-          fields: ['user_id']
-        }
-      }
     })
   },
   down: (queryInterface, Sequelize) => {
