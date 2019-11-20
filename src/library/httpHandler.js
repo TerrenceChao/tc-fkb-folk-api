@@ -13,11 +13,6 @@ function genRequestDomain (req) {
 function parseAuthentication (req) {
   const { uid, region } = req.params
   const token = req.headers.token // authorized token
-  if (uid === undefined || region === undefined || token === undefined) {
-    var err = new Error('Parse Authorization Error: lack with necessary authorization fields')
-    err.status = 422
-    return Promise.reject(err)
-  }
 
   return {
     uid,
@@ -33,11 +28,6 @@ function parseAuthentication (req) {
 function parseVerifyCode (req) {
   const token = req.params.token // verify token
   const code = req.body.code
-  if (token === undefined || code === undefined) {
-    var err = new Error('Parse Verification Error: lack with necessary verification fields')
-    err.status = 422
-    return Promise.reject(err)
-  }
 
   return {
     token, // verify token
