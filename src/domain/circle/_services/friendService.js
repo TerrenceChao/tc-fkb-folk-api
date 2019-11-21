@@ -1,7 +1,7 @@
 const CONSTANT = require('../../../property/constant')
 const { sameAccounts } = require('../../../property/util')
 const CIRCLE_CONST = require('../_properties/constant')
-const { parseInvitation } = require('../_properties/util')
+const { parseFriendInvitation } = require('../_properties/util')
 const userRepo = require('../../folk/user/_repositories/userRepository').userRepository
 const inviteRepo = require('../../circle/_repositories/invitationRepository').invitationRepository
 const friendRepo = require('../../circle/_repositories/friendRepository').friendRepository
@@ -131,7 +131,7 @@ FriendService.prototype.getRelationship = async function (ownerAccount, visitorA
     }
   }
 
-  invitation = parseInvitation(invitation)
+  invitation = parseFriendInvitation(invitation)
   // 3. user (account) is invited
   if (sameAccounts(invitation.recipient, visitorAccount)) {
     return {

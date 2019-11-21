@@ -1,41 +1,6 @@
 const _ = require('lodash')
+const uuidv3 = require('uuid/v3')
 const USER_COMMON_PUBLIC_INFO = require('./constant').USER_COMMON_PUBLIC_INFO
-
-/**
- * @param {{ inviter: Object, recipient: Object, header: Object }} invitation
- */
-function parseInvitationRoles (invitation) {
-  return {
-    inviter: {
-      uid: invitation.inviter_id || invitation.inviterId,
-      region: invitation.inviter_region || invitation.inviterRegion
-    },
-    recipient: {
-      uid: invitation.recipient_id || invitation.recipientId,
-      region: invitation.recipient_region || invitation.recipientRegion
-    }
-  }
-}
-
-/**
- * @param {{ inviter: Object, recipient: Object, header: Object }} invitation
- */
-function parseInvitation (invitation) {
-  return {
-    inviter: _.assign({
-      uid: invitation.inviter_id || invitation.inviterId,
-      region: invitation.inviter_region || invitation.inviterRegion
-    }, invitation.info.inviter),
-    recipient: _.assign({
-      uid: invitation.recipient_id || invitation.recipientId,
-      region: invitation.recipient_region || invitation.recipientRegion
-    }, invitation.info.recipient),
-    header: _.assign({
-      iid: invitation.iid,
-      inviteEvent: invitation.event
-    }, invitation.info.header)
-  }
-}
 
 /**
  * @param {{
@@ -54,17 +19,56 @@ function parseInvitation (invitation) {
   *    profileLink: string,
   *    profilePic: string
   * }} recipientUserInfo
+  * @param {string} event
+  * @returns { iid: string, info: Object }
  */
-function genFriendInvitationDBInfo (inviterUserInfo, recipientUserInfo) {
+function genFriendInvitationDBParams (inviterUserInfo, recipientUserInfo, event) {
+  const recipientPart = recipientUserInfo.uid
+    .concat('_').concat(recipientUserInfo.region)
+    .concat('_').concat(event)
+    .concat('_').concat(inviterUserInfo.region)
+  const iid = uuidv3(recipientPart, inviterUserInfo.uid) // uuidv3(string, owner_namespace: uuid)
   return {
-    inviter: _.pick(inviterUserInfo, USER_COMMON_PUBLIC_INFO),
-    recipient: _.pick(recipientUserInfo, USER_COMMON_PUBLIC_INFO),
-    header: {
-      data: {
-        options: [true, false]
+    iid,
+    info: {
+      inviter: _.pick(inviterUserInfo, USER_COMMON_PUBLIC_INFO),
+      recipient: _.pick(recipientUserInfo, USER_COMMON_PUBLIC_INFO),
+      header: {
+        data: {
+          options: [true, false]
+        }
       }
     }
   }
+}
+
+/**
+ * @param {{ inviter: Object, recipient: Object, header: Object }} invitation
+ */
+function parseFriendInvitation (invitation) {
+  return {
+    inviter: _.assign({
+      uid: invitation.inviter_id || invitation.inviterId,
+      region: invitation.inviter_region || invitation.inviterRegion
+    }, invitation.info.inviter),
+    recipient: _.assign({
+      uid: invitation.recipient_id || invitation.recipientId,
+      region: invitation.recipient_region || invitation.recipientRegion
+    }, invitation.info.recipient),
+    header: _.assign({
+      iid: invitation.iid,
+      inviteEvent: invitation.event
+    }, invitation.info.header)
+  }
+}
+
+/**
+ *
+ * @param {string} ownerUid
+ * @param {{ uid: string, region: string }} friendAccount
+ */
+function genFriendRowId (ownerUid, friendAccount) {
+  return uuidv3(friendAccount.uid.concat('_').concat(friendAccount.region), ownerUid) // uuidv3(string, owner_namespace: uuid)
 }
 
 /**
@@ -108,8 +112,8 @@ function confirmFriendRecords (sourceList, targetList) {
 }
 
 module.exports = {
-  parseInvitationRoles,
-  parseInvitation,
-  genFriendInvitationDBInfo,
+  genFriendInvitationDBParams,
+  parseFriendInvitation,
+  genFriendRowId,
   confirmFriendRecords
 }

@@ -4,9 +4,9 @@ module.exports = {
     return queryInterface.createTable('Invitations', {
       iid: {
         allowNull: false,
-        autoIncrement: true,
         primaryKey: true,
-        type: Sequelize.BIGINT
+        type: Sequelize.UUID,
+        defaultValue: Sequelize.UUIDV4
       },
       inviterId: {
         allowNull: false,
@@ -52,18 +52,6 @@ module.exports = {
         type: 'TIMESTAMP',
         field: 'updated_at',
         defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
-      }
-    }, {
-      uniqueKeys: {
-        unique_invitation: {
-          fields: [
-            'inviter_id',
-            'inviter_region',
-            'recipient_id',
-            'recipient_region',
-            'event'
-          ]
-        }
       }
     })
   },

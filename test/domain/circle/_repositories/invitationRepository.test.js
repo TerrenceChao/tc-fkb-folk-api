@@ -4,7 +4,7 @@ const config = require('config')
 const Repository = require(path.join(config.src.library, 'Repository'))
 const { AuthRepository } = require(path.join(config.src.repository.user, 'authRepository'))
 const { InvitationRepository } = require(path.join(config.src.repository.circle, 'invitationRepository'))
-const { genSignupInfo, genDBInvitationInfo } = require(path.join(config.test.common, 'mock'))
+const { genSignupInfo, genDBInvitationRowId, genDBInvitationInfo } = require(path.join(config.test.common, 'mock'))
 const { assertInvitation, sortJSONByKeys } = require(path.join(config.test.common, 'assert'))
 
 const pool = config.database.pool
@@ -30,9 +30,10 @@ describe('repository: Invitations', () => {
     const recipient = { uid: userB.uid, region: userB.region }
     const event = 'invite_event_friend_invite'
     const info = genDBInvitationInfo(userA, userB)
+    const rowId = genDBInvitationRowId(inviter, recipient, event)
 
     // act
-    const invitation = await invitationRepo.createOrUpdateInvitation(inviter, recipient, event, info)
+    const invitation = await invitationRepo.createOrUpdateInvitation(rowId, inviter, recipient, event, info)
 
     // assert
     expect(invitation.inviter_id).to.equals(userA.uid)
@@ -49,10 +50,11 @@ describe('repository: Invitations', () => {
     const recipient = { uid: userB.uid, region: userB.region }
     const event = 'invite_event_friend_invite'
     const info = genDBInvitationInfo(userA, userB)
+    const rowId = genDBInvitationRowId(inviter, recipient, event)
 
     // act
-    const invitation = await invitationRepo.createOrUpdateInvitation(inviter, recipient, event, info)
-    const newInvitation = await invitationRepo.createOrUpdateInvitation(inviter, recipient, event, info)
+    const invitation = await invitationRepo.createOrUpdateInvitation(rowId, inviter, recipient, event, info)
+    const newInvitation = await invitationRepo.createOrUpdateInvitation(rowId, inviter, recipient, event, info)
 
     // assert
     expect(newInvitation.inviter_id).to.equals(inviter.uid)
@@ -69,9 +71,25 @@ describe('repository: Invitations', () => {
     // arrange
     const sourceInvitation = await repo.query('SELECT * FROM "Invitations" LIMIT 1', [], 0)
     const inviter = { uid: sourceInvitation.inviter_id, region: sourceInvitation.inviter_region }
+    const event = 'invite_event_friend_invite'
 
     // act
-    const invitationList = await invitationRepo.getSentInvitationList(inviter, 100)
+    const invitationList = await invitationRepo.getSentInvitationList(inviter, event, 100)
+
+    // assert
+    invitationList.forEach(target => {
+      expect(target.inviter_id).to.equals(inviter.uid)
+      expect(target.inviter_region).to.equals(inviter.region)
+    })
+  })
+
+  it('getSentInvitationList without event', async () => {
+    // arrange
+    const sourceInvitation = await repo.query('SELECT * FROM "Invitations" LIMIT 1', [], 0)
+    const inviter = { uid: sourceInvitation.inviter_id, region: sourceInvitation.inviter_region }
+
+    // act
+    const invitationList = await invitationRepo.getSentInvitationList(inviter, null, 100)
 
     // assert
     invitationList.forEach(target => {
@@ -84,9 +102,25 @@ describe('repository: Invitations', () => {
     // arrange
     const sourceInvitation = await repo.query('SELECT * FROM "Invitations" LIMIT 1', [], 0)
     const recipient = { uid: sourceInvitation.recipient_id, region: sourceInvitation.recipient_region }
+    const event = 'invite_event_friend_invite'
 
     // act
-    const invitationList = await invitationRepo.getReceivedInvitationList(recipient, 100)
+    const invitationList = await invitationRepo.getReceivedInvitationList(recipient, event, 100)
+
+    // assert
+    invitationList.forEach(target => {
+      expect(target.recipient_id).to.equals(recipient.uid)
+      expect(target.recipient_region).to.equals(recipient.region)
+    })
+  })
+
+  it('getReceivedInvitationList without event', async () => {
+    // arrange
+    const sourceInvitation = await repo.query('SELECT * FROM "Invitations" LIMIT 1', [], 0)
+    const recipient = { uid: sourceInvitation.recipient_id, region: sourceInvitation.recipient_region }
+
+    // act
+    const invitationList = await invitationRepo.getReceivedInvitationList(recipient, null, 100)
 
     // assert
     invitationList.forEach(target => {
@@ -119,8 +153,9 @@ describe('repository: Invitations', () => {
       userD = await authRepo.createAccountUser(signupInfoD)
       inviter = { uid: userC.uid, region: userC.region }
       recipient = { uid: userD.uid, region: userD.region }
+      const rowId = genDBInvitationRowId(inviter, recipient, event)
 
-      sourceInvitation = await invitationRepo.createOrUpdateInvitation(inviter, recipient, event, info)
+      sourceInvitation = await invitationRepo.createOrUpdateInvitation(rowId, inviter, recipient, event, info)
       const iid = sourceInvitation.iid
       testCases[0].params = [inviter, { iid }]
       testCases[1].params = [inviter, { event }]
@@ -169,8 +204,9 @@ describe('repository: Invitations', () => {
       userD = await authRepo.createAccountUser(signupInfoD)
       inviter = { uid: userC.uid, region: userC.region }
       recipient = { uid: userD.uid, region: userD.region }
+      const rowId = genDBInvitationRowId(inviter, recipient, event)
 
-      sourceInvitation = await invitationRepo.createOrUpdateInvitation(inviter, recipient, event, info)
+      sourceInvitation = await invitationRepo.createOrUpdateInvitation(rowId, inviter, recipient, event, info)
       testCases[0].params = [inviter, recipient]
       testCases[1].params = [recipient, inviter]
     })

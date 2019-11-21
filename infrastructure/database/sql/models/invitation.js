@@ -11,7 +11,6 @@ module.exports = (sequelize, DataTypes) => {
   }, {})
   Invitation.associate = function (models) {
     // associations can be defined here
-    Invitation.belongsTo(models.Account)
   }
   return Invitation
 }

@@ -4,7 +4,7 @@ const config = require('config')
 const Repository = require(path.join(config.src.library, 'Repository'))
 const { AuthRepository } = require(path.join(config.src.repository.user, 'authRepository'))
 const { FriendRepository } = require(path.join(config.src.repository.circle, 'friendRepository'))
-const { genSignupInfo, parseFriendInfo, genDBFriendPublicInfo } = require(path.join(config.test.common, 'mock'))
+const { genSignupInfo, genFriendRowId, parseFriendInfo, genDBFriendPublicInfo } = require(path.join(config.test.common, 'mock'))
 const { assertFriend } = require(path.join(config.test.common, 'assert'))
 
 const pool = config.database.pool
@@ -31,9 +31,10 @@ describe('repository: Friends', () => {
     // arrange
     const account = { uid: userA.uid }
     const friendInfo = parseFriendInfo(userB)
+    const rowId = genFriendRowId(account.uid, friendInfo)
 
     // act
-    const friend = await friendRepo.addFriend(account, friendInfo)
+    const friend = await friendRepo.addFriend(rowId, account, friendInfo)
 
     // assert
     expect(friend.uid).to.equals(account.uid)
@@ -60,9 +61,11 @@ describe('repository: Friends', () => {
       [userInfo.uid]: friendInfo,
       [friendInfo.uid]: userInfo
     }
+    const userRowId = genFriendRowId(userInfo.uid, friendInfo)
+    const friendRowId = genFriendRowId(friendInfo.uid, userInfo)
 
     // act
-    const friendRecordList = await friendRepo.makeFriends(userInfo, friendInfo)
+    const friendRecordList = await friendRepo.makeFriends(userRowId, userInfo, friendInfo, friendRowId)
 
     // assert
     friendRecordList.forEach(friend => {
@@ -83,9 +86,10 @@ describe('repository: Friends', () => {
     // arrange
     const account = { uid: userA.uid }
     const friendInfo = parseFriendInfo(userB)
+    const rowId = genFriendRowId(account.uid, friendInfo)
 
     // act
-    await friendRepo.addFriend(account, friendInfo)
+    await friendRepo.addFriend(rowId, account, friendInfo)
     const friendRecord = await friendRepo.getFriend(account, friendInfo)
 
     // assert
@@ -98,8 +102,10 @@ describe('repository: Friends', () => {
     const account = { uid: userA.uid, region: userA.region }
     const friendInfoB = parseFriendInfo(userB)
     const friendInfoC = parseFriendInfo(userC)
-    await friendRepo.addFriend(account, friendInfoB)
-    await friendRepo.addFriend(account, friendInfoC)
+    const rowIdB = genFriendRowId(account.uid, friendInfoB)
+    const rowIdC = genFriendRowId(account.uid, friendInfoC)
+    await friendRepo.addFriend(rowIdB, account, friendInfoB)
+    await friendRepo.addFriend(rowIdC, account, friendInfoC)
 
     // act
     const friendRecordList = await friendRepo.getFriendList(account, 5, 0)
@@ -114,9 +120,10 @@ describe('repository: Friends', () => {
     const account = { uid: userA.uid }
     const friendInfo = parseFriendInfo(userB)
     const updatedPublicInfo = genDBFriendPublicInfo()
+    const rowId = genFriendRowId(account.uid, friendInfo)
 
     // act
-    await friendRepo.addFriend(account, friendInfo)
+    await friendRepo.addFriend(rowId, account, friendInfo)
     await friendRepo.updateFriend(account, friendInfo, updatedPublicInfo)
     const friendRecord = await friendRepo.getFriend(account, friendInfo)
 
@@ -133,10 +140,11 @@ describe('repository: Friends', () => {
   it('removeFriend (soft delete)', async () => {
     const account = { uid: userA.uid }
     const friendInfo = parseFriendInfo(userB)
+    const rowId = genFriendRowId(account.uid, friendInfo)
     const softDelete = true
 
     // act
-    await friendRepo.addFriend(account, friendInfo)
+    await friendRepo.addFriend(rowId, account, friendInfo)
     const deletedFriend = await friendRepo.removeFriend(account, friendInfo, softDelete)
     const friend = await friendRepo.getFriend(account, friendInfo)
 
@@ -148,9 +156,10 @@ describe('repository: Friends', () => {
   it('removeFriend', async () => {
     const account = { uid: userA.uid }
     const friendInfo = parseFriendInfo(userB)
+    const rowId = genFriendRowId(account.uid, friendInfo)
 
     // act
-    await friendRepo.addFriend(account, friendInfo)
+    await friendRepo.addFriend(rowId, account, friendInfo)
     const deletedFriend = await friendRepo.removeFriend(account, friendInfo)
     const friend = await friendRepo.getFriend(account, friendInfo)
 
@@ -171,10 +180,12 @@ describe('repository: Friends', () => {
       [userInfo.uid]: friendInfo,
       [friendInfo.uid]: userInfo
     }
+    const userRowId = genFriendRowId(userInfo.uid, friendInfo)
+    const friendRowId = genFriendRowId(friendInfo.uid, userInfo)
     const softDelete = true
 
     // act
-    await friendRepo.makeFriends(userInfo, friendInfo)
+    await friendRepo.makeFriends(userRowId, userInfo, friendInfo, friendRowId)
     const deletedFriendList = await friendRepo.unfriend(userInfo, friendInfo, softDelete)
     const friendA = await friendRepo.getFriend(friendInfo, userInfo)
     const friendB = await friendRepo.getFriend(userInfo, friendInfo)
@@ -200,9 +211,11 @@ describe('repository: Friends', () => {
       [userInfo.uid]: friendInfo,
       [friendInfo.uid]: userInfo
     }
+    const userRowId = genFriendRowId(userInfo.uid, friendInfo)
+    const friendRowId = genFriendRowId(friendInfo.uid, userInfo)
 
     // act
-    await friendRepo.makeFriends(userInfo, friendInfo)
+    await friendRepo.makeFriends(userRowId, userInfo, friendInfo, friendRowId)
     const deletedFriendList = await friendRepo.unfriend(userInfo, friendInfo)
     const friendA = await friendRepo.getFriend(friendInfo, userInfo)
     const friendB = await friendRepo.getFriend(userInfo, friendInfo)

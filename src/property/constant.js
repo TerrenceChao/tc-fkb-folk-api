@@ -17,5 +17,6 @@ module.exports = {
     TIMEOUT: parseInt(process.env.REQ_TIMEOUT) || 100
   },
   NODE_ENV: process.env.NODE_ENV,
-  EXPIRATION_SECS: parseInt(process.env.EXPIRATION_SECS) || 300
+  EXPIRATION_SECS: parseInt(process.env.EXPIRATION_SECS) || 300,
+  REGEX_UUID: process.env.REGEX_UUID || '/[0-9a-fA-F]{8}\/-[0-9a-fA-F]{4}\/-[0-9a-fA-F]{4}\/-[0-9a-fA-F]{4}\/-[0-9a-fA-F]{12}/'
 }

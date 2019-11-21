@@ -10,25 +10,29 @@ function FriendRepository (pool) {
 }
 
 /**
- * [NOTE]
+ * [NOTE] A
  * [targetUserInfo] at least includes { uid, region } (must have),
- * but may alse inclues { givenName, familyName, fullName(option), profilePic, profileLink } [同區域/跨區域操作皆需要如此]
+ * but may also includes { givenName, familyName, fullName(option), profilePic, profileLink } [同區域/跨區域操作皆需要如此]
+ * [NOTE] B
+ * 你很難確保 uuidv3 經過 md5 程序後，在大量的紀錄下是否會發生碰撞
+ * @param {string} rowId PK
  * @param {{ uid: string, region: string }} account
- * @param {Object} targetUserInfo
+ * @param {{ uid: string, region: string, publicInfo: Object }} targetUserInfo
  * @returns {Object|null} friend
  */
-FriendRepository.prototype.addFriend = async function (account, targetUserInfo) {
+FriendRepository.prototype.addFriend = async function (rowId, account, targetUserInfo) {
   let idx = 1
   const publicInfo = _.omit(targetUserInfo, ['uid', 'region'])
 
   return this.query(
     `
-    INSERT INTO "Friends" (user_id, friend_id, friend_region, public_info, deleted_at)
+    INSERT INTO "Friends" (id, user_id, friend_id, friend_region, public_info, deleted_at)
     VALUES
-    ($${idx++}::uuid, $${idx++}::uuid, $${idx++}::varchar, $${idx++}::jsonb, $${idx++}::timestamp) 
+    ($${idx++}::uuid, $${idx++}::uuid, $${idx++}::uuid, $${idx++}::varchar, $${idx++}::jsonb, $${idx++}::timestamp) 
     RETURNING user_id AS uid, friend_id, friend_region, public_info;
     `,
     [
+      rowId,
       account.uid,
       targetUserInfo.uid,
       targetUserInfo.region,
@@ -39,33 +43,40 @@ FriendRepository.prototype.addFriend = async function (account, targetUserInfo) 
 }
 
 /**
- * [NOTE] make friends from each other. [insert-2-records] [同區域操作時使用]
+ * [NOTE] A
+ * make friends from each other. [insert-2-records] [同區域操作時使用]
  * [userInfo/targetUserInfo] at least includes { uid, region } (must have),
  * but may alse inclues { givenName, familyName, fullName(option), profilePic, profileLink } [同區域/跨區域操作皆需要如此]
- * @param {Object} userInfo
- * @param {Object} targetUserInfo
- * @returns {Object[]} friends (return array with 2 records)
+ * [NOTE] B
+ * 你很難確保 uuidv3 經過 md5 程序後，在大量的紀錄下是否會發生碰撞
+ * @param {string} userRowId PK for user
+ * @param {{ uid: string, region: string, publicInfo: Object }} userInfo
+ * @param {{ uid: string, region: string, publicInfo: Object }} targetUserInfo
+ * @param {string} targetUserRowId PK for targetUser
+ * @returns {{ rowId: string, uid: string, region: string, publicInfo: Object }[]} friends (return array with 2 records)
  */
-FriendRepository.prototype.makeFriends = async function (userInfo, targetUserInfo) {
+FriendRepository.prototype.makeFriends = async function (userRowId, userInfo, targetUserInfo, targetUserRowId) {
   let idx = 1
   const userPublicInfo = _.omit(userInfo, ['uid', 'region'])
   const targetPublicInfo = _.omit(targetUserInfo, ['uid', 'region'])
 
   return this.query(
     `
-    INSERT INTO "Friends" (user_id, friend_id, friend_region, public_info, deleted_at)
+    INSERT INTO "Friends" (id, user_id, friend_id, friend_region, public_info, deleted_at)
     VALUES 
-    ($${idx++}::uuid, $${idx++}::uuid, $${idx++}::varchar, $${idx++}::jsonb, $${idx++}::timestamp),
-    ($${idx++}::uuid, $${idx++}::uuid, $${idx++}::varchar, $${idx++}::jsonb, $${idx++}::timestamp)
+    ($${idx++}::uuid, $${idx++}::uuid, $${idx++}::uuid, $${idx++}::varchar, $${idx++}::jsonb, $${idx++}::timestamp),
+    ($${idx++}::uuid, $${idx++}::uuid, $${idx++}::uuid, $${idx++}::varchar, $${idx++}::jsonb, $${idx++}::timestamp)
     RETURNING user_id AS uid, friend_id, friend_region, public_info;
     `,
     [
+      userRowId,
       userInfo.uid,
       targetUserInfo.uid,
       targetUserInfo.region,
       JSON.stringify(targetPublicInfo),
       null,
 
+      targetUserRowId,
       targetUserInfo.uid,
       userInfo.uid,
       userInfo.region,
@@ -95,6 +106,25 @@ FriendRepository.prototype.getFriend = async function (account, targetAccount) {
       account.uid,
       targetAccount.uid,
       targetAccount.region
+    ],
+    0)
+}
+
+/**
+ * TODO: unittest
+ * @param {string} rowId PK
+ */
+FriendRepository.prototype.getFriendById = async function (rowId) {
+  return this.query(
+    `
+    SELECT user_id AS uid, friend_id, friend_region, public_info
+    FROM "Friends"
+    WHERE
+      deleted_at IS NULL AND
+      id = $0::uuid
+    `,
+    [
+      rowId
     ],
     0)
 }
@@ -158,6 +188,27 @@ FriendRepository.prototype.updateFriend = async function (account, targetAccount
 }
 
 /**
+ * TODO: unittest
+ * @param {string} rowId PK
+ */
+FriendRepository.prototype.updateFriendById = async function (rowId, publicInfo) {
+  return this.query(
+    `
+    UPDATE "Friends"
+    SET
+      public_info = $0::jsonb
+    WHERE
+      id = $1::uuid AND
+    RETURNING user_id AS uid, friend_id, friend_region, public_info;
+    `,
+    [
+      JSON.stringify(publicInfo),
+      rowId
+    ],
+    0)
+}
+
+/**
  * [跨區域操作時使用]
  * [NOTE]: 在同區域時,會刪除兩筆紀錄; 在不同區域時只會刪除一筆. (雙邊區域中各刪除一筆)
  * softDelete: 跨區域操作時使用，若雙邊操作需要 rollback 有機會補教。等雙邊都 commit 再硬刪除 (hard delete)
@@ -182,6 +233,26 @@ FriendRepository.prototype.removeFriend = async function (account, targetAccount
       account.uid,
       targetAccount.uid,
       targetAccount.region
+    ],
+    0)
+}
+
+/**
+ * TODO: unittest
+ * @param {string} rowId PK
+ * @param {boolean} softDelete
+ */
+FriendRepository.prototype.removeFriendById = async function (rowId, softDelete = false) {
+  const operation = softDelete === true ? `UPDATE "Friends" SET deleted_at = NOW() AT time zone 'utc'` : 'DELETE FROM "Friends"'
+  return this.query(
+    `
+    ${operation}
+    WHERE 
+      id = $0::uuid
+    RETURNING user_id AS uid, friend_id, friend_region, public_info;
+    `,
+    [
+      rowId
     ],
     0)
 }
@@ -222,6 +293,26 @@ FriendRepository.prototype.unfriend = async function (account, targetAccount, so
       targetAccount.uid,
       account.uid,
       account.region
+    ])
+}
+
+/**
+ * TODO: unittest
+ * @param {string} rowIdA PK
+ * @param {string} rowIdB PK
+ * @param {boolean} softDelete
+ */
+FriendRepository.prototype.unfriendByBothId = async function (rowIdA, rowIdB, softDelete = false) {
+  const operation = softDelete === true ? `UPDATE "Friends" SET deleted_at = NOW() AT time zone 'utc'` : 'DELETE FROM "Friends"'
+  return this.query(
+    `
+    ${operation}
+    WHERE id IN ($0::uuid, $1::uuid)
+    RETURNING user_id AS uid, friend_id, friend_region, public_info;
+    `,
+    [
+      rowIdA,
+      rowIdB
     ])
 }
 

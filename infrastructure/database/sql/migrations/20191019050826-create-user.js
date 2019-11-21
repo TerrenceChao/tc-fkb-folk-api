@@ -1,12 +1,12 @@
 'use strict'
 module.exports = {
-  up: (queryInterface, Sequelize) => {
-    return queryInterface.createTable('Users', {
+  up: async (queryInterface, Sequelize) => {
+    await queryInterface.sequelize.query('DROP SEQUENCE IF EXISTS users_id_seq; CREATE SEQUENCE users_id_seq START 1;')
+    await queryInterface.createTable('Users', {
       id: {
         allowNull: false,
-        autoIncrement: true,
         primaryKey: true,
-        type: Sequelize.BIGINT
+        type: Sequelize.STRING(20)
       },
       userId: {
         allowNull: false,
@@ -67,8 +67,13 @@ module.exports = {
         defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
       }
     })
+
+    return queryInterface
   },
-  down: (queryInterface, Sequelize) => {
-    return queryInterface.dropTable('Users')
+  down: async (queryInterface, Sequelize) => {
+    await queryInterface.sequelize.query('DROP SEQUENCE IF EXISTS users_id_seq;')
+    await queryInterface.dropTable('Users')
+
+    return queryInterface
   }
 }

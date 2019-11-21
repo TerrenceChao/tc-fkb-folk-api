@@ -5,7 +5,7 @@ const Repository = require('../../../library/repository')
 function parseConditions (obj) {
   let idx = 5
   const datatypes = {
-    iid: 'bigint',
+    iid: 'uuid',
     event: 'varchar'
   }
   const params = []
@@ -32,17 +32,19 @@ function InvitationRepository (pool) {
  * TODO: 
  * 改變 function params 輸入參數。
  * 在 Service 層使用時需要調整格式 (無論輸出/輸入)
+ * @param {string} rowId
  * @param {{ uid: string, region: string }} inviterAccount
  * @param {{ uid: string, region: string }} recipientAccount
  * @param {string} event
  * @param {Object} info
  */
-InvitationRepository.prototype.createOrUpdateInvitation = async function (inviterAccount, recipientAccount, event, info) {
+InvitationRepository.prototype.createOrUpdateInvitation = async function (rowId, inviterAccount, recipientAccount, event, info) {
   let idx = 1
   return this.query(
     `
-    INSERT INTO "Invitations" (inviter_id, inviter_region, recipient_id, recipient_region, event, info, deleted_at)
+    INSERT INTO "Invitations" (iid, inviter_id, inviter_region, recipient_id, recipient_region, event, info, deleted_at)
     VALUES (
+      $${idx++}::uuid, -- iid
       $${idx++}::uuid, -- inviter_id
       $${idx++}::varchar,
       $${idx++}::uuid, -- recipient_id
@@ -51,7 +53,7 @@ InvitationRepository.prototype.createOrUpdateInvitation = async function (invite
       $${idx++}::jsonb,
       $${idx++}::timestamp
     )
-    ON CONFLICT ON CONSTRAINT "Invitations_inviter_id_inviter_region_recipient_id_recipien_key"
+    ON CONFLICT (iid)
     DO UPDATE SET
       info = $${idx++}::jsonb,
       deleted_at = $${idx++}::timestamp,
@@ -59,6 +61,7 @@ InvitationRepository.prototype.createOrUpdateInvitation = async function (invite
     RETURNING *;
     `,
     [
+      rowId,
       inviterAccount.uid,
       inviterAccount.region,
       recipientAccount.uid,
@@ -75,7 +78,7 @@ InvitationRepository.prototype.createOrUpdateInvitation = async function (invite
 
 /**
  * @param {{ uid: string, region: string }} account
- * @param {{ iid: number }|{ event: string }|{ iid: number, event: string }} invitationInfo
+ * @param {{ iid: string }|{ event: string }|{ iid: string, event: string }} invitationInfo
  */
 InvitationRepository.prototype.getInvitation = async function (account, invitationInfo) {
   let { conditions, params } = parseConditions(invitationInfo)
@@ -142,52 +145,74 @@ InvitationRepository.prototype.getInvitationByRoles = async function (account, t
 
 /**
  * @param {{ uid: string, region: string }} account
+ * @param {string|null} event
  * @param {number} limit
  * @param {number} skip
  */
-InvitationRepository.prototype.getSentInvitationList = async function (account, limit, skip) {
-  let idx = 1
+InvitationRepository.prototype.getSentInvitationList = async function (account, event, limit, skip) {
+  let idx = event == null ? 1 : 2
+  const conditions = event == null ? '' : ' event = $1::varchar AND '
+  const params = event == null ? [
+    account.uid,
+    account.region,
+    skip,
+    limit
+  ] : [
+    event,
+    account.uid,
+    account.region,
+    skip,
+    limit
+  ]
+
   return this.query(
     `
     SELECT *
     FROM "Invitations"
     WHERE
       deleted_at IS NULL AND
+      ${conditions}
       inviter_id = $${idx++}::uuid AND
       inviter_region = $${idx++}::varchar 
     OFFSET $${idx++}::int LIMIT $${idx++}::int;
     `,
-    [
-      account.uid,
-      account.region,
-      skip,
-      limit
-    ])
+    params)
 }
 
 /**
  * @param {{ uid: string, region: string }} account
+ * @param {string|null} event
  * @param {number} limit
  * @param {number} skip
  */
-InvitationRepository.prototype.getReceivedInvitationList = async function (account, limit, skip) {
-  let idx = 1
+InvitationRepository.prototype.getReceivedInvitationList = async function (account, event, limit, skip) {
+  let idx = event == null ? 1 : 2
+  const conditions = event == null ? '' : ' event = $1::varchar AND '
+  const params = event == null ? [
+    account.uid,
+    account.region,
+    skip,
+    limit
+  ] : [
+    event,
+    account.uid,
+    account.region,
+    skip,
+    limit
+  ]
+
   return this.query(
     `
     SELECT *
     FROM "Invitations"
     WHERE
       deleted_at IS NULL AND
+      ${conditions}
       recipient_id = $${idx++}::uuid AND
       recipient_region = $${idx++}::varchar
     OFFSET $${idx++}::int LIMIT $${idx++}::int;
     `,
-    [
-      account.uid,
-      account.region,
-      skip,
-      limit
-    ])
+    params)
 }
 
 /**

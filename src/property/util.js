@@ -83,26 +83,6 @@ function mapKeysInCamelCase (data) {
 }
 
 /**
- * 從 database 中擷取的 serialId(PK) 和 region, 經編碼後返回前端可見的 { uid, region }
- * @param {string} serialId
- * @param {string} region
- * @returns { uid: string, region: string }
- */
-function encodeAccountId (serialId, region) {
-
-}
-
-/**
- * 從前端可見的 { uid, region }，進入 API 前先解碼成 database 可辨識的 serialId(PK) 和 region
- * @param {string} uid
- * @param {string} region
- * @returns { serialId: string, region: string }
- */
-function decodeAccountId (uid, region) {
-  
-}
-
-/**
  * 返回 http 錯誤訊息
  * @param {Validator} validation
  * @param {string} validator
@@ -132,7 +112,5 @@ module.exports = {
   sameAccounts,
   sameValues,
   mapKeysInCamelCase,
-  encodeAccountId,
-  decodeAccountId,
   validateErr
 }
