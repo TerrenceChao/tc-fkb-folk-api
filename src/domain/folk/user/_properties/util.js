@@ -92,7 +92,7 @@ function reverseStr (str) {
 
 /**
  * NOTE:
- * code 的長度有可能使得 Buffer 不及足夠長的長度。因此當 code 過短時，透過';'分隔，重複 code
+ * secret 的長度有可能使得 Buffer 不及足夠長的長度。因此當 secret 過短時，透過';'分隔，重複 secret
  * @param {{ region: string, email: string, now: number }} userData
  * @param {string} secret
  * @param {string} algorithm
@@ -117,7 +117,7 @@ function genUniqueToken (userData, secret, algorithm = CIPHER_ALGO) {
  * @param {string} algorithm
  * @returns {
  *    iv: string,
- *    encrypt: string
+ *    encrypted: string
  * }
  */
 function encrypt (text, secret, algorithm) {
