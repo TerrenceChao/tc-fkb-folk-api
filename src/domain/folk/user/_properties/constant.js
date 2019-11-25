@@ -1,5 +1,5 @@
 const _ = require('lodash')
-const { NODE_ENV, EXPIRATION_SECS } = require('../../../../property/constant')
+const { NODE_ENV, EXPIRATION_SECS, CIPHER_ALGO } = require('../../../../property/constant')
 const C = require('../../../../property/userConstant')
 
 // account events
@@ -12,6 +12,16 @@ exports.ACCOUNT_EVENT_VALIDATE_ACCOUNT = 'account_event_validate_account'
  */
 exports.SETTING_EVENT_UPDATE_PUBLIC_INFO = 'setting_event_update_public_info'
 
+/**
+ * Consider cross-region
+ * 用於產生具唯一性的 verify-token。(註冊時適用，因存放在 {cache} 須具唯一性)
+ * token 隱含的資訊，已經能讓後端服務知道 token 要去哪一個區域找尋 => Consider cross-region
+ */
+exports.CIPHER_ALGO = CIPHER_ALGO
+
+/**
+ * common constants
+ */
 exports.NODE_ENV = NODE_ENV
 
 exports.EXPIRATION_SECS = EXPIRATION_SECS

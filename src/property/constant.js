@@ -17,5 +17,6 @@ module.exports = {
     TIMEOUT: parseInt(process.env.REQ_TIMEOUT) || 100
   },
   NODE_ENV: process.env.NODE_ENV,
-  EXPIRATION_SECS: parseInt(process.env.EXPIRATION_SECS) || 300
+  EXPIRATION_SECS: parseInt(process.env.EXPIRATION_SECS) || 300,
+  CIPHER_ALGO: process.env.CIPHER_ALGO
 }
