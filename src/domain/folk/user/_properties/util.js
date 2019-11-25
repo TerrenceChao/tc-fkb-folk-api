@@ -200,7 +200,6 @@ function genVerification (userInfo, expire = null, unique = false) {
    * 2. token 隱含的資訊，已經能讓後端服務知道 token 要去哪一個區域找尋 => Consider cross-region
    * (Tokyo, Taipei, Sydney ...) 找尋用戶資料了
    */
-
   return {
     token: genUniqueToken(userInfo),
     code,

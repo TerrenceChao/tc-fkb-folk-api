@@ -1,9 +1,14 @@
 const { LIMIT, SKIP } = require('../../../property/constant')
 const { sameAccounts } = require('../../../property/util')
 const CIRCLE_CONST = require('../_properties/constant')
-const { parseInvitation, genFriendInvitationDBInfo, confirmFriendRecords } = require('../_properties/util')
 const friendRepo = require('../../circle/_repositories/friendRepository').friendRepository
 const inviteRepo = require('../../circle/_repositories/invitationRepository').invitationRepository
+const {
+  parseFriendInvitation,
+  genFriendInvitationDBParams,
+  genFriendRowId,
+  confirmFriendRecords
+} = require('../_properties/util')
 
 function InvitationService (friendRepo, inviteRepo) {
   this.friendRepo = friendRepo
@@ -17,7 +22,7 @@ function InvitationService (friendRepo, inviteRepo) {
  * @param {{
  *  header: {
  *    inviteEvent: string,
- *    iid: number|null,
+ *    iid: string|null,
  *    data: {
  *      options: Array,
  *      reply: boolean|null (在回覆邀請時才會有)
@@ -75,13 +80,13 @@ InvitationService.prototype.validateRoles = function (account, invitation) {
  */
 InvitationService.prototype.inviteToBeFriend = async function (inviterUserInfo, recipientUserInfo) {
   const event = CIRCLE_CONST.INVITE_EVENT_FRIEND_INVITE
-  const info = genFriendInvitationDBInfo(inviterUserInfo, recipientUserInfo)
-  const invitation = await this.inviteRepo.createOrUpdateInvitation(inviterUserInfo, recipientUserInfo, event, info)
+  const { iid, info } = genFriendInvitationDBParams(inviterUserInfo, recipientUserInfo, event)
+  const invitation = await this.inviteRepo.createOrUpdateInvitation(iid, inviterUserInfo, recipientUserInfo, event, info)
   if (invitation === undefined) {
     throw new Error(`${arguments.callee.name}: create invitation fail!`)
   }
 
-  return parseInvitation(invitation)
+  return parseFriendInvitation(invitation)
 }
 
 /**
@@ -96,7 +101,7 @@ InvitationService.prototype.confirmFriendInvitation = async function (invitation
     throw new Error(`${arguments.callee.name}: Invitation not found`)
   }
 
-  invitation = parseInvitation(invitation)
+  invitation = parseFriendInvitation(invitation)
   invitation.header.data.reply = true
   invitation = await this.handleFriendInvitation(invitation, director)
 
@@ -132,7 +137,9 @@ InvitationService.prototype.handleFriendInvitation = async function (invitationR
   var confirmed = true
   if (invitationRespose.header.data.reply === true) {
     if (inviter.region === recipient.region) {
-      const friendRecords = await this.friendRepo.makeFriends(recipient, inviter)
+      const recipientRowId = genFriendRowId(recipient.uid, inviter)
+      const inviterRowId = genFriendRowId(inviter.uid, recipient)
+      const friendRecords = await this.friendRepo.makeFriends(recipientRowId, recipient, inviter, inviterRowId)
       confirmed = confirmFriendRecords([recipient, inviter], friendRecords)
     }
 
@@ -142,10 +149,12 @@ InvitationService.prototype.handleFriendInvitation = async function (invitationR
      * 另一方的參數應該為 addFriend(inviter, recipient)
      */
     else if (director === true) {
-      const friendRecord = await this.friendRepo.addFriend(recipient, inviter)
+      const rowId = genFriendRowId(recipient.uid, inviter)
+      const friendRecord = await this.friendRepo.addFriend(rowId, recipient, inviter)
       confirmed = confirmFriendRecords([inviter], [friendRecord])
     } else if (director === false) {
-      const friendRecord = await this.friendRepo.addFriend(inviter, recipient)
+      const rowId = genFriendRowId(inviter.uid, recipient)
+      const friendRecord = await this.friendRepo.addFriend(rowId, inviter, recipient)
       confirmed = confirmFriendRecords([recipient], [friendRecord])
     }
   }
@@ -163,37 +172,39 @@ InvitationService.prototype.handleFriendInvitation = async function (invitationR
  * TODO: 不會只有一個，在 invitationInfo 多加一個屬性：type (inviter or recipient). invitation repo test will be modified
  * get entire invitation by account & invitationInfo (iid, region)
  * @param {{ uid: string, region: string }} account
- * @param {{ iid: number }|{ event: string }|{ iid: number, event: string }} invitationInfo
+ * @param {{ iid: string }|{ event: string }|{ iid: string, event: string }} invitationInfo
  * @returns {Invitation}
  */
 InvitationService.prototype.getInvitation = async function (account, invitationInfo) {
   const invitation = await this.inviteRepo.getInvitation(account, invitationInfo)
   // ...
-  return parseInvitation(invitation)
+  return parseFriendInvitation(invitation)
 }
 
 /**
  * account is inviter, get invitation(s) he/she sent & not being confirmed
  * @param {{ uid: string, region: string }} account
+ * @param {string} event
  * @param {number} limit
  * @param {number} skip
  * @returns {Invitation[]}
  */
-InvitationService.prototype.getSentInvitationList = async function (account, limit = LIMIT, skip = SKIP) {
-  const sentInvitationList = await this.inviteRepo.getSentInvitationList(account, limit, skip)
-  return sentInvitationList.map(invitation => parseInvitation(invitation))
+InvitationService.prototype.getSentInvitationList = async function (account, event, limit = LIMIT, skip = SKIP) {
+  const sentInvitationList = await this.inviteRepo.getSentInvitationList(account, event, limit, skip)
+  return sentInvitationList.map(invitation => parseFriendInvitation(invitation))
 }
 
 /**
  * account is recipient, get invitation(s) he/she doesn't replied
  * @param {{ uid: string, region: string }} account
+ * @param {string} event
  * @param {number} limit
  * @param {number} skip
  * @returns {Invitation[]}
  */
-InvitationService.prototype.getReceivedInvitationList = async function (account, limit = LIMIT, skip = SKIP) {
-  const receivedInvitationList = await this.inviteRepo.getReceivedInvitationList(account, limit, skip)
-  return receivedInvitationList.map(invitation => parseInvitation(invitation))
+InvitationService.prototype.getReceivedInvitationList = async function (account, event, limit = LIMIT, skip = SKIP) {
+  const receivedInvitationList = await this.inviteRepo.getReceivedInvitationList(account, event, limit, skip)
+  return receivedInvitationList.map(invitation => parseFriendInvitation(invitation))
 }
 
 module.exports = {

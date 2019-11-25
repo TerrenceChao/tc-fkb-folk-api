@@ -1,5 +1,6 @@
 const faker = require('faker')
 const moment = require('moment')
+const uuidv3 = require('uuid/v3')
 
 function genSignupInfo () {
   const profileLink = faker.internet.url()
@@ -37,6 +38,16 @@ function genSignupInfo () {
   }
 }
 
+function genDBInvitationRowId (userA, userB, event) {
+  const recipientPart = userB.uid
+    .concat('_').concat(userB.region)
+    .concat('_').concat(event)
+    .concat('_').concat(userA.region)
+  const iid = uuidv3(recipientPart, userA.uid) // uuidv3(string, owner_namespace: uuid)
+
+  return iid
+}
+
 function genDBInvitationInfo (userA, userB) {
   return {
     inviter: {
@@ -60,6 +71,15 @@ function genDBInvitationInfo (userA, userB) {
       }
     }
   }
+}
+
+/**
+ *
+ * @param {string} ownerUid
+ * @param {{ uid: string, region: string }} friendAccount
+ */
+function genFriendRowId (ownerUid, friendAccount) {
+  return uuidv3(friendAccount.uid.concat('_').concat(friendAccount.region), ownerUid) // uuidv3(string, owner_namespace: uuid)
 }
 
 /**
@@ -103,7 +123,9 @@ function genTimestamp (str = null) {
 
 module.exports = {
   genSignupInfo,
+  genDBInvitationRowId,
   genDBInvitationInfo,
+  genFriendRowId,
   parseFriendInfo,
   genDBFriendPublicInfo,
   genToken,

@@ -34,7 +34,7 @@ exports.friendInviterValidator = (req, res, next) => {
 
 const FRIEND_RECIPIENT_RULES = {
   'header.inviteEvent': `required|string|in:${INVITE_EVENT_FRIEND_REPLY}`,
-  'header.iid': 'required|numeric',
+  'header.iid': 'required|string',
   'header.data.options': 'required|array',
   'header.data.options.*': 'required|boolean',
   'header.data.reply': 'required|boolean'
@@ -56,7 +56,7 @@ exports.friendRecipientValidator = (req, res, next) => {
 exports.invitationQueryValidator = (req, res, next) => {
   res.locals.data = {}
   const validation = new Validator(req.query, {
-    iid: 'numeric|required_without:event',
+    iid: 'string|required_without:event',
     event: 'string|required_without:iid'
   })
   validation.passes() ? next() : res.status(422).json(validateErr(validation, 'invitationQueryValidator'))

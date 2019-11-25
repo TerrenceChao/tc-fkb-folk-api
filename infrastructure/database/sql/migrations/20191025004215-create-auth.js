@@ -1,12 +1,12 @@
 'use strict'
 module.exports = {
   up: async (queryInterface, Sequelize) => {
+    await queryInterface.sequelize.query('DROP SEQUENCE IF EXISTS auths_id_seq; CREATE SEQUENCE auths_id_seq START 1;')
     await queryInterface.createTable('Auths', {
       id: {
         allowNull: false,
-        autoIncrement: true,
         primaryKey: true,
-        type: Sequelize.BIGINT
+        type: Sequelize.STRING(20)
       },
       userId: {
         allowNull: false,
@@ -116,7 +116,9 @@ module.exports = {
     // queryInterface.removeIndex('auths_verification_token_idx')
 
     // queryInterface.removeIndex('auths_verification_idx') // deprecated at 2019/11/15
+    await queryInterface.sequelize.query('DROP SEQUENCE IF EXISTS auths_id_seq;')
+    await queryInterface.dropTable('Auths')
 
-    return queryInterface.dropTable('Auths')
+    return queryInterface
   }
 }

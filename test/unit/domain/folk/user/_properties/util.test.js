@@ -4,7 +4,7 @@ const {
   decrypt,
   genUniqueToken,
   parseUniqueToken
-} = require('../../../../../src/domain/folk/user/_properties/util')
+} = require('../../../../../../src/domain/folk/user/_properties/util')
 
 const CIPHER_ALGO = 'aes-256-cbc'
 

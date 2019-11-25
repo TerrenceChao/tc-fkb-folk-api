@@ -247,15 +247,15 @@ AuthRepository.prototype.createAccountUser = async function (signupInfo) {
       RETURNING id, region, email
     ),
     auth AS (
-      INSERT INTO "Auths" (user_id, pw_hash, pw_salt, lock, attempt)
-      SELECT id, pw_hash, pw_salt, lock, attempt
+      INSERT INTO "Auths" (id, user_id, pw_hash, pw_salt, lock, attempt)
+      SELECT REVERSE(nextval('auths_id_seq')::varchar), id, pw_hash, pw_salt, lock, attempt
       FROM data
       JOIN account USING (id)
       RETURNING pw_hash, pw_salt
     ),
     account_user AS (
-      INSERT INTO "Users" (user_id, be_searched, given_name, family_name, gender, birth, lang, public_info)
-      SELECT id, be_searched, given_name, family_name, gender, birth, lang, public_info
+      INSERT INTO "Users" (id, user_id, be_searched, given_name, family_name, gender, birth, lang, public_info)
+      SELECT REVERSE(nextval('users_id_seq')::varchar), id, be_searched, given_name, family_name, gender, birth, lang, public_info
       FROM data
       JOIN account USING (id)
       RETURNING be_searched, given_name, family_name, lang, public_info

@@ -1,6 +1,7 @@
 'use strict'
 module.exports = (sequelize, DataTypes) => {
   const Auth = sequelize.define('Auth', {
+    userId: DataTypes.UUID,
     pwSalt: DataTypes.STRING,
     pwHash: DataTypes.STRING,
     verifyToken: DataTypes.STRING,
@@ -11,6 +12,7 @@ module.exports = (sequelize, DataTypes) => {
   }, {})
   Auth.associate = function (models) {
     // associations can be defined here
+    Auth.belongsTo(models.Account)
   }
   return Auth
 }

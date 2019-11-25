@@ -4,14 +4,22 @@ module.exports = {
     return queryInterface.createTable('Friends', {
       id: {
         allowNull: false,
-        autoIncrement: true,
         primaryKey: true,
-        type: Sequelize.BIGINT
+        type: Sequelize.UUID,
+        defaultValue: Sequelize.UUIDV4
       },
       userId: {
         allowNull: false,
         type: Sequelize.UUID,
-        field: 'user_id'
+        field: 'user_id',
+        references: {
+          model: {
+            tableName: 'Accounts'
+          },
+          key: 'id'
+        },
+        onDelete: 'CASCADE',
+        onUpdate: 'CASCADE'
       },
       friendId: {
         allowNull: false,
@@ -45,12 +53,6 @@ module.exports = {
         type: 'TIMESTAMP',
         field: 'updated_at',
         defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
-      }
-    }, {
-      uniqueKeys: {
-        unique_friend: {
-          fields: ['user_id', 'friend_id', 'friend_region']
-        }
       }
     })
   },

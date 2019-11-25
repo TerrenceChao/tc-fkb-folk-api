@@ -66,10 +66,10 @@ exports.getInvitation = async (req, res, next) => {
 
 exports.getReceivedInvitationList = async (req, res, next) => {
   var account = req.params
-  var query = req.query
+  var { event, limit, skip } = req.query
   res.locals.data = util.init(res.locals.data)
 
-  Promise.resolve(invitationService.getReceivedInvitationList(account, query.limit, query.skip))
+  Promise.resolve(invitationService.getReceivedInvitationList(account, event, limit, skip))
     .then(invitationList => (res.locals.data = invitationList))
     .then(() => next())
     .catch(err => next(err))
@@ -77,10 +77,10 @@ exports.getReceivedInvitationList = async (req, res, next) => {
 
 exports.getSentInvitationList = async (req, res, next) => {
   var account = req.params
-  var query = req.query
+  var { event, limit, skip } = req.query
   res.locals.data = util.init(res.locals.data)
 
-  Promise.resolve(invitationService.getSentInvitationList(account, query.limit, query.skip))
+  Promise.resolve(invitationService.getSentInvitationList(account, event, limit, skip))
     .then(invitationList => (res.locals.data = invitationList))
     .then(() => next())
     .catch(err => next(err))
