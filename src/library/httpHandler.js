@@ -77,7 +77,7 @@ function genRegistrationInfo (req, verification) {
     'region': verification.region,
     'uid': verification.uid,
     'verify-token': verification['verify-token'],
-    'registration-link': `${req.protocol}://${req.get('host')}${HTTP.PREFIX}/user/newborn/code/${verification['verify-token']}`
+    'registration-link': `${req.protocol}://${req.get('host')}${HTTP.PREFIX}/user/newborn/code/${verification['verify-token']}?email=${verification.account.email}`
   }
 
   const secret = {

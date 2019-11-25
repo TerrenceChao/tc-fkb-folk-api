@@ -21,8 +21,12 @@ function genSecret (str) {
 }
 
 describe('test util', () => {
+  const region = 'tw'
   const email = 'b-256@abc.com'
-  const userData = { region: 'tw', email }
+  const now = Date.now()
+  const userData = { region, email, now }
+
+  const code = '123456'
 
   it('test encrypt/decrypt', () => {
     // arrange
@@ -35,22 +39,41 @@ describe('test util', () => {
 
     // assert
     const actual = JSON.parse(result)
-    expect(actual).to.have.all.keys('region', 'email')
+    expect(actual).to.have.all.keys('region', 'email', 'now')
     expect(actual.region).to.equals(userData.region)
     expect(actual.email).to.equals(userData.email)
+    expect(actual.now).to.equals(userData.now)
   })
 
-  it('test gen/parse unique token', () => {
+  it('test gen/parse unique token (註冊時用。token 本身不受時間影響，須具備永久唯一性)', () => {
     // arrange
-    var token = genUniqueToken(userData, CIPHER_ALGO)
+    userData.now = undefined
+    var token = genUniqueToken(userData, userData.email, CIPHER_ALGO) // secret use email
 
     // action
-    var result = parseUniqueToken(token, userData.email, CIPHER_ALGO)
+    var result = parseUniqueToken(token, userData.email, CIPHER_ALGO) // secret use email
 
     // assert
     const actual = JSON.parse(result)
     expect(actual).to.have.all.keys('region', 'email')
     expect(actual.region).to.equals(userData.region)
     expect(actual.email).to.equals(userData.email)
+    expect(actual.now).to.equals(undefined)
+  })
+
+  it('test gen/parse unique token (會員時用。token 本身受時間影響，情境如：忘記密碼...etc)', () => {
+    // arrange
+    userData.now = Date.now()
+    var token = genUniqueToken(userData, code, CIPHER_ALGO) // secret use code
+
+    // action
+    var result = parseUniqueToken(token, code, CIPHER_ALGO) // secret use code
+
+    // assert
+    const actual = JSON.parse(result)
+    expect(actual).to.have.all.keys('region', 'email', 'now')
+    expect(actual.region).to.equals(userData.region)
+    expect(actual.email).to.equals(userData.email)
+    expect(actual.now).to.equals(userData.now)
   })
 })

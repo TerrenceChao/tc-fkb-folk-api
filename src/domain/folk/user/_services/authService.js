@@ -225,7 +225,7 @@ AuthService.prototype.findOrCreateVerification = async function (type, accountCo
  * 1. [verifyInfo={token:xxxx,code:123456}] token & code
  * 2. [verifyInfo={token:xxxx,expire:1565022954420}] token & expire (expire 具時效性)
  * [這裡屬於第一種]
- * token 隱含的資訊，已經能讓後端服務知道 token 要去哪一個區域(region)
+ * token 隱含的資訊，已經能讓後端服務知道 token 要去哪一個區域找尋 (region)
  *  (Tokyo, Taipei, Sydney ...) 找尋用戶資料了
  * @param {{ token: string, code: string }} verifyInfo
  * @returns {Object} userInfo
@@ -262,7 +262,7 @@ AuthService.prototype.checkExpiration = function (userInfo) {
  * 1. [verifyInfo={token:xxxx,code:123456}] token & code
  * 2. [verifyInfo={token:xxxx,expire:1565022954420}] token & expire (expire 具時效性)
  * [這裡屬於第二種]
- * token 隱含的資訊，已經能讓後端服務知道 token 要去哪一個區域(region)
+ * token 隱含的資訊，已經能讓後端服務知道 token 要去哪一個區域找尋 (region)
  *  (Tokyo, Taipei, Sydney ...) 找尋用戶資料了
  * @param {{ token: string, expire: string }} verifyInfo
  * @param {string} newPassword

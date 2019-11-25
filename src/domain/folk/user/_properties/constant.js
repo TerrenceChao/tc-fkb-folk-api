@@ -14,8 +14,9 @@ exports.SETTING_EVENT_UPDATE_PUBLIC_INFO = 'setting_event_update_public_info'
 
 /**
  * Consider cross-region
- * 用於產生具唯一性的 verify-token。(註冊時適用，因存放在 {cache} 須具唯一性)
- * token 隱含的資訊，已經能讓後端服務知道 token 要去哪一個區域找尋 => Consider cross-region
+ * 用於產生可加解密的 verify-token。
+ * token 可隱含發送地點，也就是說其隱含的資訊，已經能讓後端服務知道 token 要去哪一個區域找尋
+ * (Taipei, Tokyo, Sydney ... etc)
  */
 exports.CIPHER_ALGO = CIPHER_ALGO
 
