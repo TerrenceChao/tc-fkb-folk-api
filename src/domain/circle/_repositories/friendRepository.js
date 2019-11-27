@@ -7,6 +7,7 @@ util.inherits(FriendRepository, Repository)
 
 function FriendRepository (pool) {
   this.pool = pool
+  this.name = arguments.callee.name
 }
 
 /**

@@ -26,6 +26,7 @@ util.inherits(InvitationRepository, Repository)
 
 function InvitationRepository (pool) {
   this.pool = pool
+  this.name = arguments.callee.name
 }
 
 /**

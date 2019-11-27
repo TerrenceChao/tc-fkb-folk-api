@@ -3,6 +3,7 @@ const pool = config.pool
 
 function Repository (pool) {
   this.pool = pool
+  this.name = arguments.callee.name
 }
 
 /**
@@ -22,7 +23,7 @@ Repository.prototype.query = async function (statement, fieldValues, rowIndex = 
         })
         .catch(err => {
           client.release()
-          console.error('Repository query error:', err.message, err.stack)
+          console.error(`${this.name} query error:`, err.message, err.stack)
           return Promise.reject(err)
         })
     })

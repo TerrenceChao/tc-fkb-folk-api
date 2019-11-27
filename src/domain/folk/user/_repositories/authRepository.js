@@ -112,6 +112,7 @@ util.inherits(AuthRepository, Repository)
 
 function AuthRepository (pool) {
   this.pool = pool
+  this.name = arguments.callee.name
 }
 
 /**

@@ -108,6 +108,7 @@ util.inherits(UserRepository, Repository)
 
 function UserRepository (pool) {
   this.pool = pool
+  this.name = arguments.callee.name
 }
 
 /**
