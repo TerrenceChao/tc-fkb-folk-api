@@ -49,8 +49,9 @@ CircleService.prototype.handleInviteActivity = async function (invitationService
  * @param {NotificationService} notificationService
  * @param {{ uid: string, region: string }} account
  * @param {{ uid: string, region: string }} targetAccount
+ * @param {{ seq: string|number|null }} extra
  */
-CircleService.prototype.handleNotifyUnfriendActivity = function (notificationService, account, targetAccount) {
+CircleService.prototype.handleNotifyUnfriendActivity = function (notificationService, account, targetAccount, extra) {
   // const registerRegion = account.region
 
   // 跟自己說
@@ -64,7 +65,7 @@ CircleService.prototype.handleNotifyUnfriendActivity = function (notificationSer
       event: CONSTANT.FRIEND_EVENT_REMOVE_FRIEND,
       content: targetAccount
     }
-  })
+  }, extra)
 
   // 跟對方說
   notificationService.emitEvent({
@@ -77,7 +78,7 @@ CircleService.prototype.handleNotifyUnfriendActivity = function (notificationSer
       event: CONSTANT.FRIEND_EVENT_REMOVE_FRIEND,
       content: account
     }
-  })
+  }, extra)
 }
 
 /**

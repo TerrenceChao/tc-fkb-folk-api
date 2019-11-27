@@ -32,6 +32,7 @@ const AUTH_FIELDS = [
 ]
 
 const USER_FIELDS = [
+  ['seq', 'u.id AS seq'],
   ['beSearched', 'u.be_searched'],
   ['givenName', 'u.given_name'],
   ['familyName', 'u.family_name'],
@@ -257,7 +258,7 @@ AuthRepository.prototype.createAccountUser = async function (signupInfo) {
       SELECT REVERSE(nextval('users_id_seq')::varchar), id, be_searched, given_name, family_name, gender, birth, lang, public_info
       FROM data
       JOIN account USING (id)
-      RETURNING be_searched, given_name, family_name, lang, public_info
+      RETURNING id AS seq, be_searched, given_name, family_name, lang, public_info
     )
     SELECT *, a.id AS uid FROM account AS a, auth, account_user;
     `,

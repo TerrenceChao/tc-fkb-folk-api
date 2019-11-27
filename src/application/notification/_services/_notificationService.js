@@ -1,6 +1,5 @@
 const _ = require('lodash')
 const USER_CONST = require('../../../domain/folk/user/_properties/constant')
-const ACCOUT_IDENTITY = require('../../../domain/folk/user/_properties/constant').ACCOUT_IDENTITY
 const {
   HTTP,
   CATEGORIES,
@@ -26,7 +25,7 @@ function registerRequest (service, userInfo) {
   return util.syncPublishRequest(USER_CONST.ACCOUNT_EVENT_REGISTRATION, {
     category: CATEGORIES.PERSONAL,
     channels: [CHANNELS.INTERNAL_SEARCH],
-    sender: null,
+    sender: { seq: userInfo.seq },
     receivers: [_.pick(userInfo, USER_CONST.ACCOUT_IDENTITY)],
     packet: {
       event: USER_CONST.ACCOUNT_EVENT_REGISTRATION,
@@ -76,7 +75,7 @@ NotificationService.prototype.emitRegistration = function (verification) {
   util.publishRequest(USER_CONST.ACCOUNT_EVENT_REGISTRATION, {
     category: CATEGORIES.PERSONAL,
     channels: [CHANNELS.EMAIL],
-    sender: null,
+    sender: { seq: verification.seq },
     receivers: [{ email: notifyInfo.to }],
     packet: {
       event: USER_CONST.ACCOUNT_EVENT_REGISTRATION,
@@ -93,7 +92,7 @@ NotificationService.prototype.emitRegistration = function (verification) {
  * requset: {
  *  category: personal,
  *  channels: [SMS]/[email],
- *  sender: null,
+ *  sender: { seq: '5432' },
  *  receivers: [
  *   { email: xxxx@mail.com/phone: +886-0987-xxx-xxx }
  *  ],
@@ -110,7 +109,7 @@ NotificationService.prototype.emitVerification = function (verification) {
   util.publishRequest(USER_CONST.ACCOUNT_EVENT_VALIDATE_ACCOUNT, {
     category: CATEGORIES.PERSONAL,
     channels: [CHANNEL_TYPES[type]],
-    sender: null,
+    sender: { seq: verification.seq },
     receivers: [{ [type]: notifyInfo.to }],
     packet: {
       event: USER_CONST.ACCOUNT_EVENT_VALIDATE_ACCOUNT,
@@ -120,20 +119,20 @@ NotificationService.prototype.emitVerification = function (verification) {
 }
 
 /**
- * TODO: [尚未考慮跨區域情境]
- * 不同區域的分開處理
+ * TODO: 考慮跨區域情境：不同區域的分開處理
  * 1. same region  => notification-api
- * 2. corss region => dispatch-api
+ * 2. corss region => web-api
  */
-NotificationService.prototype.emitFriendInvitation = function (invitation) {
+NotificationService.prototype.emitFriendInvitation = function (invitation, extra) {
   const inviteEvent = invitation.header.inviteEvent
-  const sender = _.pick(invitation[SENDERS[inviteEvent]], ACCOUT_IDENTITY)
-  const receiver = _.pick(invitation[RECEIVERS[inviteEvent]], ACCOUT_IDENTITY)
+  const sender = _.pick(invitation[SENDERS[inviteEvent]], USER_CONST.ACCOUT_IDENTITY)
+  const receiver = _.pick(invitation[RECEIVERS[inviteEvent]], USER_CONST.ACCOUT_IDENTITY)
+  const seq = extra.seq
 
   util.publishRequest(inviteEvent, {
     category: CATEGORIES.INVITE_EVENT_FRIEND,
     channels: CHANNELS.PUSH,
-    sender,
+    sender: _.assign({ seq }, sender),
     receivers: [receiver],
     packet: {
       event: inviteEvent,
@@ -147,12 +146,12 @@ NotificationService.prototype.emitFriendInvitation = function (invitation) {
  * message = { category, channels, sender, receivers, packet }
  * 不同區域的分開處理
  * 1. same region  => notification-api
- * 2. corss region => dispatch-api
+ * 2. corss region => web-api
  *  TODO:
  *  request: {
  *   category: xxxx,
  *   channels: xxxx/[...],
- *   sender: { region: xxx, uid: xxx },
+ *   sender: { region: xxx, uid: xxx, seq: xxx },
  *   receivers: [
  *     { region: xxx, uid: xxx },
  *     { region: xxx, uid: xxx },
@@ -161,7 +160,9 @@ NotificationService.prototype.emitFriendInvitation = function (invitation) {
  *   packet: {...}
  *  }
  */
-NotificationService.prototype.emitEvent = function (message) {
+NotificationService.prototype.emitEvent = function (message, extra) {
+  const seq = extra.seq
+  _.assign(message.sender, { seq })
   util.publishRequest(message.packet.event, message)
 }
 

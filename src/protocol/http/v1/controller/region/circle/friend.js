@@ -33,15 +33,18 @@ exports.find = async (req, res, next) => {
  *    b. update someone's profile state (invite)
  */
 exports.unfriend = async (req, res, next) => {
+  var seq = req.headers.seq
   var account = req.params
   var targetAccount = _.mapKeys(req.query, (value, key) => _.camelCase(key.replace('target', '')))
+  var extra = { seq }
 
   Promise.resolve(friendService.unfriend(account, targetAccount))
     .then(removedFriend => (res.locals.data = removedFriend))
     .then(() => circleService.handleNotifyUnfriendActivity(
       notificationService,
       account,
-      targetAccount
+      targetAccount,
+      extra
     ))
     .then(() => next())
     .catch(err => next(err))

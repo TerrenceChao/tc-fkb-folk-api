@@ -51,7 +51,7 @@ FriendService.prototype.findOne = async function (account, targetAccount) {
  */
 FriendService.prototype.unfriend = async function (account, targetAccount, softDelete = false) {
   /**
-   * 若同一個國家有多個區域該如何處理？一樣的。基本上會用到這個 function, 在 dispatch-api
+   * 若同一個國家有多個區域該如何處理？一樣的。基本上會用到這個 function, 在 web-api
    * 就知道這裡是哪個區域，刪除時僅需考慮 account OR targetAccount 其中一個的那個區域即可。
    */
   if (account.region === targetAccount.region) {

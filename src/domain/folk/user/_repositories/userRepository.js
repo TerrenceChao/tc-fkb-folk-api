@@ -10,7 +10,6 @@ const AUTH_FIELDS = [
 const ACCOUNT_FIELDS = [
   ['uid', 'a.id AS uid'],
   ['region', 'a.region'],
-  // ['email', 'a.email'],
   ['alternateEmail', 'a.alternate_email'],
   ['countryCode', 'a.country_code'],
   ['phone', 'a.phone'],
@@ -18,6 +17,7 @@ const ACCOUNT_FIELDS = [
 ]
 
 const USER_FIELDS = [
+  ['seq', 'u.id AS seq'],
   ['beSearched', 'u.be_searched'],
   ['givenName', 'u.given_name'],
   ['familyName', 'u.family_name'],

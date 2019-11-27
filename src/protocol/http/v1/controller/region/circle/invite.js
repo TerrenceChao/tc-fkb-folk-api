@@ -12,15 +12,17 @@ var util = require('../../../../../../property/util')
  *     b. update someone's profile state [invitation_has_sent]
  */
 exports.sendInvitation = async (req, res, next) => {
+  var seq = req.headers.seq
   var account = req.params
   var inviterUserInfo = req.body.inviter
   var recipientUserInfo = req.body.recipient
+  var extra = { seq }
   res.locals.data = util.init(res.locals.data)
 
   Promise.resolve(invitationService.validateRoles(account, req.body))
     .then(() => friendService.getRelationship(recipientUserInfo, inviterUserInfo))
     .then(relationship => circleService.handleInviteActivity(invitationService, relationship))
-    .then(invitation => notificationService.emitFriendInvitation(res.locals.data = invitation))
+    .then(invitation => notificationService.emitFriendInvitation((res.locals.data = invitation), extra))
     .then(() => next())
     .catch(err => next(err))
 }
@@ -42,13 +44,15 @@ exports.sendInvitation = async (req, res, next) => {
  *      b. update someone's profile state [invite]
  */
 exports.replyInvitation = async (req, res, next) => {
+  var seq = req.headers.seq
   var account = req.params
   var invitationRespose = req.body
+  var extra = { seq }
   res.locals.data = util.init(res.locals.data)
 
   Promise.resolve(invitationService.validateRoles(account, invitationRespose))
     .then(() => invitationService.handleFriendInvitation(invitationRespose))
-    .then(invitationRespose => notificationService.emitFriendInvitation(res.locals.data = invitationRespose))
+    .then(invitationRespose => notificationService.emitFriendInvitation((res.locals.data = invitationRespose), extra))
     .then(() => next())
     .catch(err => next(err))
 }

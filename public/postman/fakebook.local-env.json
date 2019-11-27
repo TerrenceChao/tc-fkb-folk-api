@@ -5,7 +5,7 @@
 		{
 			"key": "uid_B",
 			"value": "c32f7185-31aa-40c3-b0a2-d0b68b35c783",
-			"enabled": false
+			"enabled": true
 		},
 		{
 			"key": "msg_localhost",
@@ -29,22 +29,22 @@
 		},
 		{
 			"key": "verify_token",
-			"value": "laierhgslierghULIHAsadaeri",
+			"value": "686f746d61696c2e636f6d3b72667662.0466c4f2d41cd47eb57d300b5eca0baa52305f728cd4681c5fe1ec787d326e2d45adcd9f2d52e710123349cb308ae116",
 			"enabled": true
 		},
 		{
 			"key": "verify_code",
-			"value": "123456",
+			"value": "159706",
 			"enabled": true
 		},
 		{
 			"key": "verify_expire",
-			"value": "1573838619735",
+			"value": "1574847169845",
 			"enabled": true
 		},
 		{
 			"key": "uid",
-			"value": "7e1d575c-2843-48ba-9b36-cc677728b7c8",
+			"value": "2f0b8993-fe7d-48ed-bf7c-9a1071fcffac",
 			"enabled": true
 		},
 		{
@@ -99,7 +99,7 @@
 		},
 		{
 			"key": "inviter_id",
-			"value": "7e1d575c-2843-48ba-9b36-cc677728b7c8",
+			"value": "ef936274-db63-4974-bb0f-bf55ff288908",
 			"enabled": true
 		},
 		{
@@ -109,22 +109,22 @@
 		},
 		{
 			"key": "inviter_given_name",
-			"value": "Terrence",
+			"value": "xxxxx",
 			"enabled": true
 		},
 		{
 			"key": "inviter_family_name",
-			"value": "Chao",
+			"value": "0000",
 			"enabled": true
 		},
 		{
 			"key": "inviter_profile_link",
-			"value": "http://localhost:3000/folk-service/api/v1/user/7e1d575c-2843-48ba-9b36-cc677728b7c8/tw/profile",
+			"value": "xxxx",
 			"enabled": true
 		},
 		{
 			"key": "inviter_profile_pic",
-			"value": "404-notfound/user/2bd764d4-8c66-4af9-891d-8683bcc21788/tw/profile/pic/0",
+			"value": "0000",
 			"enabled": true
 		},
 		{
@@ -139,7 +139,7 @@
 		},
 		{
 			"key": "recipient_profile_link",
-			"value": "http://localhost:3000/folk-service/api/v1/user/01f1155b-b70f-45da-a422-a138f7ebea9b/tw/profile",
+			"value": "http://localhost:3000/folk-service/api/v1/user/935c3792-3c66-44d7-8e57-0b4cffe1689f/tw/profile",
 			"enabled": true
 		},
 		{
@@ -159,12 +159,12 @@
 		},
 		{
 			"key": "profile_link",
-			"value": "{{folk_localhost}}/user/{{uid}}/{{region}}/profile",
+			"value": "http://localhost:3000/folk-service/api/v1//user/2f0b8993-fe7d-48ed-bf7c-9a1071fcffac/tw/profile",
 			"enabled": true
 		},
 		{
 			"key": "profile_pic",
-			"value": "404-notfound/user/2bd764d4-8c66-4af9-891d-8683bcc21788/tw/profile/pic/0",
+			"value": "404-notfound/user/2f0b8993-fe7d-48ed-bf7c-9a1071fcffac/tw/profile/pic/0",
 			"enabled": true
 		},
 		{
@@ -284,12 +284,12 @@
 		},
 		{
 			"key": "uid_B",
-			"value": "01f1155b-b70f-45da-a422-a138f7ebea9b",
+			"value": "c1d134d8-6d0d-4b88-be81-f05c04e452ee",
 			"enabled": true
 		},
 		{
 			"key": "verify_code_B",
-			"value": "123456",
+			"value": "908566",
 			"enabled": true
 		},
 		{
@@ -299,17 +299,17 @@
 		},
 		{
 			"key": "verify_token_B",
-			"value": "laierhgslierghULIHAsadaeri",
+			"value": "6e674067656e6572616c2e636f6d3b61.b58804ff10b922b4c9a62d97adf38e8b7bebefb713d5ea18dd524db7d2cce7d02f23e8f60500c0b6ae56c97b28f08c89eb612d9b933697e80b843dfa01820af7",
 			"enabled": true
 		},
 		{
 			"key": "profile_link_B",
-			"value": "{{folk_localhost}}/user/{{uid_B}}/{{region_B}}/profile",
+			"value": "http://localhost:3000/folk-service/api/v1//user/c1d134d8-6d0d-4b88-be81-f05c04e452ee/tw/profile",
 			"enabled": true
 		},
 		{
 			"key": "iid",
-			"value": "21",
+			"value": "2401eca9-13b0-320c-9223-02146baa9a46",
 			"enabled": true
 		},
 		{
@@ -319,21 +319,31 @@
 		},
 		{
 			"key": "recipient_id",
-			"value": "01f1155b-b70f-45da-a422-a138f7ebea9b",
-			"enabled": true
-		},
-		{
-			"key": "full_name",
-			"value": null,
+			"value": "935c3792-3c66-44d7-8e57-0b4cffe1689f",
 			"enabled": true
 		},
 		{
 			"key": "verify_reset",
 			"value": null,
 			"enabled": true
+		},
+		{
+			"key": "seq",
+			"value": "337",
+			"enabled": true
+		},
+		{
+			"key": "profile_pic_B",
+			"value": "404-notfound/user/c1d134d8-6d0d-4b88-be81-f05c04e452ee/tw/profile/pic/0",
+			"enabled": true
+		},
+		{
+			"key": "seq_B",
+			"value": "437",
+			"enabled": true
 		}
 	],
 	"_postman_variable_scope": "environment",
-	"_postman_exported_at": "2019-11-16T03:35:52.581Z",
-	"_postman_exported_using": "Postman/7.11.0"
+	"_postman_exported_at": "2019-11-27T10:32:03.318Z",
+	"_postman_exported_using": "Postman/7.12.0"
 }

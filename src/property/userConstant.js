@@ -3,6 +3,7 @@ exports.ACCOUT_IDENTITY = process.env.ACCOUT_IDENTITY ? process.env.ACCOUT_IDENT
 exports.USER_PUBLIC_INFO = process.env.USER_PUBLIC_INFO ? process.env.USER_PUBLIC_INFO.split(',') : [
   'region',
   'uid',
+  'seq',
   'givenName',
   'familyName',
   'gender',
@@ -14,6 +15,7 @@ exports.USER_PUBLIC_INFO = process.env.USER_PUBLIC_INFO ? process.env.USER_PUBLI
 exports.USER_PRIVATE_INFO = process.env.USER_PRIVATE_INFO ? process.env.USER_PRIVATE_INFO.split(',') : [
   'region',
   'uid',
+  'seq',
   'beSearched',
   'givenName',
   'familyName',
@@ -27,6 +29,7 @@ exports.USER_PRIVATE_INFO = process.env.USER_PRIVATE_INFO ? process.env.USER_PRI
 exports.USER_CONTACT = process.env.USER_CONTACT ? process.env.USER_CONTACT.split(',') : [
   'region',
   'uid',
+  'seq',
   'email',
   'alternateEmail',
   'countryCode',

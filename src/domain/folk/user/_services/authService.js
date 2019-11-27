@@ -128,6 +128,7 @@ AuthService.prototype.createVerifiedUser = async function (verifyInfo, domain) {
     .then(signupInfo => _.assign(signupInfo, util.encryptPassword(signupInfo.newpass)))
     .then(signupInfo => this.mergePublicInfo(signupInfo, domain))
     .then(signupInfo => Promise.resolve(this.authRepo.createAccountUser(signupInfo))
+      .then(rowdata => _.assign(signupInfo, { seq: rowdata.seq }))
       .then(() => cache.del(verifyInfo.token))
       .then(() => signupInfo)
     )

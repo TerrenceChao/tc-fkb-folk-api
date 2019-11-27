@@ -196,7 +196,9 @@
 									"var result = JSON.parse(responseBody);",
 									"postman.setEnvironmentVariable(\"uid\", result.data.userInfo.uid);",
 									"postman.setEnvironmentVariable(\"region\", result.data.userInfo.region);",
-									"postman.setEnvironmentVariable(\"profile_link\", \"{{folk_localhost}}/user/{{uid}}/{{region}}/profile\");",
+									"postman.setEnvironmentVariable(\"profile_link\", result.data.userInfo.publicInfo.profileLink);",
+									"postman.setEnvironmentVariable(\"profile_pic\", result.data.userInfo.publicInfo.profilePic);",
+									"postman.setEnvironmentVariable(\"seq\", result.data.userInfo.seq);",
 									""
 								],
 								"type": "text/javascript"
@@ -215,6 +217,11 @@
 							{
 								"key": "clientuseragent",
 								"value": "{{md5_useragent_chrome_linux}}",
+								"type": "text"
+							},
+							{
+								"key": "seq",
+								"value": "{{seq}}",
 								"type": "text"
 							}
 						],
@@ -303,7 +310,11 @@
 									"tests[\"Status code is 201\"] = responseCode.code === 201;",
 									"",
 									"var result = JSON.parse(responseBody);",
-									"postman.setEnvironmentVariable(\"uid\", result.data.userInfo.uid);"
+									"postman.setEnvironmentVariable(\"uid\", result.data.userInfo.uid);",
+									"postman.setEnvironmentVariable(\"region\", result.data.userInfo.region);",
+									"// postman.setEnvironmentVariable(\"profile_link\", result.data.userInfo.publicInfo.profileLink);",
+									"// postman.setEnvironmentVariable(\"profile_pic\", result.data.userInfo.publicInfo.profilePic);",
+									"postman.setEnvironmentVariable(\"seq\", result.data.userInfo.seq);"
 								],
 								"type": "text/javascript"
 							}
@@ -989,6 +1000,11 @@
 								"key": "token",
 								"value": "{{auth_token}}",
 								"type": "text"
+							},
+							{
+								"key": "seq",
+								"value": "{{seq}}",
+								"type": "text"
 							}
 						],
 						"body": {
@@ -1315,7 +1331,9 @@
 									"var result = JSON.parse(responseBody);",
 									"postman.setEnvironmentVariable(\"uid_B\", result.data.userInfo.uid);",
 									"postman.setEnvironmentVariable(\"region_B\", result.data.userInfo.region);",
-									"postman.setEnvironmentVariable(\"profile_link_B\", \"{{folk_localhost}}/user/{{uid_B}}/{{region_B}}/profile\");",
+									"postman.setEnvironmentVariable(\"profile_link_B\", result.data.userInfo.publicInfo.profileLink);",
+									"postman.setEnvironmentVariable(\"profile_pic_B\", result.data.userInfo.publicInfo.profilePic);",
+									"postman.setEnvironmentVariable(\"seq_B\", result.data.userInfo.seq);",
 									""
 								],
 								"type": "text/javascript"
@@ -1368,6 +1386,11 @@
 									"",
 									"var result = JSON.parse(responseBody);",
 									"postman.setEnvironmentVariable(\"uid_B\", result.data.userInfo.uid);",
+									"postman.setEnvironmentVariable(\"region_B\", result.data.userInfo.region);",
+									"// postman.setEnvironmentVariable(\"profile_link_B\", result.data.userInfo.publicInfo.profileLink);",
+									"// postman.setEnvironmentVariable(\"profile_pic_B\", result.data.userInfo.publicInfo.profilePic);",
+									"postman.setEnvironmentVariable(\"seq_B\", result.data.userInfo.seq);",
+									"",
 									""
 								],
 								"type": "text/javascript"
@@ -1503,6 +1526,11 @@
 								"key": "token",
 								"type": "text",
 								"value": "{{auth_token}}"
+							},
+							{
+								"key": "seq",
+								"value": "{{seq}}",
+								"type": "text"
 							}
 						],
 						"body": {
@@ -1883,6 +1911,11 @@
 								"key": "token",
 								"type": "text",
 								"value": "{{auth_token}}"
+							},
+							{
+								"key": "seq",
+								"value": "{{seq_B}}",
+								"type": "text"
 							}
 						],
 						"body": {
@@ -2242,6 +2275,11 @@
 								"key": "token",
 								"type": "text",
 								"value": "{{auth_token}}"
+							},
+							{
+								"key": "seq",
+								"value": "{{seq}}",
+								"type": "text"
 							}
 						],
 						"body": {

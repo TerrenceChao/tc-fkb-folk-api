@@ -225,6 +225,13 @@ function genVerification (userInfo, expire = null, unique = false) {
   }
 }
 
+var counter = 1
+
+function genSeq () {
+  counter = counter >= Number.MAX_SAFE_INTEGER ? 1 : counter + 1
+  return counter
+}
+
 /**
  * @param {string} type
  * @param {{ email: string}|{countryCode: string, phone: string}} accountContact
@@ -248,6 +255,7 @@ function genVerificationPacket (type, accountContact, userInfo, newVerification)
   return {
     region: userInfo.region,
     uid: userInfo.uid,
+    seq: userInfo.seq || genSeq(),
     type,
     /**
      * TODO: 這裡的 account (string OR Object?) 是否能夠和 notify-api 的資料銜接上？

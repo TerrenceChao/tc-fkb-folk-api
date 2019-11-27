@@ -21,7 +21,7 @@ describe('repository: Auths', () => {
     const newAccount = await authRepo.createAccountUser(signupInfo)
 
     // assert
-    expect(newAccount).to.have.all.keys('id', 'uid', 'region', 'email', 'pw_hash', 'pw_salt', 'be_searched', 'given_name', 'family_name', 'lang', 'public_info')
+    expect(newAccount).to.have.all.keys('id', 'uid', 'region', 'email', 'pw_hash', 'pw_salt', 'seq', 'be_searched', 'given_name', 'family_name', 'lang', 'public_info')
     // fields of "Accounts" and "Auth"
     expect(newAccount.uid).to.equals(signupInfo.uid)
     expect(newAccount.region).to.equals(signupInfo.region)
