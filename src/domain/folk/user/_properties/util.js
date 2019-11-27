@@ -36,17 +36,20 @@ function encryptPassword (password, salt) {
 }
 
 /**
- *
  * @param {Object} user
+ * @param {bool} plain to plain object: 'publicInfo'
  */
-function parseUserInfo (user) {
+function parseUserInfo (user, plain = false) {
   user = _.mapKeys(user, (value, key) => _.camelCase(key))
-  const publicInfo = user.publicInfo
-  delete user.publicInfo
-
   user.expire && (user.expire = parseInt(user.expire))
 
-  return _.assign(user, publicInfo)
+  if (plain === true) {
+    const publicInfo = user.publicInfo
+    delete user.publicInfo
+    return _.assign(user, publicInfo)
+  }
+
+  return user
 }
 
 /**
