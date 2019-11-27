@@ -162,7 +162,7 @@ NotificationService.prototype.emitFriendInvitation = function (invitation, extra
  */
 NotificationService.prototype.emitEvent = function (message, extra) {
   const seq = extra.seq
-  _.assign(message.sender, { seq })
+  message.sender = _.assign({ seq }, message.sender)
   util.publishRequest(message.packet.event, message)
 }
 

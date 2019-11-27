@@ -34,17 +34,17 @@
 		},
 		{
 			"key": "verify_code",
-			"value": "159706",
+			"value": "467694",
 			"enabled": true
 		},
 		{
 			"key": "verify_expire",
-			"value": "1574847169845",
+			"value": "1574873756591",
 			"enabled": true
 		},
 		{
 			"key": "uid",
-			"value": "2f0b8993-fe7d-48ed-bf7c-9a1071fcffac",
+			"value": "330391a8-70bf-412d-a170-029a3e9a6e9e",
 			"enabled": true
 		},
 		{
@@ -99,7 +99,7 @@
 		},
 		{
 			"key": "inviter_id",
-			"value": "ef936274-db63-4974-bb0f-bf55ff288908",
+			"value": "330391a8-70bf-412d-a170-029a3e9a6e9e",
 			"enabled": true
 		},
 		{
@@ -109,22 +109,22 @@
 		},
 		{
 			"key": "inviter_given_name",
-			"value": "xxxxx",
+			"value": "Terrence",
 			"enabled": true
 		},
 		{
 			"key": "inviter_family_name",
-			"value": "0000",
+			"value": "Chao",
 			"enabled": true
 		},
 		{
 			"key": "inviter_profile_link",
-			"value": "xxxx",
+			"value": "http://localhost:3000/folk-service/api/v1//user/330391a8-70bf-412d-a170-029a3e9a6e9e/tw/profile",
 			"enabled": true
 		},
 		{
 			"key": "inviter_profile_pic",
-			"value": "0000",
+			"value": "404-notfound/user/330391a8-70bf-412d-a170-029a3e9a6e9e/tw/profile/pic/0",
 			"enabled": true
 		},
 		{
@@ -139,12 +139,12 @@
 		},
 		{
 			"key": "recipient_profile_link",
-			"value": "http://localhost:3000/folk-service/api/v1/user/935c3792-3c66-44d7-8e57-0b4cffe1689f/tw/profile",
+			"value": "http://localhost:3000/folk-service/api/v1//user/868674c1-520b-4b9a-99b4-b0a7a1d7474f/tw/profile",
 			"enabled": true
 		},
 		{
 			"key": "recipient_profile_pic",
-			"value": "{{profile_pic_B}}",
+			"value": "404-notfound/user/868674c1-520b-4b9a-99b4-b0a7a1d7474f/tw/profile/pic/0",
 			"enabled": true
 		},
 		{
@@ -159,12 +159,12 @@
 		},
 		{
 			"key": "profile_link",
-			"value": "http://localhost:3000/folk-service/api/v1//user/2f0b8993-fe7d-48ed-bf7c-9a1071fcffac/tw/profile",
+			"value": "http://localhost:3000/folk-service/api/v1//user/330391a8-70bf-412d-a170-029a3e9a6e9e/tw/profile",
 			"enabled": true
 		},
 		{
 			"key": "profile_pic",
-			"value": "404-notfound/user/2f0b8993-fe7d-48ed-bf7c-9a1071fcffac/tw/profile/pic/0",
+			"value": "404-notfound/user/330391a8-70bf-412d-a170-029a3e9a6e9e/tw/profile/pic/0",
 			"enabled": true
 		},
 		{
@@ -284,12 +284,12 @@
 		},
 		{
 			"key": "uid_B",
-			"value": "c1d134d8-6d0d-4b88-be81-f05c04e452ee",
+			"value": "868674c1-520b-4b9a-99b4-b0a7a1d7474f",
 			"enabled": true
 		},
 		{
 			"key": "verify_code_B",
-			"value": "908566",
+			"value": "176405",
 			"enabled": true
 		},
 		{
@@ -304,12 +304,12 @@
 		},
 		{
 			"key": "profile_link_B",
-			"value": "http://localhost:3000/folk-service/api/v1//user/c1d134d8-6d0d-4b88-be81-f05c04e452ee/tw/profile",
+			"value": "http://localhost:3000/folk-service/api/v1//user/868674c1-520b-4b9a-99b4-b0a7a1d7474f/tw/profile",
 			"enabled": true
 		},
 		{
 			"key": "iid",
-			"value": "2401eca9-13b0-320c-9223-02146baa9a46",
+			"value": "d4159c8a-6817-377f-9d3d-01f290552d5b",
 			"enabled": true
 		},
 		{
@@ -319,7 +319,7 @@
 		},
 		{
 			"key": "recipient_id",
-			"value": "935c3792-3c66-44d7-8e57-0b4cffe1689f",
+			"value": "868674c1-520b-4b9a-99b4-b0a7a1d7474f",
 			"enabled": true
 		},
 		{
@@ -329,21 +329,21 @@
 		},
 		{
 			"key": "seq",
-			"value": "337",
+			"value": "143",
 			"enabled": true
 		},
 		{
 			"key": "profile_pic_B",
-			"value": "404-notfound/user/c1d134d8-6d0d-4b88-be81-f05c04e452ee/tw/profile/pic/0",
+			"value": "404-notfound/user/868674c1-520b-4b9a-99b4-b0a7a1d7474f/tw/profile/pic/0",
 			"enabled": true
 		},
 		{
 			"key": "seq_B",
-			"value": "437",
+			"value": "243",
 			"enabled": true
 		}
 	],
 	"_postman_variable_scope": "environment",
-	"_postman_exported_at": "2019-11-27T10:32:03.318Z",
+	"_postman_exported_at": "2019-11-27T17:08:57.689Z",
 	"_postman_exported_using": "Postman/7.12.0"
 }
