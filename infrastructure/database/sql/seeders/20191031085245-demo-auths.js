@@ -7,12 +7,16 @@
 function genAuths (accountRows) {
   const now = new Date()
   const auths = []
-  for (let i = 0; i < accountRows.length; i++) {
+  const len = accountRows.length
+  for (let i = 0; i < len; i++) {
     auths.push({
+      id: reverseNextVal(i + len),
       user_id: accountRows[i].id,
       pw_hash: 'xxxx',
       pw_salt: 'oooo',
-      verification: null,
+      verify_token: null,
+      verify_code: null,
+      verify_expire: null,
       attempt: 0,
       lock: false,
       created_at: now,
@@ -21,6 +25,21 @@ function genAuths (accountRows) {
   }
 
   return auths
+}
+
+/**
+ * @param {number} autoIncrementId
+ */
+function reverseNextVal (autoIncrementId) {
+  const str = autoIncrementId.toString()
+  const len = str.length
+
+  let newStr = ''
+  for (let i = len - 1; i >= 0; i--) {
+    newStr = newStr.concat(str[i])
+  }
+
+  return newStr
 }
 
 module.exports = {

@@ -2,6 +2,7 @@ const { expect } = require('chai')
 const _ = require('lodash')
 const path = require('path')
 const config = require('config')
+const Repository = require(path.join(config.src.library, 'Repository'))
 const { AuthRepository } = require(path.join(config.src.repository.user, 'authRepository'))
 const { UserRepository } = require(path.join(config.src.repository.user, 'userRepository'))
 const { genSignupInfo } = require(path.join(config.test.common, 'mock'))
@@ -10,6 +11,7 @@ const { assertUserProperties } = require(path.join(config.test.common, 'assert')
 const pool = config.database.pool
 
 describe('repository: Users', () => {
+  const repo = new Repository(pool)
   const authRepo = new AuthRepository(pool)
   const userRepo = new UserRepository(pool)
 
@@ -28,7 +30,7 @@ describe('repository: Users', () => {
     // act
     const authorizedUser = await userRepo.getAuthorizedUser(signupInfoA.email, signupInfoA.pwHash, CHECK_FIELDS)
 
-    // arrange
+    // assert
     assertUserProperties(authorizedUser, signupInfoA)
   })
 
@@ -69,7 +71,7 @@ describe('repository: Users', () => {
     // act
     const user = await userRepo.getUser({ uid, region }, CHECK_FIELDS)
 
-    // arrange
+    // assert
     assertUserProperties(user, signupInfoA)
   })
 
@@ -83,7 +85,7 @@ describe('repository: Users', () => {
     const targetAccount = { uid: userB.uid, region: userB.region }
     let users = await userRepo.getPairUsers(account, targetAccount, CHECK_FIELDS)
 
-    // arrange
+    // assert
     const order = {
       [account.uid]: 0,
       [targetAccount.uid]: 1
@@ -113,7 +115,7 @@ describe('repository: Users', () => {
     const newPublicInfo = newUserInfo.publicInfo
 
     // act
-    const updatedUser = await userRepo.updateUser({ uid: userA.uid, region: userA.region }, newUserInfo, UPDATE_USER_FIELDS.concat(['uid']))
+    const updatedUser = await userRepo.updateUser({ uid: userA.uid, region: userA.region }, newUserInfo)
 
     // arrange
     expect(updatedUser.uid).to.equals(userA.uid)
@@ -136,12 +138,18 @@ describe('repository: Users', () => {
     // act
     const updatedUser = await authRepo.updateContact({ uid: userA.uid, region: userA.region }, newContectInfo)
 
-    // arrange
+    // assert
     expect(updatedUser.uid).to.equals(userA.uid)
     expect(updatedUser.region).to.equals(userA.region)
     expect(updatedUser.alternate_email).to.equals(newContectInfo.alternateEmail)
     expect(updatedUser.country_code).to.equals(newContectInfo.countryCode)
     expect(updatedUser.phone).to.equals(newContectInfo.phone)
     expect(updatedUser.device).to.equals(newContectInfo.device)
+  })
+
+  after(async () => {
+    await repo.query('DELETE FROM "LocalAccounts";', [])
+    await repo.query('DELETE FROM "Users";', [])
+    await repo.query('DELETE FROM "Accounts";', [])
   })
 })

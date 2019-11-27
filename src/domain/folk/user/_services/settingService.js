@@ -48,7 +48,7 @@ SettingService.prototype.getPublicUserInfo = async function (account) {
   */
 SettingService.prototype.updateUserInfo = async function (account, newUserInfo) {
   newUserInfo = _.pick(newUserInfo, C.USER_PRIVATE_UPDATE_INFO)
-  await this.userRepo.updateUser(account, newUserInfo, C.USER_PRIVATE_INFO)
+  await this.userRepo.updateUser(account, newUserInfo)
 
   return true
 }
@@ -78,7 +78,7 @@ SettingService.prototype.getUserContact = async function (account) {
   */
 SettingService.prototype.updateUserContact = async function (account, newUserContact) {
   newUserContact = _.pick(newUserContact, C.USER_UPDATE_CONTACT)
-  await this.authRepo.updateContact(account, newUserContact, C.USER_CONTACT)
+  await this.authRepo.updateContact(account, newUserContact)
 
   return true
 }

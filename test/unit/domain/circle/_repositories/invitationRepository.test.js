@@ -262,4 +262,6 @@ describe('repository: Invitations', () => {
     deletedInvitationList.forEach(deleted => assertInvitation(sourceInvitation, deleted))
     expect(invitation).to.be.equals(undefined)
   })
+
+  after(() => repo.query('DELETE FROM "Invitations"', []))
 })

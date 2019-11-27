@@ -24,7 +24,17 @@ pool.on('connect', function () {
   console.log('connect Event', '\n')
 })
 
+const Promise = require('bluebird')
+const initOptions = {
+  promiseLib: Promise,
+  capSQL: true
+}
+const pgp = require('pg-promise')(initOptions)
+const db = pgp(setups)
+
 module.exports = {
+  types: pg.types,
   pool,
-  types: pg.types
+  pgp,
+  db
 }

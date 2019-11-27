@@ -12,13 +12,8 @@ module.exports = {
         allowNull: false,
         type: Sequelize.STRING(10)
       },
-      email: {
-        allowNull: false,
-        // unique: 'unique_email',
-        type: Sequelize.STRING(40)
-      },
       alternateEmail: {
-        type: Sequelize.STRING(40),
+        type: Sequelize.STRING(60),
         field: 'alternate_email'
       },
       countryCode: {
@@ -50,9 +45,6 @@ module.exports = {
       }
     }, {
       uniqueKeys: {
-        unique_email: {
-          fields: ['email']
-        },
         unique_phone: {
           fields: ['country_code', 'phone']
         }
