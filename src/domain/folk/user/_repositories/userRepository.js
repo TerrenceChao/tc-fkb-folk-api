@@ -1,11 +1,16 @@
+const _ = require('lodash')
 const util = require('util')
 const pool = require('config').database.pool
 const Repository = require('../../../../library/repository')
 
+const AUTH_FIELDS = [
+  ['email', 'au.email']
+]
+
 const ACCOUNT_FIELDS = [
   ['uid', 'a.id AS uid'],
   ['region', 'a.region'],
-  ['email', 'a.email'],
+  // ['email', 'a.email'],
   ['alternateEmail', 'a.alternate_email'],
   ['countryCode', 'a.country_code'],
   ['phone', 'a.phone'],
@@ -33,7 +38,7 @@ const USER_UPDATE_FIELDS = [
   ['publicInfo', 'public_info']
 ]
 
-const VALID_FIELD_MAP = new Map(ACCOUNT_FIELDS.concat(USER_FIELDS))
+const VALID_FIELD_MAP = new Map(AUTH_FIELDS.concat(ACCOUNT_FIELDS).concat(USER_FIELDS))
 
 function parseSelectFields (selectedFields) {
   if (selectedFields === null) {
@@ -74,6 +79,31 @@ function genUserUpdateFields (obj) {
   return fields.join()
 }
 
+const USER_FIELD_SET = new Set(new Map(USER_FIELDS).keys())
+const AUTH_FIELD_SET = new Set(new Map(AUTH_FIELDS).keys())
+
+/**
+ * @param {string[]} selectedFields
+ */
+function genJoinedTables (selectedFields) {
+  let str = ''
+  for (let i = selectedFields.length - 1; i >= 0; i--) {
+    if (USER_FIELD_SET.has(selectedFields[i])) {
+      str = str.concat('JOIN "Users" AS u ON a.id = u.user_id ')
+      break
+    }
+  }
+
+  for (let i = selectedFields.length - 1; i >= 0; i--) {
+    if (AUTH_FIELD_SET.has(selectedFields[i])) {
+      str = str.concat('JOIN "Auths" AS au ON a.id = au.user_id ')
+      break
+    }
+  }
+
+  return str
+}
+
 util.inherits(UserRepository, Repository)
 
 function UserRepository (pool) {
@@ -83,10 +113,11 @@ function UserRepository (pool) {
 /**
  * @param {string} email
  * @param {string} password
- * @param {string[]|null} selectedFields
+ * @param {string[]} selectedFields tables: "Accounts", "Auths", "Users"
  */
-UserRepository.prototype.getAuthorizedUser = async function (email, password, selectedFields = null) {
+UserRepository.prototype.getAuthorizedUser = async function (email, password, selectedFields = []) {
   let idx = 1
+  selectedFields.push('email')
   selectedFields = parseSelectFields(selectedFields)
 
   return this.query(
@@ -97,7 +128,7 @@ UserRepository.prototype.getAuthorizedUser = async function (email, password, se
     JOIN "Users" AS u ON a.id = u.user_id
     JOIN "Auths" AS au ON a.id = au.user_id
     WHERE
-      a.email = $${idx++}::varchar AND
+      au.email = $${idx++}::varchar AND
       au.pw_hash = $${idx++}::varchar;
     `,
     [
@@ -109,10 +140,11 @@ UserRepository.prototype.getAuthorizedUser = async function (email, password, se
 
 /**
  * @param {{ uid: string, region: string }} account
- * @param {string[]|null} selectedFields
+ * @param {string[]|null} selectedFields tables: "Accounts", "Auths", "Users"
  */
 UserRepository.prototype.getUser = async function (account, selectedFields = null) {
   let idx = 1
+  const joinTables = selectedFields === null ? '' : genJoinedTables(selectedFields)
   selectedFields = parseSelectFields(selectedFields)
 
   return this.query(
@@ -120,7 +152,7 @@ UserRepository.prototype.getUser = async function (account, selectedFields = nul
     SELECT 
       ${selectedFields}
     FROM "Accounts" AS a
-    JOIN "Users" AS u ON a.id = u.user_id
+    ${joinTables}
     WHERE
       a.id = $${idx++}::uuid AND
       a.region = $${idx++}::varchar;
@@ -136,10 +168,11 @@ UserRepository.prototype.getUser = async function (account, selectedFields = nul
  * 需要結合 Account 中的 region
  * @param {{ uid: string, region: string }} account
  * @param {{ uid: string, region: string }} targetAccount
- * @param {string[]|null} selectedFields
+ * @param {string[]|null} selectedFields tables: "Accounts", "Auths", "Users"
  */
 UserRepository.prototype.getPairUsers = async function (account, targetAccount, selectedFields = null) {
   let idx = 1
+  const joinTables = selectedFields === null ? '' : genJoinedTables(selectedFields)
   selectedFields = parseSelectFields(selectedFields)
 
   return this.query(
@@ -147,7 +180,7 @@ UserRepository.prototype.getPairUsers = async function (account, targetAccount, 
     SELECT 
       ${selectedFields}
     FROM "Accounts" AS a
-    JOIN "Users" AS u ON a.id = u.user_id
+    ${joinTables}
     WHERE
       (a.id = $${idx++}::uuid AND a.region = $${idx++}::varchar) OR
       (a.id = $${idx++}::uuid AND a.region = $${idx++}::varchar);
@@ -171,12 +204,11 @@ UserRepository.prototype.getPairUsers = async function (account, targetAccount, 
  *    lang: string|null,
  *    publicInfo: Object|null
  * }} newUserInfo
- * @param {string[]|null} selectedFields
  */
-UserRepository.prototype.updateUser = async function (account, newUserInfo, selectedFields = null) {
+UserRepository.prototype.updateUser = async function (account, newUserInfo) {
   let idx = 1
   const updatedFields = genUserUpdateFields(newUserInfo)
-  selectedFields = parseSelectFields(selectedFields)
+  const selectedFields = parseSelectFields(_.keys(newUserInfo))
 
   return this.query(
     `
@@ -188,7 +220,7 @@ UserRepository.prototype.updateUser = async function (account, newUserInfo, sele
       a.id = u.user_id AND
       u.user_id = $${idx++}::uuid AND
       a.region = $${idx++}::varchar
-    RETURNING ${selectedFields}, a.region;
+    RETURNING ${selectedFields}, a.id AS uid, a.region;
     `,
     [
       account.uid,

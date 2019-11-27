@@ -1,3 +1,4 @@
+const _ = require('lodash')
 const util = require('util')
 const pool = require('config').database.pool
 const Repository = require('../../../../library/repository')
@@ -5,7 +6,6 @@ const Repository = require('../../../../library/repository')
 const ACCOUNT_FIELDS = [
   ['uid', 'a.id AS uid'],
   ['region', 'a.region'],
-  ['email', 'a.email'],
   ['alternateEmail', 'a.alternate_email'],
   ['countryCode', 'a.country_code'],
   ['phone', 'a.phone'],
@@ -21,6 +21,7 @@ const ACCOUNT_UPDATE_FIELDS = [
 ]
 
 const AUTH_FIELDS = [
+  ['email', 'au.email'],
   ['pwHash', 'au.pw_hash'],
   ['pwSalt', 'au.pw_salt'],
   ['lock', 'au.lock'],
@@ -41,7 +42,6 @@ const USER_FIELDS = [
 ]
 
 const VALID_FIELD_MAP = new Map(ACCOUNT_FIELDS.concat(AUTH_FIELDS).concat(USER_FIELDS))
-const VALID_CONTACT_FIELD_MAP = new Map(ACCOUNT_FIELDS)
 
 function parseSelectFields (selectedFields, validFields = VALID_FIELD_MAP) {
   if (selectedFields === null) {
@@ -115,17 +115,17 @@ function AuthRepository (pool) {
 
 /**
  * @param {{ uidL string, region: string }} account
- * @param {string[]|null} selectedFields
+ * @param {string[]|null} selectedFields tables: "Accounts", "Auths", "Users"
  */
 AuthRepository.prototype.getAccountUser = async function (account, selectedFields = null) {
-  const joinTable = selectedFields === null ? '' : genJoinedTables(selectedFields)
+  const joinTables = selectedFields === null ? '' : genJoinedTables(selectedFields)
   const selected = parseSelectFields(selectedFields)
 
   return this.query(
     `
     SELECT ${selected}
     FROM "Accounts" AS a
-    ${joinTable}
+    ${joinTables}
     WHERE
       a.id = $1::uuid AND a.region = $2::varchar
     `,
@@ -137,23 +137,22 @@ AuthRepository.prototype.getAccountUser = async function (account, selectedField
 }
 
 /**
- * account 原本為 string,
- * 因考量可能會由 2 個以上的欄位組成 (phone = country_code + phone)
- * 所以改為 object
  * @param {string} type
- * @param {{ email: string}|{ countryCode: string, phone: string}} account
- * @param {string[]|null} selectedFields
+ * @param {{ email: string }|{ countryCode: string, phone: string }} account
+ * @param {string[]} selectedFields tables: "Accounts", "Auths(email)", "Users"
  */
-AuthRepository.prototype.getAccountUserByContact = async function (type, account, selectedFields = null) {
+AuthRepository.prototype.getAccountUserByContact = async function (type, account, selectedFields = []) {
   const defaultFields = {
-    email: 'a.email',
+    email: 'au.email',
     phone: 'a.country_code, a.phone'
   }
-  const joinTable = selectedFields === null ? '' : genJoinedTables(selectedFields)
-  const selected = selectedFields === null ? defaultFields[type] : parseSelectFields(selectedFields)
+
+  type === 'email' && selectedFields.push('email')
+  const joinTables = selectedFields.length === 0 ? '' : genJoinedTables(selectedFields)
+  const selected = selectedFields.length === 0 ? defaultFields[type] : parseSelectFields(selectedFields)
 
   const condition = {
-    email: 'a.email = $1::varchar',
+    email: 'au.email = $1::varchar',
     phone: 'a.country_code = $1::varchar AND a.phone = $2::varchar'
   }
   const params = {
@@ -165,7 +164,7 @@ AuthRepository.prototype.getAccountUserByContact = async function (type, account
     `
     SELECT ${selected}
     FROM "Accounts" AS a
-    ${joinTable}
+    ${joinTables}
     WHERE
       ${condition[type]}
     `,
@@ -241,17 +240,17 @@ AuthRepository.prototype.createAccountUser = async function (signupInfo) {
       )
     ),
     account AS (
-      INSERT INTO "Accounts" (id, region, email, alternate_email, country_code, phone, device)
-      SELECT id, region, email, alternate_email, country_code, phone, device
+      INSERT INTO "Accounts" (id, region, alternate_email, country_code, phone, device)
+      SELECT id, region, alternate_email, country_code, phone, device
       FROM data
-      RETURNING id, region, email
+      RETURNING id, region
     ),
     auth AS (
-      INSERT INTO "Auths" (id, user_id, pw_hash, pw_salt, lock, attempt)
-      SELECT REVERSE(nextval('auths_id_seq')::varchar), id, pw_hash, pw_salt, lock, attempt
+      INSERT INTO "Auths" (email, user_id, pw_hash, pw_salt, lock, attempt)
+      SELECT email, id, pw_hash, pw_salt, lock, attempt
       FROM data
       JOIN account USING (id)
-      RETURNING pw_hash, pw_salt
+      RETURNING email, pw_hash, pw_salt
     ),
     account_user AS (
       INSERT INTO "Users" (id, user_id, be_searched, given_name, family_name, gender, birth, lang, public_info)
@@ -291,12 +290,11 @@ AuthRepository.prototype.createAccountUser = async function (signupInfo) {
  *    phone: string|null,
  *    device: Object|null
  * }} newContactInfo
- * @param {string[]|null} selectedFields
  */
-AuthRepository.prototype.updateContact = async function (account, newContactInfo, selectedFields = null) {
+AuthRepository.prototype.updateContact = async function (account, newContactInfo) {
   let idx = 1
   const updatedFields = genContactUpdateFields(newContactInfo)
-  selectedFields = parseSelectFields(selectedFields, VALID_CONTACT_FIELD_MAP)
+  const selectedFields = parseSelectFields(_.keys(newContactInfo))
 
   return this.query(
     `
@@ -306,7 +304,7 @@ AuthRepository.prototype.updateContact = async function (account, newContactInfo
     WHERE
       id = $${idx++}::uuid AND
       region = $${idx++}::varchar
-    RETURNING ${selectedFields}
+    RETURNING ${selectedFields}, a.id AS uid, a.region
     `,
     [
       account.uid,
@@ -353,20 +351,20 @@ AuthRepository.prototype.resetPassword = async function (account, newPassword, o
 /**
  * 尋找或建立驗證資訊。並回傳 "Accounts", "Auths" 的資訊
  * @param {string} type
- * @param {{ email: string}|{ countryCode: string, phone: string}} account
+ * @param {{ email: string }|{ countryCode: string, phone: string }} account
  * @param {{ token: string, code: string, expire: number|null }} verification
  */
 AuthRepository.prototype.findOrCreateVerification = async function (type, account, verification) {
   const withCondition = {
-    email: 'a.email = $1::varchar',
+    email: 'au.email = $1::varchar',
     phone: 'a.country_code = $1::varchar AND a.phone = $2::varchar'
   }
   const condition = {
-    email: 'a.email = $2::varchar',
+    email: 'au.email = $2::varchar',
     phone: 'a.country_code = $3::varchar AND a.phone = $4::varchar'
   }
   const returnedFields = {
-    email: 'a.email',
+    email: 'au.email',
     phone: 'a.country_code, a.phone'
   }
   const params = {
@@ -412,7 +410,7 @@ AuthRepository.prototype.findOrCreateVerification = async function (type, accoun
       ${condition[type]} AND
       au.user_id = a.id
     RETURNING
-      user_id AS uid, a.region, ${returnedFields[type]},
+      a.id AS uid, a.region, ${returnedFields[type]},
       au.verify_token AS token, au.verify_code AS code, au.verify_expire AS expire;
     `,
     params[type],
@@ -420,11 +418,9 @@ AuthRepository.prototype.findOrCreateVerification = async function (type, accoun
 }
 
 /**
- * TODO: 若要在 "Accounts", "Auths", "Users" 找尋同一用戶的多個欄位資料，
- * [selectedFields在AuthRepository僅能選擇"Accounts","Auths"，若加上"Users"在這次查詢的成本太高]，需要用另一次的 query 查詢
  * @param {string} token
  * @param {string} code
- * @param {string[]|null} selectedFields
+ * @param {string[]|null} selectedFields tables: "Accounts", "Auths", "Users"
  */
 AuthRepository.prototype.getVerifyUserByCode = async function (token, code, selectedFields = null) {
   let idx = 1
@@ -449,13 +445,11 @@ AuthRepository.prototype.getVerifyUserByCode = async function (token, code, sele
 }
 
 /**
- * TODO: 若要在 "Accounts", "Auths", "Users" 找尋同一用戶的多個欄位資料，
- * [selectedFields在AuthRepository僅能選擇"Accounts","Auths"，若加上"Users"在這次查詢的成本太高]，需要用另一次的 query 查詢
  * @param {string} token
  * @param {number} expire
- * @param {string[]|null} selectedFields
+ * @param {string[]|null} selectedFields tables: "Accounts", "Auths", "Users"
  */
-AuthRepository.prototype.getVerifyUserWithoutExpired = async function (token, expire, selectedFields = null) {
+AuthRepository.prototype.getVerifyUserByExpire = async function (token, expire, selectedFields = null) {
   let idx = 1
   selectedFields = parseSelectFields(selectedFields)
 
@@ -479,10 +473,8 @@ AuthRepository.prototype.getVerifyUserWithoutExpired = async function (token, ex
 }
 
 /**
- * TODO: 若要在 "Accounts", "Auths", "Users" 找尋同一用戶的多個欄位資料，
- * [selectedFields在AuthRepository僅能選擇"Accounts","Auths"，若加上"Users"在這次查詢的成本太高]，需要用另一次的 query 查詢
  * @param {{ uid: string, region: string }} account
- * @param {string[]|null} selectedFields
+ * @param {string[]|null} selectedFields tables: "Accounts", "Auths"
  */
 AuthRepository.prototype.deleteVerification = async function (account, selectedFields = null) {
   let idx = 1
@@ -501,7 +493,7 @@ AuthRepository.prototype.deleteVerification = async function (account, selectedF
       a.region = $${idx++}::varchar AND
       au.user_id = a.id
     RETURNING 
-      ${selectedFields}, user_id AS uid, a.region,
+      ${selectedFields}, a.id AS uid, a.region,
       verify_token AS token, verify_code AS code, verify_expire AS expire;
     `,
     [

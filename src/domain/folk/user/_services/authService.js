@@ -272,7 +272,7 @@ AuthService.prototype.getVerifiedUserWithNewAuthorized = async function (verifyI
   const { token, expire } = verifyInfo
   const selectedFields = C.USER_PUBLIC_INFO.concat(C.USER_AUTHENTICATION)
 
-  return Promise.resolve(this.authRepo.getVerifyUserWithoutExpired(token, parseInt(expire), selectedFields))
+  return Promise.resolve(this.authRepo.getVerifyUserByExpire(token, parseInt(expire), selectedFields))
     .then(userInfo => userInfo === undefined ? Promise.reject(new Error(`${arguments.callee.name}: invalid verification!`)) : userInfo)
     .then(userInfo => this.checkExpiration(userInfo))
     .then(userInfo => this.genAuthorization(util.parseUserInfo(userInfo)))

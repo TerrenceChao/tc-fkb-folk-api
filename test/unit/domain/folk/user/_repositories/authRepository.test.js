@@ -2,12 +2,14 @@ const { expect } = require('chai')
 const faker = require('faker')
 const path = require('path')
 const config = require('config')
+const Repository = require(path.join(config.src.library, 'Repository'))
 const { AuthRepository } = require(path.join(config.src.repository.user, 'authRepository'))
 const { genToken, genSignupInfo } = require(path.join(config.test.common, 'mock'))
 
 const pool = config.database.pool
 
 describe('repository: Auths', () => {
+  const repo = new Repository(pool)
   const authRepo = new AuthRepository(pool)
 
   it('create acount/auth/user', async () => {
@@ -169,7 +171,7 @@ describe('repository: Auths', () => {
     // act
     await authRepo.createAccountUser(signupInfo)
     await authRepo.findOrCreateVerification('email', { email }, verification, now)
-    const verifyUser = await authRepo.getVerifyUserWithoutExpired(verification.token, verification.expire)
+    const verifyUser = await authRepo.getVerifyUserByExpire(verification.token, verification.expire)
 
     // arrange
     expect(verifyUser.uid).to.equals(signupInfo.uid)
@@ -206,5 +208,11 @@ describe('repository: Auths', () => {
     expect(verifyUser.token).to.equals(null)
     expect(verifyUser.code).to.equals(null)
     expect(verifyUser.expire).to.equals(null)
+  })
+
+  after(async () => {
+    await repo.query('DELETE FROM "Users";', [])
+    await repo.query('DELETE FROM "Auths";', [])
+    await repo.query('DELETE FROM "Accounts";', [])
   })
 })

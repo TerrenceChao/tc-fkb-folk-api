@@ -1,12 +1,11 @@
 'use strict'
 module.exports = {
-  up: async (queryInterface, Sequelize) => {
-    await queryInterface.sequelize.query('DROP SEQUENCE IF EXISTS auths_id_seq; CREATE SEQUENCE auths_id_seq START 1;')
-    await queryInterface.createTable('Auths', {
-      id: {
+  up: (queryInterface, Sequelize) => {
+    return queryInterface.createTable('Auths', {
+      email: {
         allowNull: false,
         primaryKey: true,
-        type: Sequelize.STRING(20)
+        type: Sequelize.STRING(60)
       },
       userId: {
         allowNull: false,
@@ -37,7 +36,7 @@ module.exports = {
       },
       verifyCode: {
         field: 'verify_code',
-        type: Sequelize.STRING(20)
+        type: Sequelize.STRING(10)
       },
       verifyExpire: {
         field: 'verify_expire',
@@ -107,18 +106,13 @@ module.exports = {
     //     name: 'auths_verification_reset_idx'
     //   }
     // )
-
-    return queryInterface
   },
-  down: async (queryInterface, Sequelize) => {
+  down: (queryInterface, Sequelize) => {
     // queryInterface.removeIndex('auths_verification_reset_idx')
     // queryInterface.removeIndex('auths_verification_code_idx')
     // queryInterface.removeIndex('auths_verification_token_idx')
 
     // queryInterface.removeIndex('auths_verification_idx') // deprecated at 2019/11/15
-    await queryInterface.sequelize.query('DROP SEQUENCE IF EXISTS auths_id_seq;')
-    await queryInterface.dropTable('Auths')
-
-    return queryInterface
+    return queryInterface.dropTable('Auths')
   }
 }

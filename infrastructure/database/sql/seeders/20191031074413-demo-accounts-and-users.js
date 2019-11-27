@@ -15,7 +15,6 @@ function genAccounts (count) {
     accounts.push({
       id: uuidv4(),
       region: [faker.address.countryCode(), faker.address.cityPrefix()].join(),
-      email: faker.internet.email(),
       alternate_email: faker.internet.email(),
       country_code: '+886',
       phone: faker.phone.phoneNumberFormat(),
@@ -33,8 +32,10 @@ function genAccounts (count) {
 function genUsers (accountRows) {
   const now = new Date()
   const users = []
-  for (let i = 0; i < accountRows.length; i++) {
+  const len = accountRows.length
+  for (let i = 0; i < len; i++) {
     users.push({
+      id: reverseNextVal(i + len),
       user_id: accountRows[i].id,
       be_searched: true,
       given_name: faker.name.firstName(),
@@ -52,6 +53,21 @@ function genUsers (accountRows) {
   }
 
   return users
+}
+
+/**
+ * @param {number} autoIncrementId
+ */
+function reverseNextVal (autoIncrementId) {
+  const str = autoIncrementId.toString()
+  const len = str.length
+
+  let newStr = ''
+  for (let i = len - 1; i >= 0; i--) {
+    newStr = newStr.concat(str[i])
+  }
+
+  return newStr
 }
 
 module.exports = {

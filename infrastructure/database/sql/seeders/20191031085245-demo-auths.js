@@ -1,4 +1,5 @@
 'use strict'
+const faker = require('faker')
 
 /**
  *
@@ -9,10 +10,13 @@ function genAuths (accountRows) {
   const auths = []
   for (let i = 0; i < accountRows.length; i++) {
     auths.push({
+      email: faker.internet.email(),
       user_id: accountRows[i].id,
       pw_hash: 'xxxx',
       pw_salt: 'oooo',
-      verification: null,
+      verify_token: null,
+      verify_code: null,
+      verify_expire: null,
       attempt: 0,
       lock: false,
       created_at: now,
