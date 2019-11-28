@@ -78,7 +78,7 @@ AuthService.prototype.signup = async function (signupInfo) {
  * @param {{ token: string, code: string }} verifyInfo
  * @returns {Object} signupInfo
  */
-AuthService.prototype.checkVerificaiton = function (signupInfo, verifyInfo) {
+AuthService.prototype.checkVerification = function (signupInfo, verifyInfo) {
   const verification = signupInfo.verification
   if (verifyInfo.token !== verification.token) {
     return Promise.reject(new Error('invalid verification'))
@@ -128,7 +128,7 @@ AuthService.prototype.createVerifiedUser = async function (verifyInfo, domain) {
     .get(verifyInfo.token)
     .exec()
     .then(buf => JSON.parse(buf[0][1].toString()))
-    .then(signupInfo => this.checkVerificaiton(signupInfo, verifyInfo))
+    .then(signupInfo => this.checkVerification(signupInfo, verifyInfo))
     .then(signupInfo => _.assign(signupInfo, util.encryptPassword(signupInfo.newpass)))
     .then(signupInfo => this.mergePublicInfo(signupInfo, domain))
     .then(signupInfo => Promise.resolve(this.authRepo.createAccountUser(signupInfo))
