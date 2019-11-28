@@ -260,9 +260,6 @@ function genVerificationPacket (type, accountContact, userInfo, newVerification)
     uid: userInfo.uid,
     seq: userInfo.seq || genSeq(),
     type,
-    /**
-     * TODO: 這裡的 account (string OR Object?) 是否能夠和 notify-api 的資料銜接上？
-     */
     account: accountContact,
     content: _.pick(userInfo, USER_PRIVATE_INFO),
     /**

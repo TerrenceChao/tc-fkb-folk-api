@@ -76,17 +76,28 @@ NotificationService.prototype.emitRegistration = function (verification) {
     category: CATEGORIES.PERSONAL,
     channels: [CHANNELS.EMAIL],
     sender: { seq: verification.seq },
-    receivers: [{ email: notifyInfo.to }],
+    receivers: [notifyInfo.to],
     packet: {
       event: USER_CONST.ACCOUNT_EVENT_REGISTRATION,
-      content: notifyInfo.content
+      content: _.assign(notifyInfo.content, { account: notifyInfo.to })
     }
   })
 }
 
 /**
  * notifyInfo.type = [email, phone]
- * notifyInfo.to = [terrence@gmail.com, +886-987-654-321]
+ * notifyInfo.to =
+ *    {
+ *      email: terrence@gmail.com
+ *    }
+ *
+ *    OR
+ *
+ *    {
+ *      countryCode: '+886',
+ *      phone: '987-654-321'
+ *    }
+ *
  * notifyInfo.content = [verification.content]
  * TODO:
  * requset: {
@@ -103,17 +114,14 @@ NotificationService.prototype.emitVerification = function (verification) {
   const type = verification.type
   var notifyInfo = form.genVerifyFormat(verification)
 
-  // send email/SMS to user .... it tests by redis. (notifyInfo.type/to/content)
-  // redisEmitter.publish(notifyInfo.to, notifyInfo.content)
-
   util.publishRequest(USER_CONST.ACCOUNT_EVENT_VALIDATE_ACCOUNT, {
     category: CATEGORIES.PERSONAL,
     channels: [CHANNEL_TYPES[type]],
     sender: { seq: verification.seq },
-    receivers: [{ [type]: notifyInfo.to }],
+    receivers: [notifyInfo.to],
     packet: {
       event: USER_CONST.ACCOUNT_EVENT_VALIDATE_ACCOUNT,
-      content: notifyInfo.content
+      content: _.assign(notifyInfo.content, { account: notifyInfo.to })
     }
   })
 }

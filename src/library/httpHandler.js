@@ -24,6 +24,7 @@ function parseAuthentication (req) {
 /**
  *
  * @param {Request} req
+ * @returns { token: string, code: string }
  */
 function parseVerifyCode (req) {
   const token = req.params.token // verify token
@@ -32,6 +33,26 @@ function parseVerifyCode (req) {
   return {
     token, // verify token
     code
+  }
+}
+
+/**
+ *
+ * @param {Request} req
+ * @returns {
+ *    token: string,
+ *    code: string,
+ *    expire: string|number
+ * }
+ */
+function parseVerification (req) {
+  const token = req.params.token // verify token
+  const code = req.body.code
+  const expire = req.params.expire
+  return {
+    token,
+    code,
+    expire
   }
 }
 
@@ -204,6 +225,7 @@ module.exports = {
   genRequestDomain,
   parseAuthentication,
   parseVerifyCode,
+  parseVerification,
   genRegistrationInfo,
   genVerifyInfo,
   request,

@@ -80,7 +80,11 @@ AuthService.prototype.signup = async function (signupInfo) {
  */
 AuthService.prototype.checkVerificaiton = function (signupInfo, verifyInfo) {
   const verification = signupInfo.verification
-  if (verifyInfo.token !== verification.token || verifyInfo.code !== verification.code) {
+  if (verifyInfo.token !== verification.token) {
+    return Promise.reject(new Error('invalid verification'))
+  }
+
+  if (verifyInfo.code !== verification.code && parseInt(verifyInfo.expire) !== parseInt(verification.expire)) {
     return Promise.reject(new Error('invalid verification'))
   }
 

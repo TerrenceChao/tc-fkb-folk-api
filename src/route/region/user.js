@@ -35,9 +35,25 @@ router.post('/signup',
  * 1. 註冊後需要透過驗證信中的[verify-code]登入主畫面,
  * 2. 或是透過驗證信中點擊[verify-link]轉到主畫面.
  *
+ * NOTE: 這裡透過[verify-code]
  * 雖然只能作用一次，但同樣的 url 不會使後端資源造成不同的結果 (都是清除驗證資訊，建立session) [idempotent]
  */
 router.put('/newborn/code/:token',
+  userReq.verificationValidator,
+  auth.authorized, // 確認後刪除 registration info (token/code)
+  generalRes.success
+  // front-end redirect to landing page
+)
+
+/**
+ * options to the landing page:
+ * 1. 註冊後需要透過驗證信中的[verify-code]登入主畫面,
+ * 2. 或是透過驗證信中點擊[verify-link]轉到主畫面.
+ *
+ * NOTE: 這裡透過[verify-link]
+ * 雖然只能作用一次，但同樣的 url 不會使後端資源造成不同的結果 (都是清除驗證資訊，建立session) [idempotent]
+ */
+router.put('/newborn/expire/:token/:expire',
   userReq.verificationValidator,
   auth.authorized, // 確認後刪除 registration info (token/code)
   generalRes.success

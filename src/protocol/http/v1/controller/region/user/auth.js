@@ -30,7 +30,7 @@ exports.authorized = async (req, res, next) => {
   var clientuseragent = req.headers.clientuseragent
   res.locals.data = util.init(res.locals.data)
 
-  Promise.resolve(httpHandler.parseVerifyCode(req))
+  Promise.resolve(httpHandler.parseVerification(req))
     .then(verifyInfo => authService.createVerifiedUser(verifyInfo, httpHandler.genRequestDomain(req)))
     .then(userInfo => Promise.all([
       userService.getPersonalInfo(userInfo),

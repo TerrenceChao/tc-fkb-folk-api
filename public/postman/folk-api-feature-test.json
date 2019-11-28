@@ -73,7 +73,7 @@
 									"var result = JSON.parse(responseBody);",
 									"postman.setEnvironmentVariable(\"verify_token\", result.data['verify-token']);",
 									"postman.setEnvironmentVariable(\"verify_code\", result.data.code);",
-									"postman.setEnvironmentVariable(\"verify_reset\", result.data.reset);",
+									"postman.setEnvironmentVariable(\"verify_expire\", result.data.expire);",
 									""
 								],
 								"type": "text/javascript"
@@ -1261,7 +1261,7 @@
 									"var result = JSON.parse(responseBody);",
 									"postman.setEnvironmentVariable(\"verify_token_B\", result.data['verify-token']);",
 									"postman.setEnvironmentVariable(\"verify_code_B\", result.data.code);",
-									"postman.setEnvironmentVariable(\"verify_reset_B\", result.data.reset);",
+									"postman.setEnvironmentVariable(\"verify_expire_B\", result.data.expire);",
 									""
 								],
 								"type": "text/javascript"
@@ -1323,7 +1323,56 @@
 					"response": []
 				},
 				{
-					"name": "new user verification (success) - userB",
+					"name": "new user verification (fail by expire) - userB",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "dfd6d7a0-d966-4c09-a8b5-8fc47d4dfefb",
+								"exec": [
+									"tests[\"Status code is 500\"] = responseCode.code === 500;"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "clientuseragent",
+								"type": "text",
+								"value": "{{md5_useragent_chrome_linux}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{folk_localhost}}/user/newborn/expire/{{verify_token_B}}/0000000123456",
+							"host": [
+								"{{folk_localhost}}"
+							],
+							"path": [
+								"user",
+								"newborn",
+								"expire",
+								"{{verify_token_B}}",
+								"0000000123456"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "new user verification (success by expire) - userB",
 					"event": [
 						{
 							"listen": "test",
@@ -1352,29 +1401,30 @@
 							{
 								"key": "Content-Type",
 								"name": "Content-Type",
-								"value": "application/json",
-								"type": "text"
+								"type": "text",
+								"value": "application/json"
 							},
 							{
 								"key": "clientuseragent",
-								"value": "{{md5_useragent_chrome_linux}}",
-								"type": "text"
+								"type": "text",
+								"value": "{{md5_useragent_chrome_linux}}"
 							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\t\"code\": \"{{verify_code_B}}\"\n}"
+							"raw": ""
 						},
 						"url": {
-							"raw": "{{folk_localhost}}/user/newborn/code/{{verify_token_B}}",
+							"raw": "{{folk_localhost}}/user/newborn/expire/{{verify_token_B}}/{{verify_expire_B}}",
 							"host": [
 								"{{folk_localhost}}"
 							],
 							"path": [
 								"user",
 								"newborn",
-								"code",
-								"{{verify_token_B}}"
+								"expire",
+								"{{verify_token_B}}",
+								"{{verify_expire_B}}"
 							]
 						}
 					},
@@ -2235,6 +2285,77 @@
 								{
 									"key": "targetRegion",
 									"value": "{{region}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "user info (notify friends, include cross-region issue) Copy",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "4f065565-3656-4cde-bb47-3e3c831e451d",
+								"exec": [
+									"tests[\"Status code is 200\"] = responseCode.code === 200;"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "clientuseragent",
+								"value": "{{md5_useragent_chrome_linux}}",
+								"type": "text"
+							},
+							{
+								"key": "token",
+								"value": "{{auth_token}}",
+								"type": "text"
+							},
+							{
+								"key": "seq",
+								"value": "{{seq}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"beSearched\": false,\n    \"givenName\": \"Albert\",\n    \"familyName\": \"Chao\",\n    \"gender\": \"1\",\n    \"birth\": \"2013-12-12\",\n    \"lang\": \"en\"\n}"
+						},
+						"url": {
+							"raw": "{{folk_localhost}}/user/{{uid}}/{{region}}/setting/info?",
+							"host": [
+								"{{folk_localhost}}"
+							],
+							"path": [
+								"user",
+								"{{uid}}",
+								"{{region}}",
+								"setting",
+								"info"
+							],
+							"query": [
+								{
+									"key": "",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "",
+									"value": "",
+									"disabled": true
 								}
 							]
 						}
