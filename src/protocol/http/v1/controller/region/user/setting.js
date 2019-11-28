@@ -40,10 +40,10 @@ exports.updateUserInfo = async (req, res, next) => {
     channels: [CHANNELS.INTERNAL_SEARCH],
     receivers: [account]
   }
-  var notifyFriend = {
+  var updateRecordOfFriend = {
     // registerRegion: account.region,
     category: CATEGORIES.FRIEND_EVENT,
-    channels: CHANNELS.PUSH
+    channels: [CHANNELS.RECALL]
   }
   var extra = { seq }
   res.locals.data = util.init(res.locals.data)
@@ -51,7 +51,7 @@ exports.updateUserInfo = async (req, res, next) => {
   Promise.resolve(settingService.updateUserInfo(account, userInfo))
     .then(updated => updated === true ? (res.locals.data = _.assign(res.locals.data, userInfo)) : Promise.reject(new Error('Update user info fail')))
     .then(() => notificationService.emitEvent(_.assign(message, updateSearchQuery), extra))
-    .then(() => circleService.handleNotifyAllFriendsActivity(friendService, notificationService, account, _.assign(message, notifyFriend)))
+    .then(() => circleService.handleNotifyAllFriendsActivity(friendService, notificationService, account, _.assign(message, updateRecordOfFriend), extra))
     .then(() => next())
     .catch(err => next(err))
 }

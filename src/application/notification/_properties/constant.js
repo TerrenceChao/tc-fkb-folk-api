@@ -31,7 +31,8 @@ module.exports = {
     APP_PUSH: 'app-push',
     WEB_PUSH: 'web-push',
     PUSH: ['app-push', 'web-push'],
-    INTERNAL_SEARCH: 'internal-search'
+    INTERNAL_SEARCH: 'internal-search',
+    RECALL: 'recall'
   },
   SENDERS: {
     [CIRCILE_CONST.INVITE_EVENT_FRIEND_INVITE]: 'inviter',

@@ -1,9 +1,10 @@
 var _ = require('lodash')
+const { mapKeysInCamelCase } = require('../../../property/util')
+const CONSTANT = require('../_properties/constant')
 const {
   CATEGORIES,
   CHANNELS
 } = require('../../../application/notification/_properties/constant')
-const CONSTANT = require('../_properties/constant')
 
 function CircleService () {
   console.log(`init ${arguments.callee.name}`)
@@ -88,12 +89,16 @@ CircleService.prototype.handleNotifyUnfriendActivity = function (notificationSer
  * @param {NotificationService} notificationService
  * @param {{ uid: string, region: string }} account
  * @param {any} packet
+ * @param {{ seq: string|number|null }} extra
  * @param {number} batchLimit
  */
-CircleService.prototype.handleNotifyAllFriendsActivity = function (friendService, notificationService, account, packet, batchLimit = CONSTANT.FRIEND_BATCH_LIMIT) {
+CircleService.prototype.handleNotifyAllFriendsActivity = function (friendService, notificationService, account, packet, extra, batchLimit = CONSTANT.FRIEND_BATCH_LIMIT) {
   (async function (friendList, skip) {
     while ((friendList = await friendService.list(account, batchLimit, skip)).length > 0) {
-      notificationService.emitEvent(_.assign(packet, { receivers: friendList }))
+      friendList = friendList.map(record => {
+        return { uid: record.friend_id, region: record.friend_region }
+      })
+      notificationService.emitEvent(_.assign(packet, { receivers: friendList }), extra)
       skip += batchLimit
     }
   })([], 0)
