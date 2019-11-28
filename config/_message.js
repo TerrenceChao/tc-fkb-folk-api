@@ -1,4 +1,4 @@
 module.exports = {
-  host: process.env.MESSAGING_HOST,
-  authenticateUrl: `${process.env.MESSAGING_HOST}${process.env.MESSAGING_PATH_AUTHENTICATE}`
+  domain: process.env.MESSAGING_DOMAIN,
+  authenticateUrl: `${process.env.MESSAGING_DOMAIN}${process.env.MESSAGING_PATH_AUTHENTICATE}`
 }

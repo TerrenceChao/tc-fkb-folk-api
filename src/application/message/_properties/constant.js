@@ -13,7 +13,7 @@ module.exports = {
     TIMEOUT: HTTP.TIMEOUT,
     TIMEOUT_MSG: {
       msgCode: 'xxxxxx',
-      error: `connect ECONNREFUSED MESSAGING_HOST, timeout: ${HTTP.TIMEOUT}`
+      error: `connect ECONNREFUSED MESSAGING_DOMAIN, timeout: ${HTTP.TIMEOUT}`
     }
   }
 }

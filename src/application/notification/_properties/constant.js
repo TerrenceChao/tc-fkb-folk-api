@@ -7,7 +7,7 @@ module.exports = {
     PUBLISH: {
       OPTIONS: {
         method: 'POST',
-        url: config[config.specify].publishUrl,
+        url: config.publishUrl,
         headers: HTTP.HEADERS,
         body: {},
         json: true
@@ -16,7 +16,7 @@ module.exports = {
     TIMEOUT: HTTP.TIMEOUT,
     TIMEOUT_MSG: {
       msgCode: 'xxxxxx',
-      error: `connect ECONNREFUSED NOTIFICATION_HOST, timeout: ${HTTP.TIMEOUT}`
+      error: `connect ECONNREFUSED NOTIFICATION_DOMAIN, timeout: ${HTTP.TIMEOUT}`
     }
   },
   CATEGORIES: {

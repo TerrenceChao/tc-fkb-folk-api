@@ -20,15 +20,15 @@ There are 3 projects in total called `fkb-message-api`, `fkb-notify-api`, `fkb-f
     * Redis: check the config name start with `ADAPTOR_` for Redis.
     * MongoDB: check the config name start with `MONGODB`.
   * fkb-notify-api
-    * Elasticsearch: `ELASTICSEARCH_DOMAIN`.
+    * Elasticsearch: `ELASTICSEARCH_HOST`.
     * fkb-message-api: `MESSAGING_DOMAIN` and `MESSAGING_PATH_PUSH` (make the connection with `fkb-message-api`).
-    * email vendor: `SPECIFY_EMAIL_VENDOR`. There are three options in total called `ses`, `mailgun`, `logger` about  `SPECIFY_EMAIL_VENDOR`. I use `ses` (Amazon Simple Email Service) or `mailgun` here to play roles as email vendors, but if you just want to make sure the `notify-api` are called correctly, maybe you wanna use `logger` to print the result out only.
-    * RabbitMQ: will update asap.
+    * email vendor: `EMAIL_VENDOR`. There are three options in total called `ses`, `mailgun`, `logger` about  `EMAIL_VENDOR`. I use `ses` (Amazon Simple Email Service) or `mailgun` here to play roles as email vendors, but if you just want to make sure the `notify-api` are called correctly, maybe you wanna use `logger` to print the result out only.
+    * RabbitMQ: check the config names called `MQ_VENDOR`, `RABBITMQ_HOSTS` for RabbitMQ.
   * fkb-folk-api
     * PostgreSQL: check the config name start with `SQL_`.
-    * fkb-message-api: `MESSAGING_HOST` and `MESSAGING_PATH_AUTHENTICATE` (make the connection with `fkb-message-api`)
-    * fkb-notify-api: `NOTIFICATION_MQ_HOST` and `NOTIFICATION_MQ_PATH_PUBLISH` (make the connection with `fkb-notify-api`)
-    * Redis: will update asap.
+    * fkb-message-api: `MESSAGING_DOMAIN` and `MESSAGING_PATH_AUTHENTICATE` (make the connection with `fkb-message-api`)
+    * fkb-notify-api: `NOTIFICATION_DOMAIN` and `NOTIFICATION_PATH_PUBLISH` (make the connection with `fkb-notify-api`)
+    * Redis: check the config name start with `REDIS_`.
 
 ## Run
 Run these 3 projects in the above order (message-api, notify-api, folk-api) by `npm run start` in your terminal (command window).
