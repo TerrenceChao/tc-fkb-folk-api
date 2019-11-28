@@ -1,5 +1,6 @@
 var express = require('express')
 var router = express.Router()
+var generalReq = require('../../protocol/http/request/generalReq')
 var userReq = require('../../protocol/http/request/user/userReq')
 var circleReq = require('../../protocol/http/request/circle/circleReq')
 var auth = require('../../protocol/http/v1/controller/region/user/auth')
@@ -172,6 +173,7 @@ router.get('/:uid/:region/setting/info',
 )
 
 router.put('/:uid/:region/setting/info',
+  generalReq.sequenceValidator,
   userReq.accountValidator,
   userReq.updateUserInfoValidator,
   auth.isLoggedIn, // validate session info by uid (req.params.uid)

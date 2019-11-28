@@ -15,6 +15,7 @@ router.get('/', function (req, res, next) {
 
 // send invitation
 router.post('/:uid/:region/invite',
+  generalReq.sequenceValidator,
   userReq.accountValidator,
   circleReq.friendInviterValidator,
   auth.isLoggedIn,
@@ -51,6 +52,7 @@ router.get('/:uid/:region/invite/list/sent',
 
 // invitation response (confirm/cancel)
 router.put('/:uid/:region/invite',
+  generalReq.sequenceValidator,
   userReq.accountValidator,
   circleReq.friendRecipientValidator,
   auth.isLoggedIn,
@@ -75,6 +77,7 @@ router.get('/:uid/:region/friend',
 )
 
 router.delete('/:uid/:region/friend',
+  generalReq.sequenceValidator,
   userReq.accountValidator,
   circleReq.targetAccountValidator,
   auth.isLoggedIn,
