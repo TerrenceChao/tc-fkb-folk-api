@@ -134,7 +134,7 @@ AuthService.prototype.createVerifiedUser = async function (verifyInfo, domain) {
     .then(signupInfo => Promise.resolve(this.authRepo.createAccountUser(signupInfo))
       .then(rowdata => _.assign(signupInfo, { seq: rowdata.seq }))
       .then(() => cache.del(verifyInfo.token))
-      .then(() => signupInfo)
+      .then(() => this.genAuthorization(signupInfo))
     )
     .catch(err => {
       console.error(err)

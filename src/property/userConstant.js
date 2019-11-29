@@ -13,6 +13,7 @@ exports.USER_PUBLIC_INFO = process.env.USER_PUBLIC_INFO ? process.env.USER_PUBLI
 ]
 
 exports.USER_PRIVATE_INFO = process.env.USER_PRIVATE_INFO ? process.env.USER_PRIVATE_INFO.split(',') : [
+  'auth',
   'region',
   'uid',
   'seq',
