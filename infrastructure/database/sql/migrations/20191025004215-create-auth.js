@@ -32,7 +32,7 @@ module.exports = {
       },
       verifyToken: {
         field: 'verify_token',
-        type: Sequelize.STRING
+        type: Sequelize.STRING(290)
       },
       verifyCode: {
         field: 'verify_code',

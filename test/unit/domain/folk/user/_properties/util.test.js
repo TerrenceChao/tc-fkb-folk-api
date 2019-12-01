@@ -21,14 +21,27 @@ function genSecret (str) {
 }
 
 describe('test util', () => {
-  const region = 'tw'
-  const email = 'b-256@abc.com'
+  const region = 'tw.taipei1'
+  const email = 'hale.krhbng.kaguhlrnhr5758i4ejhfgrtk5er7wygfhrgkfh@abcde.com'
   const now = Date.now()
   const userData = { region, email, now }
 
   const code = '123456'
 
-  it('test encrypt/decrypt', () => {
+  it('test encrypt (Maximum length limitation => region: 10, email: 60, token: < 290)', () => {
+    // arrange
+    const secret = genSecret(email)
+    // action
+    var tokenData = encrypt(JSON.stringify(userData), secret, CIPHER_ALGO)
+    var token = `${tokenData.iv}.${tokenData.encrypted}`
+
+    // assert
+    expect(region).length.lte(10)
+    expect(email).length.lte(60)
+    expect(token).length.lessThan(290)
+  })
+
+  it('test decrypt', () => {
     // arrange
     const secret = genSecret(email)
     var tokenData = encrypt(JSON.stringify(userData), secret, CIPHER_ALGO)
