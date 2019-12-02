@@ -19,10 +19,77 @@ function FriendService (userRepo, inviteRepo, friendRepo) {
  * @param {{ uid: string, region: string }} account
  * @param {number} limit
  * @param {number} skip
- * @returns {Friend[]} Friend: { id: number, uid: string, group: string|null, friend_uid: string, friend: region, public }
+ * @returns {Friend[]} Friend: { id: string, uid: string, friend_id: string, friend_region: string, public_info: string }
  */
 FriendService.prototype.list = async function (account, limit = CONSTANT.LIMIT, skip = CONSTANT.SKIP) {
   const list = await this.friendRepo.getFriendList(account, limit, skip)
+  if (list == null || list.length === 0) {
+    return []
+  }
+
+  return list
+}
+
+/**
+ * @param {{ uid: string, region: string }} account
+ * @param {number} limit
+ * @param {number} skip
+ * @returns {Friend[]} Friend: { id: string, uid: string, friend_id: string, friend_region: string, public_info: string }
+ */
+FriendService.prototype.localList = async function (account, limit = CONSTANT.LIMIT, skip = CONSTANT.SKIP) {
+  const list = await this.friendRepo.getLocalFriendList(account, limit, skip)
+  if (list == null || list.length === 0) {
+    return []
+  }
+
+  return list
+}
+
+/**
+ * @param {{ uid: string, region: string }} account
+ * @param {number} limit
+ * @param {number} skip
+ * @returns {Friend[]} Friend: { id: string, uid: string, friend_id: string, friend_region: string, public_info: string }
+ */
+FriendService.prototype.nonlocalList = async function (account, limit = CONSTANT.LIMIT, skip = CONSTANT.SKIP) {
+  const list = await this.friendRepo.getNonlocalFriendList(account, limit, skip)
+  if (list == null || list.length === 0) {
+    return []
+  }
+
+  return list
+}
+
+/**
+ * @param {{ uid: string, region: string }} friendAccount
+ * @param {
+ *    givenName: string|null,
+ *    familyname: string|null,
+ *    profileLink: string|null,
+ *    profilePic: string|null
+ * } newPublicInfo friend's new publicInfo
+ * @returns {Friend[]}
+ */
+FriendService.prototype.updatePublicInfo = async function (friendAccount, newPublicInfo) {
+  const friend = await this.friendRepo.getFriendByAccount(friendAccount)
+  if (friend === undefined) {
+    return []
+  }
+
+  const publicInfo = friend.public_info
+  const updatedPublicInfo = {}
+
+  CIRCLE_CONST.USER_COMMON_PUBLIC_INFO.forEach(field => {
+    if (newPublicInfo[field]) { // latest first
+      updatedPublicInfo[field] = newPublicInfo[field]
+    } else if (publicInfo && publicInfo[field]) { // original in DB (publicInfo maybe 'null' or 'undefined')
+      updatedPublicInfo[field] = publicInfo[field]
+    } else {
+      updatedPublicInfo[field] = null // makes updatedPublicInfo => { 'field': null }
+    }
+  })
+
+  const list = await this.friendRepo.updateFriendPublicInfo(friendAccount, updatedPublicInfo)
   if (list == null || list.length === 0) {
     return []
   }

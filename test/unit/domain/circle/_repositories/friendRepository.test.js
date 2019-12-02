@@ -97,6 +97,21 @@ describe('repository: Friends', () => {
     assertFriend(friendInfo, friendRecord)
   })
 
+  it('getFriendByAccount', async () => {
+    // arrange
+    const account = { uid: userA.uid }
+    const friendInfo = parseFriendInfo(userB)
+    const rowId = genFriendRowId(account.uid, friendInfo)
+
+    // act
+    await friendRepo.addFriend(rowId, account, friendInfo)
+    const friendRecord = await friendRepo.getFriendByAccount(friendInfo)
+
+    // assert
+    expect(friendRecord.uid).to.equals(account.uid)
+    assertFriend(friendInfo, friendRecord)
+  })
+
   it('getFriendList', async () => {
     // arrange
     const account = { uid: userA.uid, region: userA.region }
@@ -113,6 +128,106 @@ describe('repository: Friends', () => {
     // assert
     const friendInfo = [friendInfoB, friendInfoC]
     friendRecordList.forEach((friend, idx) => assertFriend(friendInfo[idx], friend))
+  })
+
+  it('getLocalFriendList (friends are same region)', async () => {
+    // arrange
+    const account = { uid: userA.uid, region: 'region A' }
+    const friendInfoB = parseFriendInfo(userB)
+    const friendInfoC = parseFriendInfo(userC)
+    friendInfoB.region = 'region A'
+    friendInfoC.region = 'region A'
+    const rowIdB = genFriendRowId(account.uid, friendInfoB)
+    const rowIdC = genFriendRowId(account.uid, friendInfoC)
+    await friendRepo.addFriend(rowIdB, account, friendInfoB)
+    await friendRepo.addFriend(rowIdC, account, friendInfoC)
+
+    // act
+    const friendRecordList = await friendRepo.getLocalFriendList(account, 5, 0)
+
+    // assert
+    const friendInfo = [friendInfoB, friendInfoC]
+    friendRecordList.forEach((friend, idx) => assertFriend(friendInfo[idx], friend))
+  })
+
+  it('getLocalFriendList (friends are different region)', async () => {
+    // arrange
+    const account = { uid: userA.uid, region: 'region A' }
+    const friendInfoB = parseFriendInfo(userB)
+    const friendInfoC = parseFriendInfo(userC)
+    friendInfoB.region = 'region B'
+    friendInfoC.region = 'region C'
+    const rowIdB = genFriendRowId(account.uid, friendInfoB)
+    const rowIdC = genFriendRowId(account.uid, friendInfoC)
+    await friendRepo.addFriend(rowIdB, account, friendInfoB)
+    await friendRepo.addFriend(rowIdC, account, friendInfoC)
+
+    // act
+    const friendRecordList = await friendRepo.getLocalFriendList(account, 5, 0)
+
+    // assert
+    expect(friendRecordList).to.be.an('array').that.is.empty
+  })
+
+  it('getNonlocalFriendList (friends are same region)', async () => {
+    // arrange
+    const account = { uid: userA.uid, region: 'region A' }
+    const friendInfoB = parseFriendInfo(userB)
+    const friendInfoC = parseFriendInfo(userC)
+    friendInfoB.region = 'region A'
+    friendInfoC.region = 'region A'
+    const rowIdB = genFriendRowId(account.uid, friendInfoB)
+    const rowIdC = genFriendRowId(account.uid, friendInfoC)
+    await friendRepo.addFriend(rowIdB, account, friendInfoB)
+    await friendRepo.addFriend(rowIdC, account, friendInfoC)
+
+    // act
+    const friendRecordList = await friendRepo.getNonlocalFriendList(account, 5, 0)
+
+    // assert
+    expect(friendRecordList).to.be.an('array').that.is.empty
+  })
+
+  it('getNonlocalFriendList (friends are different region)', async () => {
+    // arrange
+    const account = { uid: userA.uid, region: 'region A' }
+    const friendInfoB = parseFriendInfo(userB)
+    const friendInfoC = parseFriendInfo(userC)
+    friendInfoB.region = 'region B'
+    friendInfoC.region = 'region C'
+    const rowIdB = genFriendRowId(account.uid, friendInfoB)
+    const rowIdC = genFriendRowId(account.uid, friendInfoC)
+    await friendRepo.addFriend(rowIdB, account, friendInfoB)
+    await friendRepo.addFriend(rowIdC, account, friendInfoC)
+
+    // act
+    const friendRecordList = await friendRepo.getNonlocalFriendList(account, 5, 0)
+
+    // assert
+    const friendInfo = [friendInfoB, friendInfoC]
+    friendRecordList.forEach((friend, idx) => assertFriend(friendInfo[idx], friend))
+  })
+
+  it('updateFriendPublicInfo', async () => {
+    // arrange
+    const accountB = { uid: userB.uid }
+    const friendInfoA = parseFriendInfo(userA)
+    const rowId = genFriendRowId(accountB.uid, friendInfoA)
+    const newPublicInfoA = genDBFriendPublicInfo()
+
+    // act
+    await friendRepo.addFriend(rowId, accountB, friendInfoA)
+    const friendRecordList = await friendRepo.updateFriendPublicInfo(friendInfoA, newPublicInfoA)
+
+    // assert
+    const friendRecord = friendRecordList[0]
+    expect(friendRecord.uid).to.equals(accountB.uid)
+    expect(friendRecord.friend_id).to.equals(friendInfoA.uid)
+    expect(friendRecord.friend_region).to.equals(friendInfoA.region)
+    expect(friendRecord.public_info.givenName).to.equals(newPublicInfoA.givenName)
+    expect(friendRecord.public_info.familyName).to.equals(newPublicInfoA.familyName)
+    expect(friendRecord.public_info.profileLink).to.equals(newPublicInfoA.profileLink)
+    expect(friendRecord.public_info.profilePic).to.equals(newPublicInfoA.profilePic)
   })
 
   it('updateFriend', async () => {

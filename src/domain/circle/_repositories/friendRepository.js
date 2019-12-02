@@ -112,6 +112,29 @@ FriendRepository.prototype.getFriend = async function (account, targetAccount) {
 }
 
 /**
+ * @param {{ uid: string, region: string }} targetAccount
+ * @returns {Object|null} friend
+ */
+FriendRepository.prototype.getFriendByAccount = async function (targetAccount) {
+  let idx = 1
+  return this.query(
+    `
+    SELECT user_id AS uid, friend_id, friend_region, public_info
+    FROM "Friends"
+    WHERE
+      deleted_at IS NULL AND
+      friend_id = $${idx++}::uuid AND
+      friend_region = $${idx++}::varchar
+    LIMIT 1;
+    `,
+    [
+      targetAccount.uid,
+      targetAccount.region
+    ],
+    0)
+}
+
+/**
  * TODO: unittest
  * @param {string} rowId PK
  */
@@ -140,7 +163,7 @@ FriendRepository.prototype.getFriendList = async function (account, limit, skip)
   let idx = 1
   return this.query(
     `
-    SELECT user_id AS uid, friend_id, friend_region, public_info
+    SELECT id, user_id AS uid, friend_id, friend_region, public_info
     FROM "Friends"
     WHERE
       deleted_at IS NULL AND
@@ -152,6 +175,88 @@ FriendRepository.prototype.getFriendList = async function (account, limit, skip)
       account.uid,
       skip,
       limit
+    ])
+}
+
+/**
+ * @param {{ uid: string, region: string }} account
+ * @param {number} limit
+ * @param {number} skip
+ * @returns {Object[]} friend list
+ */
+FriendRepository.prototype.getLocalFriendList = async function (account, limit, skip) {
+  let idx = 1
+  return this.query(
+    `
+    SELECT id, user_id AS uid, friend_id, friend_region, public_info
+    FROM "Friends"
+    WHERE
+      deleted_at IS NULL AND
+      user_id = $${idx++}::uuid AND
+      friend_region = $${idx++}
+    ORDER BY created_at
+    OFFSET $${idx++}::int LIMIT $${idx++}::int;
+    `,
+    [
+      account.uid,
+      account.region,
+      skip,
+      limit
+    ])
+}
+
+/**
+ * @param {{ uid: string, region: string }} account
+ * @param {number} limit
+ * @param {number} skip
+ * @returns {Object[]} friend list
+ */
+FriendRepository.prototype.getNonlocalFriendList = async function (account, limit, skip) {
+  let idx = 1
+  return this.query(
+    `
+    SELECT id, user_id AS uid, friend_id, friend_region, public_info
+    FROM "Friends"
+    WHERE
+      deleted_at IS NULL AND
+      user_id = $${idx++}::uuid AND
+      friend_region != $${idx++}
+    ORDER BY created_at
+    OFFSET $${idx++}::int LIMIT $${idx++}::int;
+    `,
+    [
+      account.uid,
+      account.region,
+      skip,
+      limit
+    ])
+}
+
+/**
+ * @param {{ uid: string, region: string }} friendAccount
+ * @param {
+ *    givenName: string,
+ *    familyname: string,
+ *    profileLink: string,
+ *    profilePic: string
+ * } friendPublicInfo
+ * @returns {Object[]} friend list
+ */
+FriendRepository.prototype.updateFriendPublicInfo = async function (friendAccount, friendPublicInfo) {
+  let idx = 1
+  return this.query(
+    `
+    UPDATE "Friends" 
+    set public_info = $${idx++}
+    WHERE
+      friend_id = $${idx++}::uuid AND
+      friend_region = $${idx++}
+    RETURNING id, user_id AS uid, friend_id, friend_region, public_info;
+    `,
+    [
+      JSON.stringify(friendPublicInfo),
+      friendAccount.uid,
+      friendAccount.region
     ])
 }
 

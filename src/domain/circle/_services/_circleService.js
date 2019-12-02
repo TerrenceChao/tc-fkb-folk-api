@@ -94,7 +94,7 @@ CircleService.prototype.handleNotifyUnfriendActivity = function (notificationSer
  */
 CircleService.prototype.handleNotifyAllFriendsActivity = function (friendService, notificationService, account, packet, extra, batchLimit = CONSTANT.FRIEND_BATCH_LIMIT) {
   (async function (friendList, skip) {
-    while ((friendList = await friendService.list(account, batchLimit, skip)).length > 0) {
+    while ((friendList = await friendService.localList(account, batchLimit, skip)).length > 0) {
       friendList = friendList.map(record => {
         return { uid: record.friend_id, region: record.friend_region }
       })
