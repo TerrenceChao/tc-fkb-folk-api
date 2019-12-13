@@ -125,7 +125,7 @@ FriendService.prototype.unfriend = async function (account, targetAccount, softD
     const deletedFriendList = await this.friendRepo.unfriend(account, targetAccount, softDelete)
     // TODO: 是否需要額外的判斷？比如一定回傳 2 筆紀錄
     if (deletedFriendList == null || deletedFriendList.length === 0) {
-      return 'friend has been deleted'
+      return { msg: 'friend has been deleted' }
     }
     return deletedFriendList
   }
@@ -133,7 +133,7 @@ FriendService.prototype.unfriend = async function (account, targetAccount, softD
   const deletedFriend = await this.friendRepo.removeFriend(account, targetAccount, softDelete)
   // TODO: 是否需要額外的判斷？比如一定回傳 1 筆紀錄
   if (deletedFriend == null) {
-    return 'friend has been deleted'
+    return { msg: 'friend has been deleted' }
   }
   return deletedFriend
 }
