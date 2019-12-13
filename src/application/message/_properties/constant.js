@@ -1,5 +1,5 @@
 const config = require('config').message
-const HTTP = require('../../../property/constant').HTTP
+const { HTTP, MESSAGING_USER_INFO_REPLICATE } = require('../../../property/constant')
 
 module.exports = {
   HTTP: {
@@ -22,5 +22,6 @@ module.exports = {
       msgCode: 'xxxxxx',
       error: `connect ECONNREFUSED MESSAGING_DOMAIN, timeout: ${HTTP.TIMEOUT}`
     }
-  }
+  },
+  MESSAGING_USER_INFO_REPLICATE
 }

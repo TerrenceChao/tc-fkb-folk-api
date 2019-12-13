@@ -10,6 +10,8 @@ var { settingService } = require('../../../../../../domain/folk/user/_services/s
 var { friendService } = require('../../../../../../domain/circle/_services/friendService')
 var util = require('../../../../../../property/util')
 
+const PERSONAL_UPDATE_CHANNELS = CONSTANT.MESSAGING_USER_INFO_REPLICATE === true ? [CHANNELS.INTERNAL_SEARCH, CHANNELS.WEB_PUSH] : [CHANNELS.INTERNAL_SEARCH]
+
 exports.getUserInfo = async (req, res, next) => {
   var owner = req.params
   res.locals.data = util.init(res.locals.data)
@@ -34,10 +36,10 @@ exports.updateUserInfo = async (req, res, next) => {
       content: _.pick(userInfo, CONSTANT.USER_PUBLIC_INFO)
     }
   }
-  var updateSearchQuery = {
+  var personalUpdation = {
     // registerRegion: account.region,
     category: CATEGORIES.PERSONAL,
-    channels: [CHANNELS.INTERNAL_SEARCH],
+    channels: PERSONAL_UPDATE_CHANNELS,
     receivers: [account]
   }
   var updateRecordOfFriend = {
@@ -51,7 +53,7 @@ exports.updateUserInfo = async (req, res, next) => {
   Promise.resolve(settingService.updateUserInfo(account, userInfo))
     .then(updated => updated === true ? (res.locals.data = _.assign(res.locals.data, userInfo)) : Promise.reject(new Error('Update user info fail')))
     .then(() => friendService.updatePublicInfo(account, userInfo))
-    .then(() => notificationService.emitEvent(_.assign(message, updateSearchQuery), extra))
+    .then(() => notificationService.emitEvent(_.assign(message, personalUpdation), extra))
     .then(() => circleService.handleNotifyAllFriendsActivity(friendService, notificationService, account, _.assign(message, updateRecordOfFriend), extra))
     .then(() => next())
     .catch(err => next(err))

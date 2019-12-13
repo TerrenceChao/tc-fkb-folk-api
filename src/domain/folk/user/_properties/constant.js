@@ -1,5 +1,10 @@
 const _ = require('lodash')
-const { NODE_ENV, EXPIRATION_SECS, CIPHER_ALGO } = require('../../../../property/constant')
+const {
+  NODE_ENV,
+  EXPIRATION_SECS,
+  CIPHER_ALGO,
+  MESSAGING_USER_INFO_REPLICATE
+} = require('../../../../property/constant')
 const C = require('../../../../property/userConstant')
 
 // account events
@@ -24,6 +29,8 @@ exports.CIPHER_ALGO = CIPHER_ALGO
  * common constants
  */
 exports.NODE_ENV = NODE_ENV
+
+exports.MESSAGING_USER_INFO_REPLICATE = MESSAGING_USER_INFO_REPLICATE
 
 exports.EXPIRATION_SECS = EXPIRATION_SECS
 

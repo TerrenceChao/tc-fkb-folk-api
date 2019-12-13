@@ -1,6 +1,7 @@
 const _ = require('lodash')
 const HTTP = require('./constant').HTTP
 const httpHandler = require('../../../library/httpHandler')
+const { MESSAGING_USER_INFO_REPLICATE } = require('./constant')
 
 /**
  *
@@ -30,13 +31,15 @@ function syncCreateUserRequest (event, userInfo) {
     clientuseragent: userInfo.clientuseragent
   })
 
-  const body = {
-    info: _.assign(userInfo.publicInfo, {
+  let info = {}
+  if (MESSAGING_USER_INFO_REPLICATE === true) {
+    info = _.assign(userInfo.publicInfo, {
       givenName: userInfo.givenName,
       familyName: userInfo.familyName
     })
   }
 
+  const body = { info }
   options.body = Buffer.from(JSON.stringify(body))
 
   return httpHandler.syncRequest('[message-service]', event, options, (body) => body.data)
