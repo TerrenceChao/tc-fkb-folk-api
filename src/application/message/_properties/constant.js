@@ -3,6 +3,13 @@ const HTTP = require('../../../property/constant').HTTP
 
 module.exports = {
   HTTP: {
+    CREATE_USER: {
+      OPTIONS: {
+        method: 'POST',
+        url: config.createUserUrl,
+        headers: HTTP.HEADERS
+      }
+    },
     AUTHENTICATE: {
       OPTIONS: {
         method: 'GET',

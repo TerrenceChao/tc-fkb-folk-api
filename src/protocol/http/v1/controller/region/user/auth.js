@@ -34,7 +34,7 @@ exports.authorized = async (req, res, next) => {
     .then(verifyInfo => authService.createVerifiedUser(verifyInfo, httpHandler.genRequestDomain(req)))
     .then(userInfo => Promise.all([
       userService.getPersonalInfo(userInfo),
-      messageService.authenticate(_.assign(userInfo, { clientuseragent })),
+      messageService.createUser(_.assign(userInfo, { clientuseragent })),
       notificationService.register(_.omit(userInfo, ['auth']))
     ]))
     .then(serviceInfoList => (res.locals.data = userService.packetRegisterInfo(serviceInfoList)))

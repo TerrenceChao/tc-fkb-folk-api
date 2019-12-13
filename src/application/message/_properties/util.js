@@ -23,6 +23,31 @@ function authRequest (event, userInfo) {
  * @param {Object} userInfo
  * @param {function} callback
  */
+function syncCreateUserRequest (event, userInfo) {
+  const options = HTTP.CREATE_USER.OPTIONS
+  options.headers = _.assign(options.headers, {
+    uid: userInfo.uid,
+    clientuseragent: userInfo.clientuseragent
+  })
+
+  const body = {
+    info: _.assign(userInfo.publicInfo, {
+      givenName: userInfo.givenName,
+      familyName: userInfo.familyName
+    })
+  }
+
+  options.body = Buffer.from(JSON.stringify(body))
+
+  return httpHandler.syncRequest('[message-service]', event, options, (body) => body.data)
+}
+
+/**
+ *
+ * @param {string} event
+ * @param {Object} userInfo
+ * @param {function} callback
+ */
 function syncAuthRequest (event, userInfo) {
   const options = HTTP.AUTHENTICATE.OPTIONS
   options.headers = _.assign(options.headers, {
@@ -50,6 +75,7 @@ function authRequestTest (event) {
 
 module.exports = {
   authRequest,
+  syncCreateUserRequest,
   syncAuthRequest,
   // test
   authRequestTest

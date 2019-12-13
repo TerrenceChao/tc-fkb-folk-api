@@ -11,6 +11,18 @@ function MessageService () {
  * from message service
  * "userInfo" here must includes "clientuseragent"
  */
+MessageService.prototype.createUser = async function (userInfo) {
+  return Promise.race([
+    util.syncCreateUserRequest('create-user-and-get-authenticate', userInfo),
+    delay(HTTP.TIMEOUT, HTTP.TIMEOUT_MSG)
+  ])
+    .then(response => response)
+}
+
+/**
+ * from message service
+ * "userInfo" here must includes "clientuseragent"
+ */
 MessageService.prototype.authenticate = async function (userInfo) {
   return Promise.race([
     util.syncAuthRequest('get-authenticate', userInfo),
